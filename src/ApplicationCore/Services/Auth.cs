@@ -1,10 +1,13 @@
 ﻿using ApplicationCore.Auth;
 using ApplicationCore.DataAccess;
 using ApplicationCore.Models;
+using ApplicationCore.Settings;
 using ApplicationCore.Specifications;
 using ApplicationCore.Views;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,12 +15,17 @@ namespace ApplicationCore.Services
 {
 	public interface IAuthService
 	{
-		Task<AuthResponse> CreateTokenAsync(string ipAddress, double daysToExpire, User user, OAuth oAuth, IList<string> roles = null);
+		Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, IList<string> roles = null);
 		Task CreateUpdateUserOAuthAsync(string userId, OAuth oAuth);
+
+		string GetUserIdFromToken(string accessToken);
+		bool IsValidRefreshToken(string token, string userId);
 	}
 
 	public class AuthService : IAuthService
 	{
+		private readonly AuthSettings _authSettings;
+
 		private readonly IJwtFactory _jwtFactory;
 		private readonly ITokenFactory _tokenFactory;
 		private readonly IJwtTokenValidator _jwtTokenValidator;
@@ -25,9 +33,11 @@ namespace ApplicationCore.Services
 		private readonly IDefaultRepository<RefreshToken> _refreshTokenRepository;
 		private readonly IDefaultRepository<OAuth> _oAuthRepository;
 
-		public AuthService(IJwtFactory jwtFactory, ITokenFactory tokenFactory, IJwtTokenValidator jwtTokenValidator,
+		public AuthService(IOptions<AuthSettings> authSettings, IJwtFactory jwtFactory, ITokenFactory tokenFactory, IJwtTokenValidator jwtTokenValidator,
 			IDefaultRepository<RefreshToken> refreshTokenRepository, IDefaultRepository<OAuth> oAuthRepository)
 		{
+			_authSettings = authSettings.Value;
+
 			_jwtFactory = jwtFactory;
 			_tokenFactory = tokenFactory;
 			_jwtTokenValidator = jwtTokenValidator;
@@ -36,12 +46,16 @@ namespace ApplicationCore.Services
 			_oAuthRepository = oAuthRepository;
 		}
 
-		public async Task<AuthResponse> CreateTokenAsync(string ipAddress, double daysToExpire, User user, OAuth oAuth, IList<string> roles = null)
+		int RefreshTokenDaysToExpire => _authSettings.RefreshTokenDaysToExpire < 1 ? 5 : _authSettings.RefreshTokenDaysToExpire;
+
+		string SecretKey => _authSettings.SecurityKey;
+
+		public async Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, IList<string> roles = null)
 		{
 			var accessToken = await _jwtFactory.GenerateEncodedToken(user.Id, user.UserName, roles);
 			var refreshToken = _tokenFactory.GenerateToken();
 
-			await SetRefreshTokenAsync(ipAddress, daysToExpire, user, refreshToken);
+			await SetRefreshTokenAsync(ipAddress, user, refreshToken);
 
 			return new AuthResponse
 			{
@@ -67,9 +81,26 @@ namespace ApplicationCore.Services
 
 		}
 
-		async Task SetRefreshTokenAsync(string ipAddress, double daysToExpire, User user, string token)
+		public string GetUserIdFromToken(string accessToken)
 		{
-			var expires = DateTime.UtcNow.AddDays(daysToExpire);
+			var cp = _jwtTokenValidator.GetPrincipalFromToken(accessToken, SecretKey);
+			if (cp == null) return "";
+
+			return cp.Claims.First(c => c.Type == "id").Value;
+		}
+
+		public bool IsValidRefreshToken(string token, string userId)
+		{
+			var entity = GetRefreshToken(userId);
+			if (entity == null) return false;
+
+			return entity.Token == token && entity.Active;
+
+		}
+
+		async Task SetRefreshTokenAsync(string ipAddress, User user, string token)
+		{
+			var expires = DateTime.UtcNow.AddDays(RefreshTokenDaysToExpire);
 
 			var exist = GetRefreshToken(user.Id);
 			if (exist != null)
@@ -94,25 +125,12 @@ namespace ApplicationCore.Services
 
 			}
 
-
-
 		}
 
 		RefreshToken GetRefreshToken(string userId)
 		{
 			var spec = new RefreshTokenFilterSpecification(userId);
 			return _refreshTokenRepository.GetSingleBySpec(spec);
-
-		}
-
-
-		bool HasValidRefreshToken(string userId, string token)
-		{
-			var entity = GetRefreshToken(userId);
-			if (entity == null) return false;
-
-			return entity.Token == token && entity.Active;
-
 		}
 
 	}

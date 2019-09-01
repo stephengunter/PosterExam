@@ -8,5 +8,7 @@ namespace Infrastructure.Entities
 	{
 		public string Title { get; set; }
 		public int ParentId { get; set; }
+
+		public bool IsRootItem => ParentId == 0;
 	}
 }

@@ -20,23 +20,17 @@ namespace Web.Controllers
 {
 	public class OAuthController : BaseController
 	{
-		private readonly AuthSettings _authSettings;
-
 		private readonly UserManager<User> _userManager;
 		private readonly IAuthService _authService;
 
 		private static readonly HttpClient Client = new HttpClient();
 
-		public OAuthController(IOptions<AuthSettings> authSettings, UserManager<User> userManager, IAuthService authService)
+		public OAuthController(UserManager<User> userManager, IAuthService authService)
 		{
-			_authSettings = authSettings.Value;
-
 			_userManager = userManager;
 			_authService = authService;
 		}
-
-
-		int RefreshTokenDaysToExpire => _authSettings.RefreshTokenDaysToExpire < 1 ? 5 : _authSettings.RefreshTokenDaysToExpire;
+		
 
 		//POST api/oauth/google
 		[HttpPost("google")]
@@ -59,7 +53,7 @@ namespace Web.Controllers
 			await _authService.CreateUpdateUserOAuthAsync(user.Id, oAuth);
 
 			var roles = await _userManager.GetRolesAsync(user);
-			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, RefreshTokenDaysToExpire, user, oAuth, roles);
+			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, roles);
 
 			return Ok(responseView);
 		}

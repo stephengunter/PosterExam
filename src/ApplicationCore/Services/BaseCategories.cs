@@ -9,6 +9,10 @@ namespace ApplicationCore.Services
 {
 	public abstract class BaseCategoriesService<T> where T : BaseCategory
 	{
+		protected IEnumerable<T> AllRootItems(DbSet<T> categoryDbSet) => categoryDbSet.Where(item => !item.Removed && item.ParentId == 0);
+
 		protected IEnumerable<T> AllSubItems(DbSet<T> categoryDbSet) => categoryDbSet.Where(item => !item.Removed && item.ParentId > 0);
+
+		
 	}
 }

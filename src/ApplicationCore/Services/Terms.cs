@@ -21,6 +21,8 @@ namespace ApplicationCore.Services
 
 		Term GetById(int id);
 
+		Task LoadParentIdsAsync(Term term);
+
 		Task<int> GetMaxOrderAsync(int subjectId, int parentId);
 	}
 
@@ -66,6 +68,8 @@ namespace ApplicationCore.Services
 			return term;
 
 		}
+
+		public async Task LoadParentIdsAsync(Term term) => term.LoadParentIds(await _termRepository.ListAllAsync());
 
 		public async Task<int> GetMaxOrderAsync(int subjectId, int parentId)
 		{

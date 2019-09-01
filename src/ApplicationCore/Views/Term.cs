@@ -17,5 +17,7 @@ namespace ApplicationCore.Views
 
 		public ICollection<TermViewModel> SubItems { get; set; }
 
+		public ICollection<int> ParentIds { get; set; }
+
 	}
 }

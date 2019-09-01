@@ -10,11 +10,11 @@ namespace ApplicationCore.Models
 	{
 		public int SubjectId { get; set; }
 		public string Title { get; set; }
-		public string TermIds { get; set; }
+		public int TermId { get; set; }
 
 
 
 		public Subject Subject { get; set; }
-		public ICollection<Option> Options { get; set; }
+		public ICollection<Option> Options { get; set; } = new List<Option>();
 	}
 }

@@ -75,11 +75,7 @@ namespace Web.Controllers.Admin
 		{
 			var term = await _termsService.GetByIdAsync(id);
 			if (term == null) return NotFound();
-
-			var text = model.Text;
-
-			model.Text = model.Text.ReplaceNewLine();
-
+			
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 

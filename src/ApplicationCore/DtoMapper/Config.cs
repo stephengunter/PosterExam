@@ -13,6 +13,7 @@ namespace ApplicationCore.DtoMapper
 			{
 				mc.AddProfile(new TermMappingProfile());
 				mc.AddProfile(new SubjectMappingProfile());
+				mc.AddProfile(new QuestionMappingProfile());
 			});
 
 			return mappingConfig;

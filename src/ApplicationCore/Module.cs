@@ -32,6 +32,7 @@ namespace ApplicationCore
 			builder.RegisterType<AuthService>().As<IAuthService>().InstancePerLifetimeScope();
 			builder.RegisterType<SubjectsService>().As<ISubjectsService>().InstancePerLifetimeScope();
 			builder.RegisterType<TermsService>().As<ITermsService>().InstancePerLifetimeScope();
+			builder.RegisterType<QuestionsService>().As<IQuestionsService>().InstancePerLifetimeScope();
 
 		}
 	}
