@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Web.Controllers
 {
 	[Route("api/admin/[controller]")]
-	[Authorize(Policy = "Admin")]
+	//[Authorize(Policy = "Admin")]
 	[ApiController]
 	public class BaseAdminController : ControllerBase
 	{

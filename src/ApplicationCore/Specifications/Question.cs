@@ -12,6 +12,16 @@ namespace ApplicationCore.Specifications
 		public QuestionFilterSpecification(int subjectId) : base(item => !item.Removed && item.SubjectId == subjectId)
 		{
 			AddInclude(item => item.Options);
+			AddInclude("RecruitQuestions.Recruit");
+		}
+	}
+
+	public class QuestionIdFilterSpecification : BaseSpecification<Question>
+	{
+		public QuestionIdFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)
+		{
+			AddInclude(item => item.Options);
+			AddInclude("RecruitQuestions.Recruit");
 		}
 	}
 }

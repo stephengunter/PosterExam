@@ -23,16 +23,13 @@ namespace ApplicationCore
 			builder.RegisterType<JwtTokenValidator>().As<IJwtTokenValidator>().SingleInstance().FindConstructorsWith(new InternalConstructorFinder());
 
 			builder.RegisterType<Logger>().As<ILogger>().SingleInstance();
-
-			builder.RegisterType<PermissionsService>().As<IPermissionsService>().InstancePerLifetimeScope();
 			builder.RegisterType<HasPermissionHandler>().As<IAuthorizationHandler>().InstancePerLifetimeScope();
+			builder.RegisterGeneric(typeof(DefaultRepository<>)).As(typeof(IDefaultRepository<>)).InstancePerLifetimeScope();
 
-			builder.RegisterGeneric(typeof(DefaultRepository<>)).As(typeof(IDefaultRepository<>)).InstancePerLifetimeScope();			
-
-			builder.RegisterType<AuthService>().As<IAuthService>().InstancePerLifetimeScope();
-			builder.RegisterType<SubjectsService>().As<ISubjectsService>().InstancePerLifetimeScope();
-			builder.RegisterType<TermsService>().As<ITermsService>().InstancePerLifetimeScope();
-			builder.RegisterType<QuestionsService>().As<IQuestionsService>().InstancePerLifetimeScope();
+			builder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies())
+				   .Where(t => t.Name.EndsWith("Service"))
+				   .AsImplementedInterfaces()
+				   .InstancePerLifetimeScope();
 
 		}
 	}

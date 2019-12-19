@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ApplicationCore.Models
 {
-	public class OAuth : BaseEntity, IAggregateRoot
+	public class OAuth : BaseEntity
 	{
 		public string UserId { get; set; }
 

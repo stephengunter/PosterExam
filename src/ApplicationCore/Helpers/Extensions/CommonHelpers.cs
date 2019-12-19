@@ -30,6 +30,8 @@ namespace ApplicationCore.Helpers
 			return !enumerable.Any();
 		}
 
+		public static bool HasItems<T>(this IEnumerable<T> enumerable) => !IsNullOrEmpty(enumerable);
+
 		public static IList<string> GetKeywords(this string input)
 		{
 			if (String.IsNullOrWhiteSpace(input) || String.IsNullOrEmpty(input)) return null;

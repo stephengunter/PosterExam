@@ -6,7 +6,7 @@ using Infrastructure.Interfaces;
 
 namespace ApplicationCore.Models
 {
-	public class Option : BaseEntity, IAggregateRoot
+	public class Option : BaseEntity
 	{
 		public string Title { get; set; }
 		public bool Correct { get; set; }

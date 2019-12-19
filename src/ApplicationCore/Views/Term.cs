@@ -20,4 +20,11 @@ namespace ApplicationCore.Views
 		public ICollection<int> ParentIds { get; set; }
 
 	}
+
+	public class TermEditForm
+	{
+		public TermViewModel Term { get; set; } = new TermViewModel();
+
+		public ICollection<TermViewModel> Parents { get; set; }
+	}
 }

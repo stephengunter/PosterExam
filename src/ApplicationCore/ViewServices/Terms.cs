@@ -15,20 +15,20 @@ namespace ApplicationCore.ViewServices
 	public static class TermsViewService
 	{
 		public static TermViewModel MapViewModel(this Term term, IMapper mapper)
-		{
-			return mapper.Map<TermViewModel>(term);
-		}
+			=> mapper.Map<TermViewModel>(term);
 
 		public static List<TermViewModel> MapViewModelList(this IEnumerable<Term> terms, IMapper mapper)
-		{
-			return terms.Select(item => MapViewModel(item, mapper)).ToList();
+			=> terms.Select(item => MapViewModel(item, mapper)).ToList();
+
+		public static Term MapEntity(this TermViewModel model, IMapper mapper, string currentUserId)
+		{ 
+			var entity = mapper.Map<TermViewModel, Term>(model);
+			entity.Text = entity.Text.ReplaceNewLine();
+			entity.SetCreated(currentUserId);
+			return entity;
 		}
 
-		public static Term MapEntity(this TermViewModel model, IMapper mapper, Term term = null)
-		{
-			if (term == null) term = new Term();
-			
-			return mapper.Map<TermViewModel, Term>(model, term);
-		}
+		public static IEnumerable<Term> GetOrdered(this IEnumerable<Term> terms)
+			=> terms.OrderBy(item => item.Order);
 	}
 }

@@ -8,7 +8,7 @@ using Infrastructure.Interfaces;
 
 namespace ApplicationCore.Models
 {
-	public class Term : BaseCategory, IAggregateRoot
+	public class Term : BaseCategory
 	{
 		public int SubjectId { get; set; }
 

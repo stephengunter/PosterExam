@@ -31,10 +31,8 @@ namespace Infrastructure.Interfaces
 		void DeleteRange(IEnumerable<T> entityList);
 
 
-
-		
-
-
+		void Update(T existingEntity, T model);
+		void SyncList(IList<T> existingList, IList<T> latestList);
 
 	}
 }

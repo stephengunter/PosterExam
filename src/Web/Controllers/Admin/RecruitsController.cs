@@ -1,0 +1,101 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using ApplicationCore.Models;
+using ApplicationCore.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using ApplicationCore.Views;
+using ApplicationCore.Helpers;
+using AutoMapper;
+using ApplicationCore.ViewServices;
+
+namespace Web.Controllers.Admin
+{
+	public class RecruitsController : BaseAdminController
+	{
+		private readonly IMapper _mapper;
+		private readonly IRecruitsService _recruitsService;
+
+		public RecruitsController(IRecruitsService recruitsService, IMapper mapper)
+		{
+			_mapper = mapper;
+			_recruitsService = recruitsService;
+		}
+
+		[HttpGet("")]
+		public async Task<ActionResult> Index()
+		{
+			
+			var recruits = await _recruitsService.GetAllAsync();
+			recruits = recruits.GetOrdered();
+			return Ok(recruits.MapViewModelList(_mapper));
+		}
+
+		[HttpGet("create")]
+		public ActionResult Create() => Ok(new RecruitViewModel());
+		
+
+		[HttpPost("")]
+		public async Task<ActionResult> Store([FromBody] RecruitViewModel model)
+		{
+			ValidateRequest(model);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			var recruit = model.MapEntity(_mapper);
+			recruit.SetCreated(CurrentUserId);
+
+			recruit = await _recruitsService.CreateAsync(recruit);
+
+			return Ok(recruit);
+		}
+
+		[HttpGet("edit/{id}")]
+		public async Task<ActionResult> Edit(int id)
+		{
+			var recruit = await _recruitsService.GetByIdAsync(id);
+			if (recruit == null) return NotFound();
+
+			var model = recruit.MapViewModel(_mapper);
+			return Ok(model);
+		}
+
+		[HttpPut("{id}")]
+		public async Task<ActionResult> Update(int id, [FromBody] RecruitViewModel model)
+		{
+			var existingEntity = _recruitsService.GetById(id);
+			if (existingEntity == null) return NotFound();
+
+			ValidateRequest(model);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			var recruit = model.MapEntity(_mapper);
+			recruit.SetUpdated(CurrentUserId);
+
+			await _recruitsService.UpdateAsync(recruit);
+
+			return Ok();
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<ActionResult> Delete(int id)
+		{
+			var recruit = await _recruitsService.GetByIdAsync(id);
+			if (recruit == null) return NotFound();
+
+			recruit.SetUpdated(CurrentUserId);
+			await _recruitsService.RemoveAsync(recruit);
+
+			return Ok();
+		}
+
+		void ValidateRequest(RecruitViewModel model)
+		{
+			if (!ModelState.IsValid) return;
+			if(model.Year < 100) ModelState.AddModelError("year", "年度錯誤");
+		}
+
+
+	}
+}

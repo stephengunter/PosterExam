@@ -16,6 +16,8 @@ namespace Infrastructure.Interfaces
 		Task DeleteAsync(T entity);
 		Task<int> CountAsync(ISpecification<T> spec);
 
+		Task UpdateAsync(T existingEntity, T model);
+
 	}
 
 }

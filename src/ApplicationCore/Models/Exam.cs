@@ -6,7 +6,7 @@ using Infrastructure.Interfaces;
 
 namespace ApplicationCore.Models
 {
-	public class Exam : BaseRecord, IAggregateRoot
+	public class Exam : BaseRecord
 	{
 		public OptionType OptionType { get; private set; }
 		public int OptionCount { get; private set; }

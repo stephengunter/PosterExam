@@ -6,7 +6,7 @@ using Infrastructure.Interfaces;
 
 namespace ApplicationCore.Models
 {
-	public class Category : BaseCategory, IAggregateRoot
+	public class Category : BaseCategory
 	{
 		public CategoryType Type { get; set; }
 	}

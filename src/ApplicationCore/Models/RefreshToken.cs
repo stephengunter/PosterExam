@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ApplicationCore.Models
 {
-	public class RefreshToken : BaseEntity , IAggregateRoot
+	public class RefreshToken : BaseEntity
 	{
 		public string Token { get; set; }
 		public DateTime Expires { get; set; }

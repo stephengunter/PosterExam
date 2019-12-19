@@ -9,7 +9,7 @@ using ApplicationCore.Helpers;
 
 namespace ApplicationCore.Models
 {
-	public class Subject : BaseCategory, IAggregateRoot
+	public class Subject : BaseCategory
 	{
 		public ICollection<Term> Terms { get; set; }
 

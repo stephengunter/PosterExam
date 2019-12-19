@@ -12,4 +12,11 @@ namespace ApplicationCore.Views
 		public ICollection<SubjectViewModel> SubItems { get; set; }
 
 	}
+
+	public class SubjectEditForm
+	{
+		public SubjectViewModel Subject { get; set; } = new SubjectViewModel();
+
+		public ICollection<SubjectViewModel> Parents { get; set; }
+	}
 }

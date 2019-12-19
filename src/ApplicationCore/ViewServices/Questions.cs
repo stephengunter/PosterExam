@@ -15,20 +15,23 @@ namespace ApplicationCore.ViewServices
 	public static class QuestionsViewService
 	{
 		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper)
-		{
-			return mapper.Map<QuestionViewModel>(question);
-		}
+			=> mapper.Map<QuestionViewModel>(question);
 
 		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper)
-		{
-			return questions.Select(item => MapViewModel(item, mapper)).ToList();
-		}
+			=> questions.Select(item => MapViewModel(item, mapper)).ToList();
 
-		public static Question MapEntity(this QuestionViewModel model, IMapper mapper, Question question = null)
+		public static Question MapEntity(this QuestionViewModel model, IMapper mapper)
+			=> mapper.Map<QuestionViewModel, Question>(model);
+
+		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, int page, int pageSize)
 		{
-			if (question == null) question = new Question();
-			
-			return mapper.Map<QuestionViewModel, Question>(model, question);
+			var pageList = new PagedList<Question, QuestionViewModel>(questions, page, pageSize);
+
+			pageList.ViewList = pageList.List.MapViewModelList(mapper);
+
+			pageList.List = null;
+
+			return pageList;
 		}
 	}
 }

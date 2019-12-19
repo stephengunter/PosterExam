@@ -12,13 +12,14 @@ namespace ApplicationCore.Services
 {
 	public interface ISubjectsService
 	{
-		Task<IEnumerable<Subject>> FetchAsync();
+		Task<IEnumerable<Subject>> FetchAsync(int parentId = -1);
 		Task<Subject> GetByIdAsync(int id);
 		Task<Subject> CreateAsync(Subject subject);
 		Task UpdateAsync(Subject subject);
+		Task UpdateAsync(Subject existingEntity, Subject model);
 		Task RemoveAsync(Subject subject);
 
-
+		void LoadSubItems(IEnumerable<Subject> list);
 		Subject GetById(int id);
 	}
 
@@ -30,22 +31,27 @@ namespace ApplicationCore.Services
 		{
 			this._subjectRepository = subjectRepository;
 		}
+		
 
-		public async Task<IEnumerable<Subject>> FetchAsync()
+		public async Task<IEnumerable<Subject>> FetchAsync(int parentId = -1)
 		{
-			int parentId = 0;
-			var spec = new SubjectFilterSpecification(parentId);
-			var list = await _subjectRepository.ListAsync(spec);
+			SubjectFilterSpecification spec;
+			if (parentId >= 0) spec = new SubjectFilterSpecification(parentId);
+			else spec = new SubjectFilterSpecification();
 
-			LoadSubItems(list);
-			return list;
+
+			return await _subjectRepository.ListAsync(spec);
 		}
+
+		
 
 		public async Task<Subject> GetByIdAsync(int id) => await _subjectRepository.GetByIdAsync(id);
 
 		public async Task<Subject> CreateAsync(Subject subject) => await _subjectRepository.AddAsync(subject);
 
 		public async Task UpdateAsync(Subject subject) => await _subjectRepository.UpdateAsync(subject);
+
+		public async Task UpdateAsync(Subject existingEntity, Subject model) => await _subjectRepository.UpdateAsync(existingEntity, model);
 
 		public async Task RemoveAsync(Subject subject)
 		{
@@ -63,11 +69,11 @@ namespace ApplicationCore.Services
 			return subject;
 
 		}
-		
-		
 
 
-		void LoadSubItems(IEnumerable<Subject> list)
+
+
+		public void LoadSubItems(IEnumerable<Subject> list)
 		{
 			if (list.IsNullOrEmpty()) return;
 

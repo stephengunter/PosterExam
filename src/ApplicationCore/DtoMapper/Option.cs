@@ -8,13 +8,13 @@ using System.Text;
 
 namespace ApplicationCore.DtoMapper
 {
-	public class QuestionMappingProfile : Profile
+	public class OptionMappingProfile : Profile
 	{
-		public QuestionMappingProfile()
+		public OptionMappingProfile()
 		{
-			CreateMap<Question, QuestionViewModel>();
+			CreateMap<Option, OptionViewModel>();
 
-			CreateMap<QuestionViewModel, Question>();
+			CreateMap<OptionViewModel, Option>();
 		}
 	}
 }

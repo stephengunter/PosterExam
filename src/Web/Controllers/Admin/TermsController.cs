@@ -17,31 +17,61 @@ namespace Web.Controllers.Admin
 	{
 		private readonly IMapper _mapper;
 		private readonly ITermsService _termsService;
+		private readonly ISubjectsService _subjectsService;
 
-		public TermsController(ITermsService termsService, IMapper mapper)
+		public TermsController(ITermsService termsService, ISubjectsService subjectsService, IMapper mapper)
 		{
 			_mapper = mapper;
 			_termsService = termsService;
+			_subjectsService = subjectsService;
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject, int parent = 0)
+		public async Task<ActionResult> Index(int subject, int parent = -1, bool subItems = true)
 		{
-			var terms = await _termsService.FetchAsync(subject, parent);
+			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
+			if (selectedSubject == null)
+			{
+				ModelState.AddModelError("subject", "科目不存在");
+				return BadRequest(ModelState);
+			}
+			
+
+			var terms = await _termsService.FetchAsync(selectedSubject, parent);
+			terms = terms.GetOrdered();
+
+			if (subItems) _termsService.LoadSubItems(terms);
 			return Ok(terms.MapViewModelList(_mapper));
 		}
 
 		[HttpGet("create")]
 		public async Task<ActionResult> Create(int subject, int parent)
 		{
-			int maxOrder = await _termsService.GetMaxOrderAsync(subject, parent);
+			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
+			if (selectedSubject == null)
+			{
+				ModelState.AddModelError("subject", "科目不存在");
+				return BadRequest(ModelState);
+			}
+
+			int maxOrder = await _termsService.GetMaxOrderAsync(selectedSubject, parent);
 			var model = new TermViewModel()
 			{
 				Order = maxOrder + 1,
 				SubjectId = subject,
 				ParentId = parent
 			};
-			return Ok(model);
+
+			
+			var terms = await _termsService.FetchAllAsync();
+			terms = terms.GetOrdered();
+
+			var form = new TermEditForm()
+			{
+				Term = model,
+				Parents = terms.MapViewModelList(_mapper)
+			};
+			return Ok(form);
 		}
 
 		[HttpPost("")]
@@ -50,9 +80,7 @@ namespace Web.Controllers.Admin
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var term = model.MapEntity(_mapper);
-			term.Text = term.Text.ReplaceNewLine();
-			term.SetCreated(CurrentUserId);
+			var term = model.MapEntity(_mapper, CurrentUserId);
 
 			term = await _termsService.CreateAsync(term);
 
@@ -67,23 +95,30 @@ namespace Web.Controllers.Admin
 
 			var model = term.MapViewModel(_mapper);
 			model.Text = model.Text.ReplaceBrToNewLine();
-			return Ok(model);
+			
+			var terms = await _termsService.FetchAllAsync();
+			terms = terms.GetOrdered();
+
+			var form = new TermEditForm()
+			{
+				Term = model,
+				Parents = terms.MapViewModelList(_mapper)
+			};
+			return Ok(form);
 		}
 
 		[HttpPut("{id}")]
 		public async Task<ActionResult> Update(int id, [FromBody] TermViewModel model)
 		{
-			var term = await _termsService.GetByIdAsync(id);
-			if (term == null) return NotFound();
+			var existingEntity = _termsService.GetById(id);
+			if (existingEntity == null) return NotFound();
 			
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			term = model.MapEntity(_mapper, term);
-			term.Text = term.Text.ReplaceNewLine();
-			term.SetUpdated(CurrentUserId);
+			var term = model.MapEntity(_mapper, CurrentUserId);
 
-			await _termsService.UpdateAsync(term);
+			await _termsService.UpdateAsync(existingEntity, term);
 
 			return Ok();
 		}
@@ -102,11 +137,15 @@ namespace Web.Controllers.Admin
 
 		async Task ValidateRequestAsync(TermViewModel model)
 		{
-			
+			var subject = await _subjectsService.GetByIdAsync(model.SubjectId);
+			if (subject == null) ModelState.AddModelError("subjectId", "科目不存在");
+
 			if (model.ParentId > 0)
 			{
 				var parent = await _termsService.GetByIdAsync(model.ParentId);
-				if(parent == null) ModelState.AddModelError("parentId", "主科目不存在");
+				if(parent == null) ModelState.AddModelError("parentId", "主條文不存在");
+
+				if (parent.Id == model.Id) ModelState.AddModelError("parentId", "主條文重疊.請選擇其他主條文");
 			}
 		}
 

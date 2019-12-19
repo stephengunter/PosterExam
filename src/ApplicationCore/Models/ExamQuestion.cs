@@ -6,7 +6,7 @@ using Infrastructure.Interfaces;
 
 namespace ApplicationCore.Models
 {
-	public class ExamQuestion : BaseEntity, IAggregateRoot
+	public class ExamQuestion : BaseEntity
 	{
 		public int ExamId { get; set; }
 		public int Order { get; set; }

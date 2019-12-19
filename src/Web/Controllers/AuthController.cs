@@ -24,7 +24,7 @@ namespace Web.Controllers
 		private readonly UserManager<User> _userManager;
 		private readonly IAuthService _authService;
 
-		private static readonly HttpClient Client = new HttpClient();
+		//private static readonly HttpClient Client = new HttpClient();
 
 		public AuthController(UserManager<User> userManager, IAuthService authService)
 		{

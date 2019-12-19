@@ -15,40 +15,46 @@ namespace Web.Controllers.Admin
 {
 	public class QuestionsController : BaseAdminController
 	{
-		private readonly IMapper _mapper;
 		private readonly IQuestionsService _questionsService;
+		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
+		private readonly IMapper _mapper;
 
-		public QuestionsController(IQuestionsService questionsService, ITermsService termsService, IMapper mapper)
+		public QuestionsController(IQuestionsService questionsService, ISubjectsService subjectsService, ITermsService termsService,
+			 IMapper mapper)
 		{
-			_mapper = mapper;
 			_questionsService = questionsService;
+			_subjectsService = subjectsService;
 			_termsService = termsService;
+
+			_mapper = mapper;
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject)
+		public async Task<ActionResult> Index(int subject, string terms, string keyword = "", int page = 1, int pageSize = 10)
 		{
-			var questions = await _questionsService.FetchAsync(subject);
-			return Ok(questions.MapViewModelList(_mapper));
+			var selectedTermIds = terms.Split(',').Select(i => i.ToInt()).ToArray();
+
+			var termIds = _termsService.ResolveSelectedIds(selectedTermIds);
+
+			var questions = await _questionsService.FetchAsync(subject, termIds);
+
+			var pageList = questions.GetPagedList(_mapper, page, pageSize);
+
+			foreach (var item in pageList.ViewList)
+			{
+				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
+			}
+
+			return Ok(pageList);
 		}
 
 		[HttpGet("create")]
 		public async Task<ActionResult> Create(int subject, int term = 0)
 		{
 			var model = new QuestionViewModel { SubjectId = subject, TermId = term };
-			if (term > 0)
-			{
-				var selectedTerm = await _termsService.GetByIdAsync(term);
-				if (selectedTerm == null)
-				{
-					ModelState.AddModelError("termId", "科目不存在");
-					return BadRequest(ModelState);
-				}
-				await _termsService.LoadParentIdsAsync(selectedTerm);
-				model.Term = selectedTerm.MapViewModel(_mapper);
-			}
 
+			if (term > 0) model.Term = await LoadTermViewModelAsync(term);
 			
 			return Ok(model);
 		}
@@ -60,6 +66,12 @@ namespace Web.Controllers.Admin
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			var question = model.MapEntity(_mapper);
+
+			var recruitQuestions = question.RecruitQuestions;
+			if (recruitQuestions.IsNullOrEmpty())
+			{
+
+			}
 			question.SetCreated(CurrentUserId);
 
 			question = await _questionsService.CreateAsync(question);
@@ -67,29 +79,41 @@ namespace Web.Controllers.Admin
 			return Ok(question);
 		}
 
+		async Task<TermViewModel> LoadTermViewModelAsync(int termId)
+		{
+			var term = await _termsService.GetByIdAsync(termId);
+			if (term == null) return null;
+
+			await _termsService.LoadParentIdsAsync(term);
+			return term.MapViewModel(_mapper);
+		}
+
 		[HttpGet("edit/{id}")]
 		public async Task<ActionResult> Edit(int id)
 		{
-			var question = await _questionsService.GetByIdAsync(id);
+			var question = _questionsService.GetById(id);
 			if (question == null) return NotFound();
 
 			var model = question.MapViewModel(_mapper);
+
+			if (question.TermId > 0) model.Term = await LoadTermViewModelAsync(question.TermId);
+			
 			return Ok(model);
 		}
 
 		[HttpPut("{id}")]
 		public async Task<ActionResult> Update(int id, [FromBody] QuestionViewModel model)
 		{
-			var question = await _questionsService.GetByIdAsync(id);
-			if (question == null) return NotFound();
+			var existingEntity = _questionsService.GetById(id);
+			if (existingEntity == null) return NotFound();
 
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			question = model.MapEntity(_mapper, question);
+			var question = model.MapEntity(_mapper);
 			question.SetUpdated(CurrentUserId);
 
-			await _questionsService.UpdateAsync(question);
+			await _questionsService.UpdateAsync(existingEntity, question);
 
 			return Ok();
 		}
@@ -108,8 +132,20 @@ namespace Web.Controllers.Admin
 
 		async Task ValidateRequestAsync(QuestionViewModel model)
 		{
-			var subject = await _questionsService.GetByIdAsync(model.SubjectId);
+			var subject = await _subjectsService.GetByIdAsync(model.SubjectId);
 			if (subject == null) ModelState.AddModelError("subjectId", "科目不存在");
+
+			if (model.Options.IsNullOrEmpty())
+			{
+				ModelState.AddModelError("options", "必須要有選項");
+			}
+			else
+			{
+				var correctOptions = model.Options.Where(item => item.Correct).ToList();
+				if (correctOptions.IsNullOrEmpty()) ModelState.AddModelError("options", "必須要有一個正確選項");
+				else if (correctOptions.Count > 1) ModelState.AddModelError("options", "只能有一個正確選項");
+			}
+									
 		}
 
 

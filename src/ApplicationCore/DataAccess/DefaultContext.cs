@@ -17,15 +17,31 @@ namespace ApplicationCore.DataAccess
 		public DbSet<Exam> Exams { get; set; }
 		public DbSet<ExamQuestion> ExamQuestions { get; set; }
 		public DbSet<Question> Questions { get; set; }
+		public DbSet<Option> Options { get; set; }
 		public DbSet<Subject> Subjects { get; set; }
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<Term> Terms { get; set; }
+		public DbSet<Recruit> Recruits { get; set; }
+		public DbSet<RecruitQuestion> RecruitQuestions { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{
 			base.OnModelCreating(builder);
 
 			builder.Entity<User>(ConfigureUser);
+
+			builder.Entity<RecruitQuestion>().HasKey(item => new { item.RecruitId, item.QuestionId });
+
+			builder.Entity<RecruitQuestion>()
+				.HasOne<Recruit>(item => item.Recruit)
+				.WithMany(item => item.RecruitQuestions)
+				.HasForeignKey(item => item.RecruitId);
+
+
+			builder.Entity<RecruitQuestion>()
+				.HasOne<Question>(item => item.Question)
+				.WithMany(item => item.RecruitQuestions)
+				.HasForeignKey(item => item.QuestionId);
 
 		}
 

@@ -7,6 +7,7 @@ namespace ApplicationCore.Views
 {
 	public class QuestionViewModel : BaseRecordView
 	{
+		public int Id { get; set; }
 		public int SubjectId { get; set; }
 		public string Title { get; set; }
 		public int TermId { get; set; }
@@ -15,6 +16,9 @@ namespace ApplicationCore.Views
 
 		public TermViewModel Term  { get; set; }
 		public ICollection<OptionViewModel> Options { get; set; } = new List<OptionViewModel>();
+		public ICollection<RecruitViewModel> Recruits { get; set; } = new List<RecruitViewModel>();
+
+		public string RecruitsText { get; set; }
 	}
 
 }

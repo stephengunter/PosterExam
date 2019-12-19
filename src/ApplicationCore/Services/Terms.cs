@@ -12,18 +12,22 @@ namespace ApplicationCore.Services
 {
 	public interface ITermsService
 	{
-		Task<IEnumerable<Term>> FetchAsync(int subjectId, int parentId);
+		Task<IEnumerable<Term>> FetchAllAsync();
+		Task<IEnumerable<Term>> FetchAsync(Subject subject, int parentId = -1);
 		Task<Term> GetByIdAsync(int id);
 		Task<Term> CreateAsync(Term term);
 		Task UpdateAsync(Term term);
+		Task UpdateAsync(Term existingEntity, Term model);
 		Task RemoveAsync(Term term);
 
 
 		Term GetById(int id);
-
+		void LoadSubItems(IEnumerable<Term> list);
 		Task LoadParentIdsAsync(Term term);
 
-		Task<int> GetMaxOrderAsync(int subjectId, int parentId);
+		Task<int> GetMaxOrderAsync(Subject subject, int parentId);
+
+		List<int> ResolveSelectedIds(int[] selectedIds);
 	}
 
 	public class TermsService : BaseCategoriesService<Term>, ITermsService
@@ -35,12 +39,16 @@ namespace ApplicationCore.Services
 			this._termRepository = termRepository;
 		}
 
-		public async Task<IEnumerable<Term>> FetchAsync(int subjectId, int parentId)
+		public async Task<IEnumerable<Term>> FetchAllAsync() => await _termRepository.ListAsync(new TermFilterSpecification());
+		
+		public async Task<IEnumerable<Term>> FetchAsync(Subject subject, int parentId = -1)
 		{
-			var spec = new TermFilterSpecification(subjectId, parentId);
-			var list = await _termRepository.ListAsync(spec);
+			TermFilterSpecification spec;
+			if (parentId >= 0) spec = new TermFilterSpecification(subject, parentId);
+			else spec = new TermFilterSpecification(subject);
 
-			LoadSubItems(list);
+
+			var list = await _termRepository.ListAsync(spec);
 			return list;
 		}
 
@@ -50,7 +58,7 @@ namespace ApplicationCore.Services
 
 		public async Task UpdateAsync(Term term) => await _termRepository.UpdateAsync(term);
 
-		
+		public async Task UpdateAsync(Term existingEntity, Term model) => await _termRepository.UpdateAsync(existingEntity, model);
 
 		public async Task RemoveAsync(Term term)
 		{
@@ -71,16 +79,18 @@ namespace ApplicationCore.Services
 
 		public async Task LoadParentIdsAsync(Term term) => term.LoadParentIds(await _termRepository.ListAllAsync());
 
-		public async Task<int> GetMaxOrderAsync(int subjectId, int parentId)
+		public async Task<int> GetMaxOrderAsync(Subject subject, int parentId)
 		{
-			var spec = new TermFilterSpecification(subjectId, parentId);
+			var spec = new TermFilterSpecification(subject, parentId);
 			var list = await _termRepository.ListAsync(spec);
 
 			if (list.IsNullOrEmpty()) return 0;
 			return list.Max(item => item.Order);
 		}
 
-		void LoadSubItems(IEnumerable<Term> list)
+		public List<int> ResolveSelectedIds(int[] selectedIds) => ResolveSelectedIds(selectedIds, _termRepository.DbSet);
+
+		public void LoadSubItems(IEnumerable<Term> list)
 		{
 			if (list.IsNullOrEmpty()) return;
 
@@ -99,5 +109,7 @@ namespace ApplicationCore.Services
 
 			entity.LoadSubItems(subItems.ToList());
 		}
+
+		
 	}
 }

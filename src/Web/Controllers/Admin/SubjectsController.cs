@@ -25,15 +25,25 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index()
+		public async Task<ActionResult> Index(bool subItems = true)
 		{
-			var subjects = await _subjectsService.FetchAsync();
+			int parentId = subItems ? 0 : -1;
+			var subjects = await _subjectsService.FetchAsync(parentId);
 			subjects = subjects.GetOrdered();
+
+			if(subItems) _subjectsService.LoadSubItems(subjects);
 			return Ok(subjects.MapViewModelList(_mapper));
 		}
 
 		[HttpGet("create")]
-		public ActionResult Create() => Ok(new SubjectViewModel());
+		public async Task<ActionResult> Create()
+		{
+			var subjects = await _subjectsService.FetchAsync();
+			subjects = subjects.GetOrdered();
+
+			var form = new SubjectEditForm() { Parents = subjects.MapViewModelList(_mapper) };
+			return Ok(form);
+		}
 		
 
 		[HttpPost("")]
@@ -56,23 +66,32 @@ namespace Web.Controllers.Admin
 			var subject = await _subjectsService.GetByIdAsync(id);
 			if (subject == null) return NotFound();
 
-			var model = subject.MapViewModel(_mapper);
-			return Ok(model);
+			
+			var subjects = await _subjectsService.FetchAsync();
+		
+			subjects = subjects.GetOrdered();
+
+			var form = new SubjectEditForm() 
+			{
+				Subject = subject.MapViewModel(_mapper),
+				Parents = subjects.MapViewModelList(_mapper) 
+			};
+			return Ok(form);
 		}
 
 		[HttpPut("{id}")]
 		public async Task<ActionResult> Update(int id, [FromBody] SubjectViewModel model)
 		{
-			var subject = await _subjectsService.GetByIdAsync(id);
-			if (subject == null) return NotFound();
+			var existingEntity = _subjectsService.GetById(id);
+			if (existingEntity == null) return NotFound();
 
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			subject = model.MapEntity(_mapper, subject);
+			var subject = model.MapEntity(_mapper);
 			subject.SetUpdated(CurrentUserId);
 
-			await _subjectsService.UpdateAsync(subject);
+			await _subjectsService.UpdateAsync(existingEntity, subject);
 
 			return Ok();
 		}
@@ -91,11 +110,13 @@ namespace Web.Controllers.Admin
 
 		async Task ValidateRequestAsync(SubjectViewModel model)
 		{
-			
 			if (model.ParentId > 0)
 			{
 				var parent = await _subjectsService.GetByIdAsync(model.ParentId);
-				if(parent == null) ModelState.AddModelError("parentId", "主科目不存在");
+				if (parent == null) ModelState.AddModelError("parentId", "主科目不存在");
+
+				if (parent.Id == model.Id) ModelState.AddModelError("parentId", "主科目重疊.請選擇其他主科目");
+				
 			}
 		}
 

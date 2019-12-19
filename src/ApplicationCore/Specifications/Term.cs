@@ -9,9 +9,11 @@ namespace ApplicationCore.Specifications
 
 	public class TermFilterSpecification : BaseSpecification<Term>
 	{
-		public TermFilterSpecification(int subjectId, int parentId) : base(item => !item.Removed && item.SubjectId == subjectId && item.ParentId == parentId)
-		{
+		public TermFilterSpecification() : base(item => !item.Removed) { }
 
-		}
+		public TermFilterSpecification(Subject subject) : base(item => !item.Removed && item.SubjectId == subject.Id) { }
+
+		public TermFilterSpecification(Subject subject, int parentId)
+			: base(item => !item.Removed && item.SubjectId == subject.Id && item.ParentId == parentId) { }
 	}
 }

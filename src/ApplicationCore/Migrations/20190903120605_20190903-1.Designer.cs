@@ -4,14 +4,16 @@ using ApplicationCore.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ApplicationCore.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    partial class DefaultContextModelSnapshot : ModelSnapshot
+    [Migration("20190903120605_20190903-1")]
+    partial class _201909031
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -171,44 +173,6 @@ namespace ApplicationCore.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Questions");
-                });
-
-            modelBuilder.Entity("ApplicationCore.Models.Recruit", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreatedAt");
-
-                    b.Property<DateTime>("LastUpdated");
-
-                    b.Property<int>("Order");
-
-                    b.Property<bool>("Removed");
-
-                    b.Property<string>("Title");
-
-                    b.Property<string>("UpdatedBy");
-
-                    b.Property<int>("Year");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Recruits");
-                });
-
-            modelBuilder.Entity("ApplicationCore.Models.RecruitQuestion", b =>
-                {
-                    b.Property<int>("RecruitId");
-
-                    b.Property<int>("QuestionId");
-
-                    b.HasKey("RecruitId", "QuestionId");
-
-                    b.HasIndex("QuestionId");
-
-                    b.ToTable("RecruitQuestions");
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.RefreshToken", b =>
@@ -495,19 +459,6 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Subject", "Subject")
                         .WithMany("Questions")
                         .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("ApplicationCore.Models.RecruitQuestion", b =>
-                {
-                    b.HasOne("ApplicationCore.Models.Question", "Question")
-                        .WithMany("RecruitQuestions")
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("ApplicationCore.Models.Recruit", "Recruit")
-                        .WithMany("RecruitQuestions")
-                        .HasForeignKey("RecruitId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

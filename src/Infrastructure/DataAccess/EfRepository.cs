@@ -46,6 +46,12 @@ namespace Infrastructure.DataAccess
 			await _dbContext.SaveChangesAsync();
 		}
 
+		public async Task UpdateAsync(T existingEntity, T model)
+		{
+			_dbContext.Entry(existingEntity).CurrentValues.SetValues(model);
+			await UpdateAsync(existingEntity);
+		}
+
 		public async Task DeleteAsync(T entity)
 		{
 			_dbSet.Remove(entity);
@@ -83,6 +89,12 @@ namespace Infrastructure.DataAccess
 			_dbContext.SaveChanges();
 		}
 
+		public void Update(T existingEntity, T model)
+		{
+			_dbContext.Entry(existingEntity).CurrentValues.SetValues(model);
+			Update(existingEntity);
+		}
+
 		public void Delete(T entity)
 		{
 			_dbSet.Remove(entity);
@@ -108,6 +120,28 @@ namespace Infrastructure.DataAccess
 		public void DeleteRange(IEnumerable<T> entityList)
 		{
 			_dbSet.RemoveRange(entityList);
+			_dbContext.SaveChanges();
+		}
+
+		public void SyncList(IList<T> existingList, IList<T> latestList)
+		{
+			foreach (var existingItem in existingList)
+			{
+				if (!latestList.Any(item => item.Id == existingItem.Id))
+				{
+					_dbSet.Remove(existingItem);
+				}
+			}
+
+			foreach (var latestItem in latestList)
+			{
+				var existingItem = existingList.Where(item => item.Id == latestItem.Id).FirstOrDefault();
+
+				if (existingItem != null) _dbContext.Entry(existingItem).CurrentValues.SetValues(latestItem);
+				else _dbSet.Add(latestItem);
+
+			}
+
 			_dbContext.SaveChanges();
 		}
 	}
