@@ -3,25 +3,45 @@ using ApplicationCore.Models;
 using Infrastructure.DataAccess;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ApplicationCore.Specifications
 {
 
 	public class QuestionFilterSpecification : BaseSpecification<Question>
 	{
-		public QuestionFilterSpecification(int subjectId) : base(item => !item.Removed && item.SubjectId == subjectId)
+		public QuestionFilterSpecification() : base(item => !item.Removed)
+		{
+			AddInclude(item => item.Options);
+			AddInclude("RecruitQuestions.Recruit");
+		}
+
+		public QuestionFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)
+		{
+			AddInclude(item => item.Options);
+			AddInclude("RecruitQuestions.Recruit");
+		}
+
+		public QuestionFilterSpecification(Subject subject) : base(item => !item.Removed && item.SubjectId == subject.Id)
+		{
+			AddInclude(item => item.Options);
+			AddInclude("RecruitQuestions.Recruit");
+		}
+
+		public QuestionFilterSpecification(Subject subject, IEnumerable<int> termIds) 
+			: base(item => !item.Removed && item.SubjectId == subject.Id && termIds.Contains(item.TermId))
 		{
 			AddInclude(item => item.Options);
 			AddInclude("RecruitQuestions.Recruit");
 		}
 	}
 
-	public class QuestionIdFilterSpecification : BaseSpecification<Question>
-	{
-		public QuestionIdFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)
-		{
-			AddInclude(item => item.Options);
-			AddInclude("RecruitQuestions.Recruit");
-		}
-	}
+	//public class QuestionIdFilterSpecification : BaseSpecification<Question>
+	//{
+	//	public QuestionIdFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)
+	//	{
+	//		AddInclude(item => item.Options);
+	//		AddInclude("RecruitQuestions.Recruit");
+	//	}
+	//}
 }

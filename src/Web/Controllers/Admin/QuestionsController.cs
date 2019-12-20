@@ -31,13 +31,31 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject, string terms, string keyword = "", int page = 1, int pageSize = 10)
+		public async Task<ActionResult> Index(int subject, int term, string keyword = "", int page = 1, int pageSize = 10)
 		{
-			var selectedTermIds = terms.Split(',').Select(i => i.ToInt()).ToArray();
+			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
+			if (selectedSubject == null)
+			{
+				ModelState.AddModelError("subject", "科目不存在");
+				return BadRequest(ModelState);
+			}
 
-			var termIds = _termsService.ResolveSelectedIds(selectedTermIds);
+			Term selectedTerm = null;
+			ICollection<int> termIds = null;
+			if (term > 0)
+			{
+				selectedTerm =_termsService.GetById(term);
+				if (selectedTerm == null)
+				{
+					ModelState.AddModelError("term", "條文不存在");
+					return BadRequest(ModelState);
+				}
 
-			var questions = await _questionsService.FetchAsync(subject, termIds);
+				termIds = selectedTerm.GetSubIds();
+				termIds.Add(selectedTerm.Id);
+			}
+
+			var questions = await _questionsService.FetchAsync(selectedSubject, termIds);
 
 			var pageList = questions.GetPagedList(_mapper, page, pageSize);
 

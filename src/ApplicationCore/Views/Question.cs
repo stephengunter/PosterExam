@@ -21,4 +21,11 @@ namespace ApplicationCore.Views
 		public string RecruitsText { get; set; }
 	}
 
+	public class QuestionEditForm
+	{
+		public QuestionViewModel Question { get; set; } = new QuestionViewModel();
+
+		public ICollection<TermViewModel> Terms { get; set; }
+	}
+
 }

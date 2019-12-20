@@ -13,7 +13,7 @@ namespace ApplicationCore.Services
 {
 	public interface IQuestionsService
 	{
-		Task<IEnumerable<Question>> FetchAsync(int subjectId, IList<int> termIds = null);
+		Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null);
 		Task<Question> GetByIdAsync(int id);
 		Task<Question> CreateAsync(Question question);
 		Task UpdateAsync(Question question);
@@ -35,15 +35,13 @@ namespace ApplicationCore.Services
 			_optionRepository = optionRepository;
 		}
 
-		public async Task<IEnumerable<Question>> FetchAsync(int subjectId, IList<int> termIds = null)
+		public async Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null)
 		{
-			var spec = new QuestionFilterSpecification(subjectId);
-			var list = await _questionRepository.ListAsync(spec);
+			QuestionFilterSpecification spec;
+			if (termIds.IsNullOrEmpty()) spec = new QuestionFilterSpecification(subject);
+			else spec = new QuestionFilterSpecification(subject, termIds);
 
-			if (!termIds.IsNullOrEmpty()) list = list.Where(item => termIds.Contains(item.TermId)).ToList();
-
-
-			return list;
+			return await _questionRepository.ListAsync(spec);
 		}
 
 		public async Task<Question> GetByIdAsync(int id) => await _questionRepository.GetByIdAsync(id);
@@ -64,7 +62,7 @@ namespace ApplicationCore.Services
 
 		public Question GetById(int id)
 		{
-			var spec = new QuestionIdFilterSpecification(id);
+			var spec = new QuestionFilterSpecification(id);
 			return _questionRepository.GetSingleBySpec(spec);
 		}
 

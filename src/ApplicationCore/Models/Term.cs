@@ -26,6 +26,19 @@ namespace ApplicationCore.Models
 		public ICollection<int> ParentIds { get; private set; } = new List<int>();
 
 
+		public ICollection<int> GetSubIds()
+		{
+			var subIds = new List<int>();
+			foreach (var item in SubItems)
+			{
+				subIds.Add(item.Id);
+
+				subIds.AddRange(item.GetSubIds());
+			}
+			return subIds;
+		}
+
+
 		public void LoadSubItems(IEnumerable<Term> subItems)
 		{
 			SubItems = subItems.Where(item => item.ParentId == this.Id).OrderBy(item => item.Order).ToList();

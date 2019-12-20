@@ -47,9 +47,7 @@ namespace ApplicationCore.Services
 			if (parentId >= 0) spec = new TermFilterSpecification(subject, parentId);
 			else spec = new TermFilterSpecification(subject);
 
-
-			var list = await _termRepository.ListAsync(spec);
-			return list;
+			return await _termRepository.ListAsync(spec);
 		}
 
 		public async Task<Term> GetByIdAsync(int id) => await _termRepository.GetByIdAsync(id);
