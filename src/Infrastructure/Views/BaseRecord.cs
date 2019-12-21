@@ -16,6 +16,8 @@ namespace Infrastructure.Views
 
 		public bool Active { get; set; }
 
+		public string StatusText => this.Active ? "上架中" : "已下架";
+
 		public void SetUpdated(string userId)
 		{
 			UpdatedBy = userId;
@@ -23,4 +25,5 @@ namespace Infrastructure.Views
 		}
 
 	}
+	
 }

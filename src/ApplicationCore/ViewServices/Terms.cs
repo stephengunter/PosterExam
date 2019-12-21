@@ -21,12 +21,16 @@ namespace ApplicationCore.ViewServices
 			=> terms.Select(item => MapViewModel(item, mapper)).ToList();
 
 		public static Term MapEntity(this TermViewModel model, IMapper mapper, string currentUserId)
-		{ 
+		{
 			var entity = mapper.Map<TermViewModel, Term>(model);
 			entity.Text = entity.Text.ReplaceNewLine();
-			entity.SetCreated(currentUserId);
+
+			if(model.Id == 0) entity.SetCreated(currentUserId);
+			entity.SetUpdated(currentUserId);
+
 			return entity;
 		}
+		
 
 		public static IEnumerable<Term> GetOrdered(this IEnumerable<Term> terms)
 			=> terms.OrderBy(item => item.Order);

@@ -12,7 +12,12 @@ namespace ApplicationCore.Models
 
 		public string Title { get; set; }
 
+		public DateTime? Date { get; set; }
+
+		public bool Done { get; set; }
+
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; }
+		
 	}
 
 	public class RecruitQuestion : IAggregateRoot

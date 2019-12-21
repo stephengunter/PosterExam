@@ -25,10 +25,12 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index()
+		public async Task<ActionResult> Index(bool active = true, int year = 0)
 		{
 			
-			var recruits = await _recruitsService.GetAllAsync();
+			var recruits = await _recruitsService.FetchAsync(active);
+			if (year > 0) recruits = recruits.Where(x => x.Year == year);
+
 			recruits = recruits.GetOrdered();
 			return Ok(recruits.MapViewModelList(_mapper));
 		}
@@ -43,8 +45,9 @@ namespace Web.Controllers.Admin
 			ValidateRequest(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var recruit = model.MapEntity(_mapper);
-			recruit.SetCreated(CurrentUserId);
+			model.Order = model.Active ? 0 : -1;
+
+			var recruit = model.MapEntity(_mapper, CurrentUserId);
 
 			recruit = await _recruitsService.CreateAsync(recruit);
 
@@ -70,11 +73,26 @@ namespace Web.Controllers.Admin
 			ValidateRequest(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var recruit = model.MapEntity(_mapper);
-			recruit.SetUpdated(CurrentUserId);
+			if (model.Active)
+			{
+				if (existingEntity.Active == false) model.Order = 0;
+			}
+			else
+			{
+				if (existingEntity.Active) model.Order = -1;
+			}
 
-			await _recruitsService.UpdateAsync(recruit);
+			var recruit = model.MapEntity(_mapper, CurrentUserId);
 
+			await _recruitsService.UpdateAsync(existingEntity, recruit);
+
+			return Ok();
+		}
+
+		[HttpPost("order")]
+		public async Task<ActionResult> Order([FromBody] OrderRequest model)
+		{
+			await _recruitsService.UpdateOrderAsync(model.TargetId, model.ReplaceId, model.Up);
 			return Ok();
 		}
 
@@ -93,7 +111,6 @@ namespace Web.Controllers.Admin
 		void ValidateRequest(RecruitViewModel model)
 		{
 			if (!ModelState.IsValid) return;
-			if(model.Year < 100) ModelState.AddModelError("year", "年度錯誤");
 		}
 
 

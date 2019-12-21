@@ -12,10 +12,12 @@ namespace ApplicationCore.Services
 {
 	public interface IRecruitsService
 	{
-		Task<IEnumerable<Recruit>> GetAllAsync();
 		Task<IEnumerable<Recruit>> FetchAsync(bool active);
 		Task<Recruit> GetByIdAsync(int id);
+		Task<IEnumerable<Recruit>> GetAllAsync();
 		Task<Recruit> CreateAsync(Recruit recruit);
+
+		Task UpdateOrderAsync(int target, int replace, bool up);
 		Task UpdateAsync(Recruit recruit);
 		Task UpdateAsync(Recruit existingEntity, Recruit model);
 		Task RemoveAsync(Recruit recruit);
@@ -39,6 +41,28 @@ namespace ApplicationCore.Services
 		public async Task<Recruit> GetByIdAsync(int id) => await _recruitRepository.GetByIdAsync(id);
 
 		public async Task<Recruit> CreateAsync(Recruit recruit) => await _recruitRepository.AddAsync(recruit);
+
+		public async Task UpdateOrderAsync(int target, int replace, bool up)
+		{
+			var targetEntity = await _recruitRepository.GetByIdAsync(target);
+			int targetOrder = targetEntity.Order;
+
+			var replaceEntity = await _recruitRepository.GetByIdAsync(replace);
+			int replaceOrder = replaceEntity.Order;
+
+			
+
+			targetEntity.Order = replaceOrder;
+			replaceEntity.Order = targetOrder;
+
+			if (targetEntity.Order == replaceEntity.Order)
+			{
+				if (up) replaceEntity.Order += 1;
+				else targetEntity.Order += 1;
+			}
+
+			_recruitRepository.UpdateRange(new List<Recruit> { targetEntity, replaceEntity });
+		}
 
 		public async Task UpdateAsync(Recruit recruit) => await _recruitRepository.UpdateAsync(recruit);
 

@@ -15,5 +15,12 @@ namespace ApplicationCore.Views
 
 		[Required(ErrorMessage = "請填寫標題")]
 		public string Title { get; set; }
+
+		public string DateText { get; set; }
+
+		public bool Done { get; set; }
+
+		public string DoneText => this.Done ? "已結束" : "";
+		
 	}
 }
