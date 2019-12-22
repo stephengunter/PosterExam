@@ -68,13 +68,9 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("create")]
-		public async Task<ActionResult> Create(int subject, int term = 0)
+		public ActionResult Create()
 		{
-			var model = new QuestionViewModel { SubjectId = subject, TermId = term };
-
-			if (term > 0) model.Term = await LoadTermViewModelAsync(term);
-			
-			return Ok(model);
+			return Ok(new QuestionViewModel());
 		}
 
 		[HttpPost("")]
@@ -160,8 +156,12 @@ namespace Web.Controllers.Admin
 			else
 			{
 				var correctOptions = model.Options.Where(item => item.Correct).ToList();
-				if (correctOptions.IsNullOrEmpty()) ModelState.AddModelError("options", "必須要有一個正確選項");
-				else if (correctOptions.Count > 1) ModelState.AddModelError("options", "只能有一個正確選項");
+				if (correctOptions.IsNullOrEmpty()) ModelState.AddModelError("options", "必須要有正確的選項");
+				else if (correctOptions.Count > 1) 
+				{
+					if(!model.MultiAnswers) ModelState.AddModelError("options", "單選題只能有一個正確選項");
+
+				} 
 			}
 									
 		}

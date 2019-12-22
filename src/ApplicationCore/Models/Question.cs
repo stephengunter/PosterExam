@@ -11,6 +11,8 @@ namespace ApplicationCore.Models
 {
 	public class Question : BaseRecord
 	{
+		public bool MultiAnswers { get; set; }
+
 		public int SubjectId { get; set; }
 		public string Title { get; set; }
 		public int TermId { get; set; }

@@ -11,6 +11,7 @@ namespace ApplicationCore.Views
 		public int SubjectId { get; set; }
 		public string Title { get; set; }
 		public int TermId { get; set; }
+		public bool MultiAnswers { get; set; }
 
 		public string OptionsText { get; set; }
 

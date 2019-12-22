@@ -21,7 +21,18 @@ namespace ApplicationCore.ViewServices
 			=> questions.Select(item => MapViewModel(item, mapper)).ToList();
 
 		public static Question MapEntity(this QuestionViewModel model, IMapper mapper)
-			=> mapper.Map<QuestionViewModel, Question>(model);
+		{ 
+			var entity = mapper.Map<QuestionViewModel, Question>(model);
+			if (model.Recruits.IsNullOrEmpty())
+			{
+				var test = model.Recruits.Count;
+			}
+			else
+			{
+
+			}
+			return entity;
+		}
 
 		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, int page, int pageSize)
 		{
