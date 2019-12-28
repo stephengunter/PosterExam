@@ -9,12 +9,6 @@ using ApplicationCore.Models;
 using ApplicationCore.Auth;
 using Microsoft.Extensions.Options;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Authorization;
-using System.Net.Http;
-using Newtonsoft.Json;
-using Google.Apis.Auth;
-using ApplicationCore.Settings;
-using ApplicationCore.Exceptions;
 
 namespace Web.Controllers
 {
@@ -36,15 +30,18 @@ namespace Web.Controllers
 		[HttpPost("refreshtoken")]
 		public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenRequest model)
 		{
-			string userId = _authService.GetUserIdFromToken(model.accessToken);			
+			var cp = _authService.ResolveClaimsFromToken(model.accessToken);
+			string userId = cp.GetUserId();
+			OAuthProvider oauthProvider = cp.GetOAuthProvider();
 
 			ValidateRequest(model, userId);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			var user = await _userManager.FindByIdAsync(userId);
+			var oauth = _authService.FindOAuthByProvider(userId, oauthProvider);
 			var roles = await _userManager.GetRolesAsync(user);
 
-			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, roles);
+			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, oauth, roles);
 
 			return Ok(responseView);
 

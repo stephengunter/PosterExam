@@ -31,7 +31,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject, int term, string keyword = "", int page = 1, int pageSize = 10)
+		public async Task<ActionResult> Index(int subject, int term, string recruits = "", int page = 1, int pageSize = 10)
 		{
 			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
 			if (selectedSubject == null)
@@ -55,7 +55,9 @@ namespace Web.Controllers.Admin
 				termIds.Add(selectedTerm.Id);
 			}
 
-			var questions = await _questionsService.FetchAsync(selectedSubject, termIds);
+			var recruitIds = recruits.SplitToIds();
+
+			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
 
 			var pageList = questions.GetPagedList(_mapper, page, pageSize);
 
@@ -79,18 +81,11 @@ namespace Web.Controllers.Admin
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var question = model.MapEntity(_mapper);
-
-			var recruitQuestions = question.RecruitQuestions;
-			if (recruitQuestions.IsNullOrEmpty())
-			{
-
-			}
-			question.SetCreated(CurrentUserId);
+			var question = model.MapEntity(_mapper, CurrentUserId);
 
 			question = await _questionsService.CreateAsync(question);
 
-			return Ok(question);
+			return Ok(question.Id);
 		}
 
 		async Task<TermViewModel> LoadTermViewModelAsync(int termId)
@@ -124,8 +119,7 @@ namespace Web.Controllers.Admin
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var question = model.MapEntity(_mapper);
-			question.SetUpdated(CurrentUserId);
+			var question = model.MapEntity(_mapper, CurrentUserId);
 
 			await _questionsService.UpdateAsync(existingEntity, question);
 

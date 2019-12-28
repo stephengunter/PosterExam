@@ -78,6 +78,22 @@ namespace ApplicationCore.Helpers
 
 		}
 
+		public static List<int> SplitToIntList(this string str, char splitBy = ',')
+		{
+			if (String.IsNullOrEmpty(str)) return new List<int>();
+			return str.Split(splitBy).Select(s => s.ToInt()).ToList();
+		}
+
+		public static List<int> SplitToIds(this string str, char splitBy = ',')
+		{
+			var list = str.SplitToIntList();
+
+			if(!list.IsNullOrEmpty()) list.RemoveAll(item => item == 0);
+
+			return list;
+		}
+
+
 		public static DateTime? ToDatetimeOrNull(this string str)
 		{
 			DateTime dateValue;

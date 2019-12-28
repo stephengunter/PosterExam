@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,11 +16,14 @@ namespace ApplicationCore.Services
 {
 	public interface IAuthService
 	{
-		Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, IList<string> roles = null);
+		Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, OAuth oAuth, IList<string> roles = null);
 		Task CreateUpdateUserOAuthAsync(string userId, OAuth oAuth);
 
-		string GetUserIdFromToken(string accessToken);
+		ClaimsPrincipal ResolveClaimsFromToken(string accessToken);
+
 		bool IsValidRefreshToken(string token, string userId);
+
+		OAuth FindOAuthByProvider(string userId, OAuthProvider provider);
 	}
 
 	public class AuthService : IAuthService
@@ -50,9 +54,9 @@ namespace ApplicationCore.Services
 
 		string SecretKey => _authSettings.SecurityKey;
 
-		public async Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, IList<string> roles = null)
+		public async Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, OAuth oAuth, IList<string> roles = null)
 		{
-			var accessToken = await _jwtFactory.GenerateEncodedToken(user.Id, user.UserName, roles);
+			var accessToken = await _jwtFactory.GenerateEncodedToken(user.Id, user.UserName, oAuth.Provider.ToString(), oAuth.PictureUrl, roles);
 			var refreshToken = _tokenFactory.GenerateToken();
 
 			await SetRefreshTokenAsync(ipAddress, user, refreshToken);
@@ -64,15 +68,18 @@ namespace ApplicationCore.Services
 			};
 		}
 
+		public OAuth FindOAuthByProvider(string userId, OAuthProvider provider)
+			=> _oAuthRepository.GetSingleBySpec(new OAuthFilterSpecification(userId, provider));
+		
+
 		public async Task CreateUpdateUserOAuthAsync(string userId, OAuth oAuth)
 		{
-			var spec = new OAuthFilterSpecification(userId, oAuth.Provider);
-			var exist = _oAuthRepository.GetSingleBySpec(spec);
+			var exist = FindOAuthByProvider(userId, oAuth.Provider);
 
 			if (exist != null)
 			{
-				exist.OAuthId = oAuth.OAuthId;
-				await _oAuthRepository.UpdateAsync(exist);
+				oAuth.Id = exist.Id;
+				await _oAuthRepository.UpdateAsync(exist, oAuth);
 			}
 			else
 			{
@@ -81,12 +88,24 @@ namespace ApplicationCore.Services
 
 		}
 
+		public ClaimsPrincipal ResolveClaimsFromToken(string accessToken)
+			=> _jwtTokenValidator.GetPrincipalFromToken(accessToken, SecretKey);
+
+
 		public string GetUserIdFromToken(string accessToken)
 		{
 			var cp = _jwtTokenValidator.GetPrincipalFromToken(accessToken, SecretKey);
 			if (cp == null) return "";
 
 			return cp.Claims.First(c => c.Type == "id").Value;
+		}
+
+		public string GetOAuthProviderFromToken(string accessToken)
+		{
+			var cp = _jwtTokenValidator.GetPrincipalFromToken(accessToken, SecretKey);
+			if (cp == null) return "";
+
+			return cp.Claims.First(c => c.Type == "provider").Value;
 		}
 
 		public bool IsValidRefreshToken(string token, string userId)

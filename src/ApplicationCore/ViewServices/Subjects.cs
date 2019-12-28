@@ -20,9 +20,15 @@ namespace ApplicationCore.ViewServices
 		public static List<SubjectViewModel> MapViewModelList(this IEnumerable<Subject> subjects, IMapper mapper)
 			=> subjects.Select(item => MapViewModel(item, mapper)).ToList();
 
-		public static Subject MapEntity(this SubjectViewModel model, IMapper mapper)
-			=> mapper.Map<SubjectViewModel, Subject>(model);
+		public static Subject MapEntity(this SubjectViewModel model, IMapper mapper, string currentUserId)
+		{
+			var entity = mapper.Map<SubjectViewModel, Subject>(model);
 
+			if (model.Id == 0) entity.SetCreated(currentUserId);
+			else entity.SetUpdated(currentUserId);
+
+			return entity;
+		}
 		public static IEnumerable<Subject> GetOrdered(this IEnumerable<Subject> subjects)
 			=> subjects.OrderBy(item => item.Order);
 	}

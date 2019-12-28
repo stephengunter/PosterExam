@@ -84,7 +84,7 @@ namespace Web.Controllers.Admin
 
 			term = await _termsService.CreateAsync(term);
 
-			return Ok(term);
+			return Ok(term.Id);
 		}
 
 		[HttpGet("edit/{id}")]

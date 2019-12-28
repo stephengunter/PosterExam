@@ -52,12 +52,11 @@ namespace Web.Controllers.Admin
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var subject = model.MapEntity(_mapper);
-			subject.SetCreated(CurrentUserId);
+			var subject = model.MapEntity(_mapper, CurrentUserId);
 
 			subject = await _subjectsService.CreateAsync(subject);
 
-			return Ok(subject);
+			return Ok(subject.Id);
 		}
 
 		[HttpGet("edit/{id}")]
@@ -88,8 +87,7 @@ namespace Web.Controllers.Admin
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var subject = model.MapEntity(_mapper);
-			subject.SetUpdated(CurrentUserId);
+			var subject = model.MapEntity(_mapper, CurrentUserId);
 
 			await _subjectsService.UpdateAsync(existingEntity, subject);
 

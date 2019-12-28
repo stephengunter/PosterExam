@@ -13,7 +13,7 @@ namespace ApplicationCore.Auth
 {
 	public interface IJwtFactory
 	{
-		Task<AccessTokenResponse> GenerateEncodedToken(string id, string userName, IList<string> roles = null);
+		Task<AccessTokenResponse> GenerateEncodedToken(string id, string userName, string provider, string picture, IList<string> roles = null);
 	}
 
 
@@ -29,13 +29,15 @@ namespace ApplicationCore.Auth
             ThrowIfInvalidOptions(_jwtOptions);
         }
 
-        public async Task<AccessTokenResponse> GenerateEncodedToken(string id, string userName, IList<string> roles = null)
+        public async Task<AccessTokenResponse> GenerateEncodedToken(string id, string userName, string provider, string picture, IList<string> roles = null)
         {
             var identity = GenerateClaimsIdentity(id, userName);
 			var claims = new[]
             {
                  new Claim(JwtRegisteredClaimNames.Sub, userName),
-				 new Claim("roles", roles.IsNullOrEmpty() ? "" : String.Join(",", roles)),
+                 new Claim("provider", provider),
+                 new Claim("picture", picture),
+                 new Claim("roles", roles.IsNullOrEmpty() ? "" : String.Join(",", roles)),
 				 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
                  new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
                  identity.FindFirst(Helpers.Constants.Strings.JwtClaimIdentifiers.Rol),

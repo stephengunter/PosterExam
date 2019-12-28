@@ -53,7 +53,10 @@ namespace Web.Controllers
 			await _authService.CreateUpdateUserOAuthAsync(user.Id, oAuth);
 
 			var roles = await _userManager.GetRolesAsync(user);
-			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, roles);
+
+
+
+			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, oAuth, roles);
 
 			return Ok(responseView);
 		}

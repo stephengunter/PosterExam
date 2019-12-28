@@ -13,7 +13,7 @@ namespace ApplicationCore.Services
 {
 	public interface IQuestionsService
 	{
-		Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null);
+		Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null, ICollection<int> recruitIds = null);
 		Task<Question> GetByIdAsync(int id);
 		Task<Question> CreateAsync(Question question);
 		Task UpdateAsync(Question question);
@@ -28,20 +28,32 @@ namespace ApplicationCore.Services
 	{
 		private readonly IDefaultRepository<Question> _questionRepository;
 		private readonly IDefaultRepository<Option> _optionRepository;
+		private readonly DefaultContext _context;
 
-		public QuestionsService(IDefaultRepository<Question> questionRepository, IDefaultRepository<Option> optionRepository)
+		public QuestionsService(IDefaultRepository<Question> questionRepository, IDefaultRepository<Option> optionRepository, DefaultContext context)
 		{
 			_questionRepository = questionRepository;
 			_optionRepository = optionRepository;
+			_context = context;
 		}
 
-		public async Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null)
+		public async Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null, ICollection<int> recruitIds = null)
 		{
 			QuestionFilterSpecification spec;
 			if (termIds.IsNullOrEmpty()) spec = new QuestionFilterSpecification(subject);
 			else spec = new QuestionFilterSpecification(subject, termIds);
 
-			return await _questionRepository.ListAsync(spec);
+			var list = await _questionRepository.ListAsync(spec);
+
+			if (recruitIds.IsNullOrEmpty()) return list;
+
+			var questionIds = FetchQuestionIdsByRecruits(recruitIds);
+			if (!questionIds.IsNullOrEmpty())
+			{
+				list = list.Where(item => questionIds.Contains(item.Id)).ToList();
+			}
+
+			return list;
 		}
 
 		public async Task<Question> GetByIdAsync(int id) => await _questionRepository.GetByIdAsync(id);
@@ -70,6 +82,14 @@ namespace ApplicationCore.Services
 		{
 			question.Removed = true;
 			await _questionRepository.UpdateAsync(question);
+		}
+
+		IEnumerable<int> FetchQuestionIdsByRecruits(ICollection<int> recruitIds)
+		{
+			var recruitQuestions = _context.RecruitQuestions.Where(x => recruitIds.Contains(x.RecruitId));
+			if (recruitQuestions.IsNullOrEmpty()) return new List<int>();
+
+			return recruitQuestions.Select(x => x.QuestionId).ToList();
 		}
 
 

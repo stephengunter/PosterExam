@@ -22,9 +22,7 @@ namespace ApplicationCore.Models
 
 	public enum OAuthProvider
 	{
-		Google,
-		Facebook,
-		Wechat,
-		Line
+		Google = 0,
+		Unknown = -1
 	}
 }

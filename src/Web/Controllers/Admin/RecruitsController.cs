@@ -51,7 +51,7 @@ namespace Web.Controllers.Admin
 
 			recruit = await _recruitsService.CreateAsync(recruit);
 
-			return Ok(recruit);
+			return Ok(recruit.Id);
 		}
 
 		[HttpGet("edit/{id}")]
@@ -110,9 +110,11 @@ namespace Web.Controllers.Admin
 
 		void ValidateRequest(RecruitViewModel model)
 		{
-			if (!ModelState.IsValid) return;
-		}
+			if (String.IsNullOrEmpty(model.Title)) ModelState.AddModelError("subjectId", "請填寫標題");
 
+			if (model.Year <= 0) ModelState.AddModelError("year", "請填寫年度");
+			
+		}
 
 	}
 }

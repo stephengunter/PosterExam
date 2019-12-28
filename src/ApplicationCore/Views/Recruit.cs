@@ -10,10 +10,8 @@ namespace ApplicationCore.Views
 	{
 		public int Id { get; set; }
 
-		[Required(ErrorMessage = "請填寫年度")]
 		public int Year { get; set; }
 
-		[Required(ErrorMessage = "請填寫標題")]
 		public string Title { get; set; }
 
 		public string DateText { get; set; }

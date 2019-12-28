@@ -20,17 +20,23 @@ namespace ApplicationCore.ViewServices
 		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper)
 			=> questions.Select(item => MapViewModel(item, mapper)).ToList();
 
-		public static Question MapEntity(this QuestionViewModel model, IMapper mapper)
+		public static Question MapEntity(this QuestionViewModel model, IMapper mapper, string currentUserId)
 		{ 
 			var entity = mapper.Map<QuestionViewModel, Question>(model);
-			if (model.Recruits.IsNullOrEmpty())
+
+			if (model.Id == 0)
 			{
-				var test = model.Recruits.Count;
+				entity.SetCreated(currentUserId);
 			}
 			else
 			{
+				foreach (var option in entity.Options)
+				{
+					option.QuestionId = entity.Id;
+				} 
+				entity.SetUpdated(currentUserId);
+			} 
 
-			}
 			return entity;
 		}
 

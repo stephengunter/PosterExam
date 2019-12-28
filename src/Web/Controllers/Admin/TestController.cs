@@ -13,34 +13,26 @@ using ApplicationCore.ViewServices;
 
 namespace Web.Controllers.Admin
 {
-	public class TestController : BaseAdminController
+	public class TestController : ControllerBase
 	{
 
 		private readonly IMapper _mapper;
-		private readonly ITermsService _termsService;
-		private readonly ISubjectsService _subjectsService;
-		
+		private readonly IQuestionsService _questionsService;
 
-		public TestController(ITermsService termsService, ISubjectsService subjectsService, IMapper mapper)
+		public TestController(IQuestionsService questionsService, IMapper mapper)
 		{
 			_mapper = mapper;
-			_termsService = termsService;
-			_subjectsService = subjectsService;
+			_questionsService = questionsService;
 		}
-
+		
 		[HttpGet("")]
-		public ActionResult Index(int term)
+		public ActionResult Index(string recruits = "")
 		{
-			Term selectedTerm = _termsService.GetById(term);
-			if (selectedTerm == null)
-			{
-				ModelState.AddModelError("term", "條文不存在");
-				return BadRequest(ModelState);
-			}
-			var test = selectedTerm.GetSubIds();
 
-			var model = selectedTerm.MapViewModel(_mapper);
-			return Ok(model);
+			var recruitIds = recruits.SplitToIds();
+			return Ok(recruitIds);
+
+
 
 		}
 
