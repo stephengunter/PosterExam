@@ -18,9 +18,7 @@ namespace ApplicationCore.Models
 
 		[NotMapped]
 		public ICollection<Term> SubItems { get; private set; }
-
-		//[NotMapped]
-		//public Term RootItem { get; private set; }
+		
 
 		[NotMapped]
 		public ICollection<int> ParentIds { get; private set; } = new List<int>();
@@ -49,28 +47,6 @@ namespace ApplicationCore.Models
 			}
 		}
 
-		//public void FindRoot(IEnumerable<Term> allTerms)
-		//{
-		//	Term root = null;
-
-		//	if (ParentId > 0)
-		//	{
-		//		int parentId = ParentId;
-				
-		//		do
-		//		{
-		//			var parent = allTerms.Where(item => item.Id == parentId).FirstOrDefault();
-		//			if (parent == null) throw new Exception($"Term not found. id = {parentId}");
-
-		//			if (parent.IsRootItem) root = parent;
-		//			parentId = parent.Id;
-
-		//		} while (root == null);
-		//	}
-
-		//	RootItem = root;
-		//}
-
 		public void LoadParentIds(IEnumerable<Term> allTerms)
 		{
 			var parentIds = new List<int>();
@@ -95,4 +71,6 @@ namespace ApplicationCore.Models
 			ParentIds = parentIds;
 		}
 	}
+
+	
 }

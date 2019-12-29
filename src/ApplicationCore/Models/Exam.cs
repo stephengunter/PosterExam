@@ -13,7 +13,8 @@ namespace ApplicationCore.Models
 
 		public double Score { get; set; }
 		public string UserId { get; set; }
-		public ICollection<ExamQuestion> ExamQuestions { get; set; }
+
+		//public ICollection<ExamQuestion> ExamQuestions { get; set; }
 
 		public User User { get; set; }
 

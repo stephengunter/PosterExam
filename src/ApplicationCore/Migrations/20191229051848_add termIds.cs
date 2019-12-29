@@ -2,21 +2,20 @@
 
 namespace ApplicationCore.Migrations
 {
-    public partial class MultiAnswers : Migration
+    public partial class addtermIds : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "MultiAnswers",
+            migrationBuilder.AddColumn<string>(
+                name: "TermIds",
                 table: "Questions",
-                nullable: false,
-                defaultValue: false);
+                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "MultiAnswers",
+                name: "TermIds",
                 table: "Questions");
         }
     }

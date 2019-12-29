@@ -10,16 +10,18 @@ namespace ApplicationCore.Views
 		public int Id { get; set; }
 		public int SubjectId { get; set; }
 		public string Title { get; set; }
-		public int TermId { get; set; }
+		
 		public bool MultiAnswers { get; set; }
 
 		public string OptionsText { get; set; }
-
-		public TermViewModel Term  { get; set; }
 		public ICollection<OptionViewModel> Options { get; set; } = new List<OptionViewModel>();
+		
+
 		public ICollection<RecruitViewModel> Recruits { get; set; } = new List<RecruitViewModel>();
 
 		public string RecruitsText { get; set; }
+
+		public string TermIds { get; set; }  //  Example: 1,6
 	}
 
 	public class QuestionEditForm

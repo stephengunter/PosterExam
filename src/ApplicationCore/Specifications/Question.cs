@@ -27,12 +27,5 @@ namespace ApplicationCore.Specifications
 			AddInclude(item => item.Options);
 			AddInclude("RecruitQuestions.Recruit");
 		}
-
-		public QuestionFilterSpecification(Subject subject, IEnumerable<int> termIds) 
-			: base(item => !item.Removed && item.SubjectId == subject.Id && termIds.Contains(item.TermId))
-		{
-			AddInclude(item => item.Options);
-			AddInclude("RecruitQuestions.Recruit");
-		}
 	}
 }

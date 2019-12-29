@@ -19,13 +19,4 @@ namespace ApplicationCore.Models
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; }
 		
 	}
-
-	public class RecruitQuestion : IAggregateRoot
-	{
-		public int RecruitId { get; set; }
-		public Recruit Recruit { get; set; }
-
-		public int QuestionId { get; set; }
-		public Question Question { get; set; }
-	}
 }
