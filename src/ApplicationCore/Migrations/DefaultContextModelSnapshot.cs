@@ -19,33 +19,6 @@ namespace ApplicationCore.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("ApplicationCore.Models.Category", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("CreatedAt");
-
-                    b.Property<DateTime>("LastUpdated");
-
-                    b.Property<int>("Order");
-
-                    b.Property<int>("ParentId");
-
-                    b.Property<bool>("Removed");
-
-                    b.Property<string>("Title");
-
-                    b.Property<int>("Type");
-
-                    b.Property<string>("UpdatedBy");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Categories");
-                });
-
             modelBuilder.Entity("ApplicationCore.Models.Exam", b =>
                 {
                     b.Property<int>("Id")
@@ -75,33 +48,6 @@ namespace ApplicationCore.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Exams");
-                });
-
-            modelBuilder.Entity("ApplicationCore.Models.ExamQuestion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("AnswerIndex");
-
-                    b.Property<int>("ExamId");
-
-                    b.Property<string>("OptionIndexes");
-
-                    b.Property<int>("Order");
-
-                    b.Property<int>("QuestionId");
-
-                    b.Property<string>("UserAnswerIndex");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExamId");
-
-                    b.HasIndex("QuestionId");
-
-                    b.ToTable("ExamQuestions");
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.OAuth", b =>
@@ -162,7 +108,7 @@ namespace ApplicationCore.Migrations
 
                     b.Property<int>("SubjectId");
 
-                    b.Property<int>("TermId");
+                    b.Property<string>("TermIds");
 
                     b.Property<string>("Title");
 
@@ -294,6 +240,17 @@ namespace ApplicationCore.Migrations
                     b.HasIndex("SubjectId");
 
                     b.ToTable("Terms");
+                });
+
+            modelBuilder.Entity("ApplicationCore.Models.TermQuestion", b =>
+                {
+                    b.Property<int>("TermId");
+
+                    b.Property<int>("QuestionId");
+
+                    b.HasKey("TermId", "QuestionId");
+
+                    b.ToTable("TermQuestions");
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.User", b =>
@@ -466,19 +423,6 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.User", "User")
                         .WithMany("Exams")
                         .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("ApplicationCore.Models.ExamQuestion", b =>
-                {
-                    b.HasOne("ApplicationCore.Models.Exam", "Exam")
-                        .WithMany("ExamQuestions")
-                        .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("ApplicationCore.Models.Question", "Question")
-                        .WithMany()
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.OAuth", b =>

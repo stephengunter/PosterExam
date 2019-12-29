@@ -88,24 +88,22 @@ namespace Web.Controllers.Admin
 			return Ok(question.Id);
 		}
 
-		async Task<TermViewModel> LoadTermViewModelAsync(int termId)
-		{
-			var term = await _termsService.GetByIdAsync(termId);
-			if (term == null) return null;
+		//async Task<TermViewModel> LoadTermViewModelAsync(int termId)
+		//{
+		//	var term = await _termsService.GetByIdAsync(termId);
+		//	if (term == null) return null;
 
-			await _termsService.LoadParentIdsAsync(term);
-			return term.MapViewModel(_mapper);
-		}
+		//	await _termsService.LoadParentIdsAsync(term);
+		//	return term.MapViewModel(_mapper);
+		//}
 
 		[HttpGet("edit/{id}")]
-		public async Task<ActionResult> Edit(int id)
+		public ActionResult Edit(int id)
 		{
 			var question = _questionsService.GetById(id);
 			if (question == null) return NotFound();
 
 			var model = question.MapViewModel(_mapper);
-
-			if (question.TermId > 0) model.Term = await LoadTermViewModelAsync(question.TermId);
 			
 			return Ok(model);
 		}

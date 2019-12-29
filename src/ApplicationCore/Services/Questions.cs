@@ -39,34 +39,50 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null, ICollection<int> recruitIds = null)
 		{
-			QuestionFilterSpecification spec;
-			if (termIds.IsNullOrEmpty()) spec = new QuestionFilterSpecification(subject);
-			else spec = new QuestionFilterSpecification(subject, termIds);
-
+			var spec = new QuestionFilterSpecification(subject);
 			var list = await _questionRepository.ListAsync(spec);
 
-			if (recruitIds.IsNullOrEmpty()) return list;
-
-			var questionIds = FetchQuestionIdsByRecruits(recruitIds);
-			if (!questionIds.IsNullOrEmpty())
+			if (termIds.HasItems())
 			{
+				var questionIds = FetchQuestionIdsByTerms(termIds);
 				list = list.Where(item => questionIds.Contains(item.Id)).ToList();
 			}
+
+			if (recruitIds.HasItems())
+			{
+				var questionIds = FetchQuestionIdsByRecruits(recruitIds);
+				list = list.Where(item => questionIds.Contains(item.Id)).ToList();
+			}
+
+			
 
 			return list;
 		}
 
 		public async Task<Question> GetByIdAsync(int id) => await _questionRepository.GetByIdAsync(id);
 
-		public async Task<Question> CreateAsync(Question question) => await _questionRepository.AddAsync(question);
-
-		public async Task UpdateAsync(Question existingEntity, Question model)
+		public async Task<Question> CreateAsync(Question question)
 		{
-			existingEntity.RecruitQuestions = model.RecruitQuestions;
+			question = await _questionRepository.AddAsync(question);
 
-			await _questionRepository.UpdateAsync(existingEntity, model);
+			if (!String.IsNullOrEmpty(question.TermIds))
+			{
+				await AddTermQuestionsAsync(question);
+			}
 
-			_optionRepository.SyncList(existingEntity.Options.ToList(), model.Options.ToList());
+			return question;
+		}
+		
+
+		public async Task UpdateAsync(Question existingEntity, Question question)
+		{
+			existingEntity.RecruitQuestions = question.RecruitQuestions;
+
+			await _questionRepository.UpdateAsync(existingEntity, question);
+			
+			_optionRepository.SyncList(existingEntity.Options.ToList(), question.Options.ToList());
+
+			await SyncTermQuestions(question);
 
 		}
 
@@ -92,6 +108,35 @@ namespace ApplicationCore.Services
 			return recruitQuestions.Select(x => x.QuestionId).ToList();
 		}
 
+		IEnumerable<int> FetchQuestionIdsByTerms(ICollection<int> termIds)
+		{
+			var termQuestions = _context.TermQuestions.Where(x => termIds.Contains(x.TermId));
+			if (termQuestions.IsNullOrEmpty()) return new List<int>();
 
+			return termQuestions.Select(x => x.QuestionId).ToList();
+		}
+
+
+
+		async Task SyncTermQuestions(Question entity)
+		{
+			await RemoveTermQuestionsAsync(entity);
+			if(!String.IsNullOrEmpty(entity.TermIds)) await AddTermQuestionsAsync(entity);
+		}
+
+		async Task RemoveTermQuestionsAsync(Question entity)
+		{
+			_context.TermQuestions.RemoveRange(_context.TermQuestions.Where(x => x.QuestionId == entity.Id).ToList());
+			await _context.SaveChangesAsync();
+		}
+
+		async Task AddTermQuestionsAsync(Question entity)
+		{
+			var termIds = entity.TermIds.SplitToIds();
+			var termQuestions = termIds.Select(termId => new TermQuestion { QuestionId = entity.Id, TermId = termId });
+
+			_context.TermQuestions.AddRange(termQuestions);
+			await _context.SaveChangesAsync();
+		}
 	}
 }

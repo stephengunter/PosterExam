@@ -15,12 +15,13 @@ namespace ApplicationCore.DataAccess
 		public DbSet<RefreshToken> RefreshTokens { get; set; }
 		public DbSet<OAuth> OAuth { get; set; }
 		public DbSet<Exam> Exams { get; set; }
-		public DbSet<ExamQuestion> ExamQuestions { get; set; }
+		//public DbSet<ExamQuestion> ExamQuestions { get; set; }
 		public DbSet<Question> Questions { get; set; }
 		public DbSet<Option> Options { get; set; }
 		public DbSet<Subject> Subjects { get; set; }
-		public DbSet<Category> Categories { get; set; }
+		
 		public DbSet<Term> Terms { get; set; }
+		public DbSet<TermQuestion> TermQuestions { get; set; }
 		public DbSet<Recruit> Recruits { get; set; }
 		public DbSet<RecruitQuestion> RecruitQuestions { get; set; }
 
@@ -30,19 +31,9 @@ namespace ApplicationCore.DataAccess
 
 			builder.Entity<User>(ConfigureUser);
 
-			builder.Entity<RecruitQuestion>().HasKey(item => new { item.RecruitId, item.QuestionId });
+			builder.Entity<RecruitQuestion>(ConfigureRecruitQuestion);
 
-			builder.Entity<RecruitQuestion>()
-				.HasOne<Recruit>(item => item.Recruit)
-				.WithMany(item => item.RecruitQuestions)
-				.HasForeignKey(item => item.RecruitId);
-
-
-			builder.Entity<RecruitQuestion>()
-				.HasOne<Question>(item => item.Question)
-				.WithMany(item => item.RecruitQuestions)
-				.HasForeignKey(item => item.QuestionId);
-
+			builder.Entity<TermQuestion>(ConfigureTermQuestion);
 		}
 
 		private void ConfigureUser(EntityTypeBuilder<User> builder)
@@ -51,7 +42,26 @@ namespace ApplicationCore.DataAccess
 					.WithOne(rt => rt.User)
 					.HasForeignKey<RefreshToken>(rt => rt.UserId);
 		}
+		private void ConfigureRecruitQuestion(EntityTypeBuilder<RecruitQuestion> builder)
+		{
+			builder.HasKey(item => new { item.RecruitId, item.QuestionId });
 
+			builder.HasOne<Recruit>(item => item.Recruit)
+				.WithMany(item => item.RecruitQuestions)
+				.HasForeignKey(item => item.RecruitId);
+
+
+			builder.HasOne<Question>(item => item.Question)
+				.WithMany(item => item.RecruitQuestions)
+				.HasForeignKey(item => item.QuestionId);
+
+		}
+
+		private void ConfigureTermQuestion(EntityTypeBuilder<TermQuestion> builder)
+		{
+			builder.HasKey(item => new { item.TermId, item.QuestionId });
+
+		}
 
 	}
 }

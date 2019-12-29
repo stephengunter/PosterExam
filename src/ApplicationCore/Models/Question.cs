@@ -11,14 +11,17 @@ namespace ApplicationCore.Models
 {
 	public class Question : BaseRecord
 	{
+		public string Title { get; set; }
+
 		public bool MultiAnswers { get; set; }
 
 		public int SubjectId { get; set; }
-		public string Title { get; set; }
-		public int TermId { get; set; }
-
 		public Subject Subject { get; set; }
+
+		public string TermIds { get; set; }  //  Example: 1,6
+
 		public ICollection<Option> Options { get; set; } = new List<Option>();
+	
 
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; } = new List<RecruitQuestion>();
 
@@ -32,7 +35,8 @@ namespace ApplicationCore.Models
 			}
 		}
 
-		
+
+
 		public string RecruitsText => Recruits.IsNullOrEmpty() ? "" : String.Join(",", Recruits.Select(item => item.Title));
 	}
 }

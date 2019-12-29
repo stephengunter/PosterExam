@@ -33,7 +33,7 @@ namespace ApplicationCore.DataAccess
 				await SeedUsers(userManager);
 				await SeedSubjects(defaultContext);
 				await SeedSubSubjects(defaultContext);
-				await SeedTestCategories(defaultContext);
+				//await SeedTestCategories(defaultContext);
 
 			}
 
@@ -169,155 +169,155 @@ namespace ApplicationCore.DataAccess
 		}
 
 
-		static async Task SeedTestCategories(DefaultContext context)
-		{
-			if (context.Categories.Count() > 0) return;
+		//static async Task SeedTestCategories(DefaultContext context)
+		//{
+		//	if (context.Categories.Count() > 0) return;
 
-			var first = new List<Category>
-			{
-				new Category {  Title = "第一章" },
-				new Category {  Title = "第二章"}
-			};
-			foreach (var item in first) await CreateOrUpdateCategory(context, item);
+		//	var first = new List<Category>
+		//	{
+		//		new Category {  Title = "第一章" },
+		//		new Category {  Title = "第二章"}
+		//	};
+		//	foreach (var item in first) await CreateOrUpdateCategory(context, item);
 
-			string parent = "第一章";
-			await CreateOrUpdateCategory(context, new Category { Title = "1-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = "1-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = "1-3" }, parent);
+		//	string parent = "第一章";
+		//	await CreateOrUpdateCategory(context, new Category { Title = "1-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = "1-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = "1-3" }, parent);
 
-			parent = "第二章";
-			await CreateOrUpdateCategory(context, new Category { Title = "2-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = "2-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = "2-3" }, parent);
+		//	parent = "第二章";
+		//	await CreateOrUpdateCategory(context, new Category { Title = "2-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = "2-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = "2-3" }, parent);
 
-			parent = "1-1";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-1";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "1-2";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-2";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-1";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-1";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-2";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-2";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-3";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-3";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
 
-			parent = "1-1-1";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-1-1";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "1-1-2";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-1-2";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "1-1-3";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-1-3";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "1-2-1";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-2-1";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "1-2-2";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-2-2";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "1-2-3";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "1-2-3";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 			
 
-			parent = "2-1-1";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-1-1";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-1-2";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-1-2";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-1-3";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-1-3";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-2-1";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-2-1";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-2-2";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-2-2";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-2-3";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-2-3";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-3-1";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-3-1";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
-			parent = "2-3-2";
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
-			await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
+		//	parent = "2-3-2";
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-1" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-2" }, parent);
+		//	await CreateOrUpdateCategory(context, new Category { Title = parent + "-3" }, parent);
 
 			
 
 
 
 
-		}
+		//}
 
-		static async Task CreateOrUpdateCategory(DefaultContext context, Category category, string parentName = "")
-		{
-			category.Type = CategoryType.Term;
-			var exist = context.Categories.Where(x => x.Title == category.Title).FirstOrDefault();
+		//static async Task CreateOrUpdateCategory(DefaultContext context, Category category, string parentName = "")
+		//{
+		//	category.Type = CategoryType.Term;
+		//	var exist = context.Categories.Where(x => x.Title == category.Title).FirstOrDefault();
 
-			int parentId = 0;
-			if (!String.IsNullOrEmpty(parentName))
-			{ 
-				var parentCategory = context.Categories.Where(x => x.Title == parentName).FirstOrDefault();
-				parentId = parentCategory.Id;
-			}
+		//	int parentId = 0;
+		//	if (!String.IsNullOrEmpty(parentName))
+		//	{ 
+		//		var parentCategory = context.Categories.Where(x => x.Title == parentName).FirstOrDefault();
+		//		parentId = parentCategory.Id;
+		//	}
 
-			if (exist == null)
-			{
-				category.ParentId = parentId;
-				await context.Categories.AddAsync(category);
-			}
-			else
-			{
-				exist.ParentId = parentId;
-			}
+		//	if (exist == null)
+		//	{
+		//		category.ParentId = parentId;
+		//		await context.Categories.AddAsync(category);
+		//	}
+		//	else
+		//	{
+		//		exist.ParentId = parentId;
+		//	}
 
-			await context.SaveChangesAsync();
-		}
+		//	await context.SaveChangesAsync();
+		//}
 
 	}
 }

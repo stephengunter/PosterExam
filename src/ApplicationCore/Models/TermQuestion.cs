@@ -6,14 +6,9 @@ using Infrastructure.Interfaces;
 
 namespace ApplicationCore.Models
 {
-	public class Category : BaseCategory
+	public class TermQuestion : IAggregateRoot
 	{
-		public CategoryType Type { get; set; }
-	}
-
-	public enum CategoryType
-	{
-		Subject,
-		Term
+		public int TermId { get; set; }
+		public int QuestionId { get; set; }
 	}
 }
