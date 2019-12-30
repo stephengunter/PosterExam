@@ -31,30 +31,26 @@ namespace Web.Controllers.Admin
 			_mapper = mapper;
 		}
 
+		TestBaseOption<int> myTest;
+
+
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject, string terms = "", string recruits = "", int page = 1, int pageSize = 10)
+		public async Task<ActionResult> Index()
 		{
-			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
-			if (selectedSubject == null)
+			this.myTest = new TestBaseOption<int>(30, "jiiji");
+			return Ok(myTest);
+		}
+
+		class TestBaseOption<TKey>
+		{
+			public TestBaseOption(TKey value, string text)
 			{
-				ModelState.AddModelError("subject", "科目不存在");
-				return BadRequest(ModelState);
+				this.Value = value;
+				this.Text = text;
 			}
+			public TKey Value { get; set; }
+			public string Text { get; set; }
 
-			var termIds = terms.SplitToIds();
-
-			var recruitIds = recruits.SplitToIds();
-
-			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
-
-			var pageList = questions.GetPagedList(_mapper, page, pageSize);
-
-			foreach (var item in pageList.ViewList)
-			{
-				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
-			}
-
-			return Ok(pageList);
 		}
 
 	}

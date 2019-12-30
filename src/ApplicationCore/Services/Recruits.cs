@@ -22,10 +22,11 @@ namespace ApplicationCore.Services
 		Task UpdateAsync(Recruit existingEntity, Recruit model);
 		Task RemoveAsync(Recruit recruit);
 
+		void LoadSubItems(IEnumerable<Recruit> list);
 		Recruit GetById(int id);
 	}
 
-	public class RecruitsService : IRecruitsService
+	public class RecruitsService : BaseCategoriesService<Recruit>, IRecruitsService
 	{
 		private readonly IDefaultRepository<Recruit> _recruitRepository;
 
@@ -34,9 +35,16 @@ namespace ApplicationCore.Services
 			this._recruitRepository = recruitRepository;
 		}
 
+		
 		public async Task<IEnumerable<Recruit>> GetAllAsync() => await _recruitRepository.ListAsync(new RecruitFilterSpecification());
 
-		public async Task<IEnumerable<Recruit>> FetchAsync(bool active) => await _recruitRepository.ListAsync(new RecruitFilterSpecification(active));
+		public async Task<IEnumerable<Recruit>> FetchAsync(bool active)
+		{
+			int parentId = 0;
+			var list = await _recruitRepository.ListAsync(new RecruitFilterSpecification(parentId));
+
+			return list.Where(x => x.Active == active);
+		}
 		
 		public async Task<Recruit> GetByIdAsync(int id) => await _recruitRepository.GetByIdAsync(id);
 
@@ -75,5 +83,25 @@ namespace ApplicationCore.Services
 		}
 
 		public Recruit GetById(int id) => _recruitRepository.GetById(id);
+
+		public void LoadSubItems(IEnumerable<Recruit> list)
+		{
+			if (list.IsNullOrEmpty()) return;
+
+			var subItems = AllSubItems(_recruitRepository.DbSet);
+
+
+			foreach (var entity in list)
+			{
+				entity.LoadSubItems(subItems.ToList());
+			}
+		}
+
+		void LoadSubItems(Recruit entity)
+		{
+			var subItems = AllSubItems(_recruitRepository.DbSet);
+
+			entity.LoadSubItems(subItems.ToList());
+		}
 	}
 }

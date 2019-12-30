@@ -14,6 +14,7 @@ namespace ApplicationCore.Models
 		public ICollection<Term> Terms { get; set; }
 
 		public ICollection<Question> Questions { get; set; }
+		
 
 		[NotMapped]
 		public ICollection<Subject> SubItems { get; private set; }

@@ -72,13 +72,13 @@ namespace ApplicationCore.Helpers
 
 		}
 
-		public static List<BaseOption> GetYearOptions(this DateTime fromDate, bool chinese = false)
+		public static List<BaseOption<int>> GetYearOptions(this DateTime fromDate, bool chinese = false)
 		{
 			int currentYear = DateTime.Now.Year;
-			var options = new List<BaseOption>();
+			var options = new List<BaseOption<int>>();
 			for (int i = fromDate.Year; i <= currentYear; i++)
 			{
-				options.Add(new BaseOption(i.ToString(), i.ToString()));
+				options.Add(new BaseOption<int>(i, i.ToString()));
 			}
 			return options;
 		}

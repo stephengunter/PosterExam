@@ -10,6 +10,7 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
+using Infrastructure.Views;
 
 namespace Web.Controllers.Admin
 {
@@ -17,26 +18,37 @@ namespace Web.Controllers.Admin
 	{
 		private readonly IMapper _mapper;
 		private readonly IRecruitsService _recruitsService;
+		private readonly ISubjectsService _subjectsService;
 
-		public RecruitsController(IRecruitsService recruitsService, IMapper mapper)
+		public RecruitsController(IRecruitsService recruitsService, ISubjectsService subjectsService, IMapper mapper)
 		{
 			_mapper = mapper;
 			_recruitsService = recruitsService;
+			_subjectsService = subjectsService;
 		}
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index(bool active = true, int year = 0)
 		{
-			
 			var recruits = await _recruitsService.FetchAsync(active);
 			if (year > 0) recruits = recruits.Where(x => x.Year == year);
 
 			recruits = recruits.GetOrdered();
+			_recruitsService.LoadSubItems(recruits);
 			return Ok(recruits.MapViewModelList(_mapper));
 		}
 
 		[HttpGet("create")]
-		public ActionResult Create() => Ok(new RecruitViewModel());
+		public ActionResult Create()
+		{
+			var model = new RecruitEditForm();
+
+			var subjects = _subjectsService.FetchRootItems();
+			model.SubjectOptions = subjects.Select(item => new BaseOption<int>(item.Id, item.Title)).ToList();
+
+			return Ok(model);
+		}
+		
 		
 
 		[HttpPost("")]
@@ -61,6 +73,7 @@ namespace Web.Controllers.Admin
 			if (recruit == null) return NotFound();
 
 			var model = recruit.MapViewModel(_mapper);
+			
 			return Ok(model);
 		}
 

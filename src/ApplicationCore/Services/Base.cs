@@ -9,32 +9,6 @@ using ApplicationCore.DataAccess;
 
 namespace ApplicationCore.Services
 {
-	//public abstract class BaseEntitiesService<T> where T : BaseEntity
-	//{
-	//	protected SyncRelatedEntities(IEnumerable<BaseEntity> existingList, DbSet<T> latestList, IDefaultRepository<T> repository)
-	//	{
-	//		foreach (var existingItem in existingList)
-	//		{
-	//			if (!latestList.Any(item => item.Id == existingItem.Id))
-	//			{
-	//				_optionRepository.Delete(existingOption);
-	//			}
-	//		}
-
-	//		foreach (var option in model.Options)
-	//		{
-	//			var existingOption = existingEntity.Options.Where(item => item.Id == option.Id).FirstOrDefault();
-
-	//			if (existingOption != null) _optionRepository.Update(existingOption, option);
-	//			else _optionRepository.Add(option);
-
-	//		}
-	//	}
-
-		
-
-	//}
-
 	public abstract class BaseCategoriesService<T> where T : BaseCategory
 	{
 		protected IEnumerable<T> AllRootItems(DbSet<T> categoryDbSet) => categoryDbSet.Where(item => !item.Removed && item.ParentId == 0);

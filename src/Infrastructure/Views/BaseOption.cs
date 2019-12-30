@@ -4,14 +4,16 @@ using System.Text;
 
 namespace Infrastructure.Views
 {
-	public class BaseOption
+	public class BaseOption<Tkey>
 	{
-		public BaseOption(string value, string text)
+		public BaseOption(Tkey value, string text)
 		{
 			this.Value = value;
 			this.Text = text;
 		}
-		public string Value { get; set; }
+		public Tkey Value { get; set; }
 		public string Text { get; set; }
+
 	}
+
 }

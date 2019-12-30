@@ -14,9 +14,10 @@ namespace ApplicationCore.Specifications
 
 		}
 
-		public RecruitFilterSpecification(bool active) : base(item => !item.Removed && item.Active == active)
+		public RecruitFilterSpecification(int parentId) : base(item => !item.Removed && item.ParentId == parentId)
 		{
 
 		}
+		
 	}
 }
