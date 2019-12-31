@@ -14,14 +14,17 @@ namespace ApplicationCore.Services
 	public interface IQuestionsService
 	{
 		Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null, ICollection<int> recruitIds = null);
+		Task<IEnumerable<Question>> FetchByRecruitAsync(Recruit recruit, Subject subject);
+
 		Task<Question> GetByIdAsync(int id);
 		Task<Question> CreateAsync(Question question);
 		Task UpdateAsync(Question question);
 		Task RemoveAsync(Question question);
 
 		Task UpdateAsync(Question existingEntity, Question model);
-
 		Question GetById(int id);
+
+		
 	}
 
 	public class QuestionsService : IQuestionsService
@@ -57,6 +60,16 @@ namespace ApplicationCore.Services
 			
 
 			return list;
+		}
+
+		public async Task<IEnumerable<Question>> FetchByRecruitAsync(Recruit recruit, Subject subject)
+		{
+			var spec = new QuestionFilterSpecification(subject);
+			var list = await _questionRepository.ListAsync(spec);
+
+			var questionIds = FetchQuestionIdsByRecruit(recruit);
+
+			return list.Where(item => questionIds.Contains(item.Id)).ToList();
 		}
 
 		public async Task<Question> GetByIdAsync(int id) => await _questionRepository.GetByIdAsync(id);
@@ -100,6 +113,19 @@ namespace ApplicationCore.Services
 			await _questionRepository.UpdateAsync(question);
 		}
 
+		public void LoadRecruitsText(IEnumerable<Question> list)
+		{
+
+		}
+
+		IEnumerable<int> FetchQuestionIdsByRecruit(Recruit recruit)
+		{
+			var recruitQuestions = _context.RecruitQuestions.Where(x => x.RecruitId == recruit.Id);
+			if (recruitQuestions.IsNullOrEmpty()) return new List<int>();
+
+			return recruitQuestions.Select(x => x.QuestionId).ToList();
+		}
+
 		IEnumerable<int> FetchQuestionIdsByRecruits(ICollection<int> recruitIds)
 		{
 			var recruitQuestions = _context.RecruitQuestions.Where(x => recruitIds.Contains(x.RecruitId));
@@ -138,5 +164,7 @@ namespace ApplicationCore.Services
 			_context.TermQuestions.AddRange(termQuestions);
 			await _context.SaveChangesAsync();
 		}
+
+		
 	}
 }

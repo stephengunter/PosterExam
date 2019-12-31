@@ -16,14 +16,16 @@ namespace Web.Controllers.Admin
 	public class QuestionsController : BaseAdminController
 	{
 		private readonly IQuestionsService _questionsService;
+		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
-		public QuestionsController(IQuestionsService questionsService, ISubjectsService subjectsService, ITermsService termsService,
-			 IMapper mapper)
+		public QuestionsController(IQuestionsService questionsService, IRecruitsService recruitsService,
+			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
 		{
 			_questionsService = questionsService;
+			_recruitsService = recruitsService;
 			_subjectsService = subjectsService;
 			_termsService = termsService;
 
@@ -59,7 +61,9 @@ namespace Web.Controllers.Admin
 
 			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
 
-			var pageList = questions.GetPagedList(_mapper, page, pageSize);
+			var rootRecruits = _recruitsService.FetchRootItems().ToList();
+
+			var pageList = questions.GetPagedList(_mapper, rootRecruits, page, pageSize);
 
 			foreach (var item in pageList.ViewList)
 			{
@@ -155,6 +159,9 @@ namespace Web.Controllers.Admin
 
 				} 
 			}
+
+
+
 									
 		}
 

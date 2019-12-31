@@ -35,8 +35,11 @@ namespace ApplicationCore.Models
 			}
 		}
 
+		public void SetRecruitsText(ICollection<Recruit> parentRecruits) 
+			=> RecruitsText = Recruits.IsNullOrEmpty() ? "" : String.Join(",", parentRecruits.Select(item => item.Title));
+		
 
-
-		public string RecruitsText => Recruits.IsNullOrEmpty() ? "" : String.Join(",", Recruits.Select(item => item.Title));
+	    [NotMapped]
+		public string RecruitsText { get;  private set; }
 	}
 }

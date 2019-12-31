@@ -15,6 +15,7 @@ namespace Infrastructure.DataAccess
 		protected readonly DbSet<T> _dbSet;
 
 		public DbSet<T> DbSet => _dbSet;
+		public DbContext DbContext => _dbContext;
 
 		public EfRepository(DbContext dbContext)
 		{

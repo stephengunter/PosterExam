@@ -27,10 +27,24 @@ namespace ApplicationCore.ViewServices
 		public static Recruit MapEntity(this RecruitViewModel model, IMapper mapper, string currentUserId)
 		{ 
 			var entity = mapper.Map<RecruitViewModel, Recruit>(model);
-			entity.Date = model.DateText.ToDatetimeOrNull();			
+			entity.Date = model.DateText.ToDatetimeOrNull();
 
-			if (model.Id == 0) entity.SetCreated(currentUserId);
-			else entity.SetUpdated(currentUserId);
+			if (model.Id == 0)
+			{
+				entity.SetCreated(currentUserId);
+				foreach (var item in entity.SubItems)
+				{
+					item.SetCreated(currentUserId);
+				}
+			}
+			else
+			{
+				entity.SetUpdated(currentUserId);
+				foreach (var item in entity.SubItems)
+				{
+					item.SetUpdated(currentUserId);
+				}
+			} 
 
 			return entity;
 		}

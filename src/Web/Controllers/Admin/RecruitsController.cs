@@ -28,13 +28,14 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(bool active = true, int year = 0)
+		public async Task<ActionResult> Index(int parent = 0, bool active = true, int year = 0)
 		{
-			var recruits = await _recruitsService.FetchAsync(active);
+			var recruits = await _recruitsService.FetchAsync(parent, active);
 			if (year > 0) recruits = recruits.Where(x => x.Year == year);
 
 			recruits = recruits.GetOrdered();
-			_recruitsService.LoadSubItems(recruits);
+			if (parent >= 0) _recruitsService.LoadSubItems(recruits);
+
 			return Ok(recruits.MapViewModelList(_mapper));
 		}
 
@@ -61,7 +62,7 @@ namespace Web.Controllers.Admin
 
 			var recruit = model.MapEntity(_mapper, CurrentUserId);
 
-			recruit = await _recruitsService.CreateAsync(recruit);
+			recruit = await _recruitsService.CreateAsync(recruit, recruit.SubItems);
 
 			return Ok(recruit.Id);
 		}
@@ -72,8 +73,12 @@ namespace Web.Controllers.Admin
 			var recruit = await _recruitsService.GetByIdAsync(id);
 			if (recruit == null) return NotFound();
 
-			var model = recruit.MapViewModel(_mapper);
-			
+			_recruitsService.LoadSubItems(recruit);
+			var model = new RecruitEditForm() {  Recruit = recruit.MapViewModel(_mapper) };
+
+			var subjects = _subjectsService.FetchRootItems();
+			model.SubjectOptions = subjects.Select(item => new BaseOption<int>(item.Id, item.Title)).ToList();
+
 			return Ok(model);
 		}
 
@@ -82,7 +87,7 @@ namespace Web.Controllers.Admin
 		{
 			var existingEntity = _recruitsService.GetById(id);
 			if (existingEntity == null) return NotFound();
-
+		
 			ValidateRequest(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -97,7 +102,7 @@ namespace Web.Controllers.Admin
 
 			var recruit = model.MapEntity(_mapper, CurrentUserId);
 
-			await _recruitsService.UpdateAsync(existingEntity, recruit);
+			await _recruitsService.UpdateAsync(existingEntity, recruit, recruit.SubItems);
 
 			return Ok();
 		}
@@ -126,7 +131,16 @@ namespace Web.Controllers.Admin
 			if (String.IsNullOrEmpty(model.Title)) ModelState.AddModelError("subjectId", "請填寫標題");
 
 			if (model.Year <= 0) ModelState.AddModelError("year", "請填寫年度");
-			
+
+			if (model.SubItems.IsNullOrEmpty()) ModelState.AddModelError("subItems", "必須要有筆試項目");
+
+			var subjectIds = model.SubItems.Select(x => x.SubjectId).Distinct();
+			if (subjectIds.Count() != model.SubItems.Count())
+			{
+				ModelState.AddModelError("subItems", "筆試科目重複了");
+			}
+
+
 		}
 
 	}

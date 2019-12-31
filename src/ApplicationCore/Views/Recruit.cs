@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.ComponentModel.DataAnnotations;
-using Infrastructure.Views;
 
 namespace ApplicationCore.Views
 {
@@ -19,6 +18,8 @@ namespace ApplicationCore.Views
 
 		public bool Done { get; set; }
 
+		public string PS { get; set; }
+
 		public string DoneText => this.Done ? "已結束" : "";
 
 		public ICollection<RecruitViewModel> SubItems { get; set; }
@@ -28,8 +29,6 @@ namespace ApplicationCore.Views
 	public class RecruitEditForm
 	{
 		public RecruitViewModel Recruit { get; set; } = new RecruitViewModel();
-
-		public ICollection<RecruitViewModel> SubItems { get; set; } = new List<RecruitViewModel>();
 
 		public ICollection<BaseOption<int>> SubjectOptions { get; set; }
 	}

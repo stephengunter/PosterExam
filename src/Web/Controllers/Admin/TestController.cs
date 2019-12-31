@@ -16,42 +16,35 @@ namespace Web.Controllers.Admin
 	public class TestController : ControllerBase
 	{
 
-		private readonly IQuestionsService _questionsService;
-		private readonly ISubjectsService _subjectsService;
-		private readonly ITermsService _termsService;
+		private readonly IRecruitsService _recruitsService;
 		private readonly IMapper _mapper;
 
-		public TestController(IQuestionsService questionsService, ISubjectsService subjectsService, ITermsService termsService,
-			 IMapper mapper)
-		{
-			_questionsService = questionsService;
-			_subjectsService = subjectsService;
-			_termsService = termsService;
+		public TestController(IRecruitsService recruitsService, IMapper mapper)
 
+		{
+			_recruitsService = recruitsService;
 			_mapper = mapper;
 		}
-
-		TestBaseOption<int> myTest;
 
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-			this.myTest = new TestBaseOption<int>(30, "jiiji");
-			return Ok(myTest);
-		}
-
-		class TestBaseOption<TKey>
-		{
-			public TestBaseOption(TKey value, string text)
+			var model = new RecruitViewModel { Title = "jiji", Year = 105 };
+			model.SubItems = new List<RecruitViewModel>()
 			{
-				this.Value = value;
-				this.Text = text;
-			}
-			public TKey Value { get; set; }
-			public string Text { get; set; }
+				new RecruitViewModel { Title = "qq" , SubjectId = 1},
+				new RecruitViewModel { Title = "pl" , SubjectId = 2}
+			};
 
+			var recruit = model.MapEntity(_mapper, "");
+
+			recruit = await _recruitsService.CreateAsync(recruit, recruit.SubItems);
+
+			return Ok(recruit.Id);
 		}
+
+		
 
 	}
 }

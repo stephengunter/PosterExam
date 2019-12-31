@@ -20,6 +20,8 @@ namespace ApplicationCore.Models
 
 		public int SubjectId { get; set; }
 
+		public string PS { get; set; }
+
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; }
 
 		[NotMapped]
@@ -35,6 +37,10 @@ namespace ApplicationCore.Models
 				item.LoadSubItems(subItems);
 			}
 		}
+
+		public Recruit GetParent(IEnumerable<Recruit> rootItems) => rootItems.FirstOrDefault(x => x.Id == ParentId);
+
+
 
 	}
 

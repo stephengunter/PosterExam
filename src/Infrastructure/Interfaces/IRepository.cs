@@ -9,7 +9,7 @@ namespace Infrastructure.Interfaces
 {
 	public interface IRepository<T> where T : BaseEntity, IAggregateRoot
 	{
-
+		DbContext DbContext { get; }
 		DbSet<T> DbSet { get; }
 
 		T GetById(int id);
@@ -33,6 +33,8 @@ namespace Infrastructure.Interfaces
 
 		void Update(T existingEntity, T model);
 		void SyncList(IList<T> existingList, IList<T> latestList);
+
+		
 
 	}
 }
