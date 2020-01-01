@@ -54,7 +54,7 @@ namespace ApplicationCore.ViewServices
 			return entity;
 		}
 
-		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, int page, int pageSize)
+		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, int page = 1, int pageSize = 999)
 		{
 			var pageList = new PagedList<Question, QuestionViewModel>(questions, page, pageSize);
 
@@ -65,7 +65,7 @@ namespace ApplicationCore.ViewServices
 			return pageList;
 		}
 
-		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits, int page, int pageSize)
+		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits, int page = 1, int pageSize = 999)
 		{
 			var pageList = new PagedList<Question, QuestionViewModel>(questions, page, pageSize);
 

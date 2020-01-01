@@ -42,7 +42,10 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null, ICollection<int> recruitIds = null)
 		{
-			var spec = new QuestionFilterSpecification(subject);
+			var subjectIds = subject.GetSubIds();
+			subjectIds.Add(subject.Id);
+
+			var spec = new QuestionSubjectIdsFilterSpecification(subjectIds);
 			var list = await _questionRepository.ListAsync(spec);
 
 			if (termIds.HasItems())
@@ -64,7 +67,10 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Question>> FetchByRecruitAsync(Recruit recruit, Subject subject)
 		{
-			var spec = new QuestionFilterSpecification(subject);
+			var subjectIds = subject.GetSubIds();
+			subjectIds.Add(subject.Id);
+
+			var spec = new QuestionSubjectIdsFilterSpecification(subjectIds);
 			var list = await _questionRepository.ListAsync(spec);
 
 			var questionIds = FetchQuestionIdsByRecruit(recruit);

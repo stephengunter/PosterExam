@@ -34,7 +34,33 @@ namespace Web.Controllers.Admin
 			if (year > 0) recruits = recruits.Where(x => x.Year == year);
 
 			recruits = recruits.GetOrdered();
-			if (parent >= 0) _recruitsService.LoadSubItems(recruits);
+
+			if (parent == 0)
+			{
+				_recruitsService.LoadSubItems(recruits);
+
+				var subjects = await _subjectsService.FetchAsync();
+				_subjectsService.LoadSubItems(subjects);
+
+				foreach (var recruit in recruits)
+				{
+					foreach (var subItem in recruit.SubItems)
+					{
+						if (subItem.SubjectId > 0)
+						{
+							var subject = subjects.FirstOrDefault(x => x.Id == subItem.SubjectId);
+							subject.GetSubIds();
+
+							subItem.Subject = subject;
+							
+							var subjectIds = new List<int> { subject.Id };
+							subjectIds.AddRange(subject.SubIds);
+							subItem.SubjectIds = subjectIds;
+
+						}
+					}
+				}
+			}
 
 			return Ok(recruits.MapViewModelList(_mapper));
 		}

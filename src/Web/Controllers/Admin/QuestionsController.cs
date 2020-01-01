@@ -35,7 +35,7 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int subject, int term, string recruits = "", int page = 1, int pageSize = 10)
 		{
-			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
+			Subject selectedSubject = _subjectsService.GetById(subject);
 			if (selectedSubject == null)
 			{
 				ModelState.AddModelError("subject", "科目不存在");

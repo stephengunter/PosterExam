@@ -25,7 +25,25 @@ namespace ApplicationCore.Models
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; }
 
 		[NotMapped]
+		public Subject Subject { get; set; }
+
+		[NotMapped]
+		public ICollection<int> SubjectIds { get; set; } = new List<int>();
+
+		[NotMapped]
 		public ICollection<Recruit> SubItems { get; private set; }
+
+		public ICollection<int> GetSubIds()
+		{
+			var subIds = new List<int>();
+			foreach (var item in SubItems)
+			{
+				subIds.Add(item.Id);
+
+				subIds.AddRange(item.GetSubIds());
+			}
+			return subIds;
+		}
 
 
 		public void LoadSubItems(IEnumerable<Recruit> subItems)

@@ -123,7 +123,15 @@ namespace ApplicationCore.Services
 			await _recruitRepository.UpdateAsync(recruit);
 		}
 
-		public Recruit GetById(int id) => _recruitRepository.GetById(id);
+		public Recruit GetById(int id)
+		{
+			var recruit = _recruitRepository.GetById(id);
+			if (recruit == null) return null;
+
+			LoadSubItems(recruit);
+
+			return recruit;
+		}
 
 		public void LoadRecruitsText(IEnumerable<Question> questions)
 		{

@@ -39,9 +39,9 @@ namespace Web.Controllers.Admin
 				return BadRequest(ModelState);
 			}
 
-			if (selectedRecruit.SubjectId == 0) return Ok(new List<QuestionViewModel>());
+			if (selectedRecruit.SubjectId == 0) return Ok(new List<Question>().GetPagedList(_mapper));
 
-			Subject selectedSubject = await _subjectsService.GetByIdAsync(selectedRecruit.SubjectId);
+			Subject selectedSubject = _subjectsService.GetById(selectedRecruit.SubjectId);
 			if (selectedSubject == null)
 			{
 				ModelState.AddModelError("subject", "科目不存在");
@@ -50,14 +50,14 @@ namespace Web.Controllers.Admin
 
 			var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, selectedSubject);
 
-			var viewList = questions.MapViewModelList(_mapper);
+			var pageList = questions.GetPagedList(_mapper);
 
-			foreach (var item in viewList)
+			foreach (var item in pageList.ViewList)
 			{
 				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
 			}
 
-			return Ok(viewList);
+			return Ok(pageList);
 		}
 
 	}

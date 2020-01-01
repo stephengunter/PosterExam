@@ -18,7 +18,16 @@ namespace ApplicationCore.ViewServices
 		{ 
 			var model = mapper.Map<RecruitViewModel>(recruit);
 			model.DateText = recruit.Date.ToDateString();
-			
+
+			if (recruit.SubItems.HasItems())
+			{
+				var subjectIds = new List<int>();
+				foreach (var item in recruit.SubItems)
+				{
+					subjectIds.AddRange(item.SubjectIds);
+				}
+				model.SubjectIds = subjectIds;
+			}
 			return model;
 		}
 

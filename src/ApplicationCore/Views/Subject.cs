@@ -11,6 +11,7 @@ namespace ApplicationCore.Views
 
 		public ICollection<SubjectViewModel> SubItems { get; set; }
 
+		public ICollection<int> SubIds { get; set; }
 	}
 
 	public class SubjectEditForm

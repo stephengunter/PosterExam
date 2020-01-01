@@ -24,6 +24,10 @@ namespace ApplicationCore.Views
 
 		public ICollection<RecruitViewModel> SubItems { get; set; }
 
+		public ICollection<int> SubjectIds { get; set; }
+
+		public SubjectViewModel Subject { get; set; }
+
 	}
 
 	public class RecruitEditForm

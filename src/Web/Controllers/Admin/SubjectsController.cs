@@ -25,13 +25,20 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(bool subItems = true)
+		public async Task<ActionResult> Index(int parent = -1, bool subItems = true)
 		{
-			int parentId = subItems ? 0 : -1;
-			var subjects = await _subjectsService.FetchAsync(parentId);
+			var subjects = await _subjectsService.FetchAsync(parent);
 			subjects = subjects.GetOrdered();
 
-			if(subItems) _subjectsService.LoadSubItems(subjects);
+			if (subItems)
+			{
+				_subjectsService.LoadSubItems(subjects);
+				foreach (var item in subjects)
+				{
+					item.GetSubIds();
+				}
+			}
+
 			return Ok(subjects.MapViewModelList(_mapper));
 		}
 

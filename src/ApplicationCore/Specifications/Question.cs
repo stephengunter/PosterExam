@@ -28,4 +28,14 @@ namespace ApplicationCore.Specifications
 			AddInclude("RecruitQuestions.Recruit");
 		}
 	}
+
+	public class QuestionSubjectIdsFilterSpecification : BaseSpecification<Question>
+	{
+		public QuestionSubjectIdsFilterSpecification(ICollection<int> subjectIds) 
+			: base(item => !item.Removed && subjectIds.Contains(item.SubjectId))
+		{
+			AddInclude(item => item.Options);
+			AddInclude("RecruitQuestions.Recruit");
+		}
+	}
 }
