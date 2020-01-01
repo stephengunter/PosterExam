@@ -30,7 +30,7 @@ namespace ApplicationCore.Paging
 	public class PagedList<T,V> : IPagedList<T,V>
 	{
 		
-		public PagedList(IEnumerable<T> list, int pageNumber=1, int pageSize=999)
+		public PagedList(IEnumerable<T> list, int pageNumber = 1, int pageSize = 999)
 		{
 			this.TotalItems = list.Count();
 			this.PageNumber = pageNumber;

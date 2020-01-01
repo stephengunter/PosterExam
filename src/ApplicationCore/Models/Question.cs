@@ -41,5 +41,15 @@ namespace ApplicationCore.Models
 
 	    [NotMapped]
 		public string RecruitsText { get;  private set; }
+
+
+		[NotMapped]
+		public ICollection<Term> Terms { get; private set; }
+
+		public void LoadTerms(IEnumerable<Term> allTerms)
+		{
+			var termIds = TermIds.SplitToIds();
+			this.Terms = allTerms.Where(x => termIds.Contains(x.Id)).ToList();
+		}
 	}
 }

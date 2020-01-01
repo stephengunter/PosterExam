@@ -18,14 +18,17 @@ namespace Web.Controllers.Admin
 		private readonly IQuestionsService _questionsService;
 		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
+		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
 		public RecruitQuestionsController(IQuestionsService questionsService, IRecruitsService recruitsService,
-			ISubjectsService subjectsService, IMapper mapper)
+			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
 		{
 			_questionsService = questionsService;
 			_recruitsService = recruitsService;
 			_subjectsService = subjectsService;
+			_termsService = termsService;
+
 			_mapper = mapper;
 		}
 
@@ -49,13 +52,17 @@ namespace Web.Controllers.Admin
 			}
 
 			var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, selectedSubject);
+			if (questions.HasItems())
+			{
+				var allTerms = await _termsService.FetchAllAsync();
+				foreach (var question in questions)
+				{
+					question.LoadTerms(allTerms);
+					question.Options = question.Options.OrderByDescending(o => o.Correct).ToList();
+				}
+			}
 
 			var pageList = questions.GetPagedList(_mapper);
-
-			foreach (var item in pageList.ViewList)
-			{
-				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
-			}
 
 			return Ok(pageList);
 		}

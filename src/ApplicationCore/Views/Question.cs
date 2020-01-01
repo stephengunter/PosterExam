@@ -1,6 +1,8 @@
-﻿using Infrastructure.Views;
+﻿using ApplicationCore.Helpers;
+using Infrastructure.Views;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ApplicationCore.Views
@@ -22,6 +24,8 @@ namespace ApplicationCore.Views
 		public string RecruitsText { get; set; }
 
 		public string TermIds { get; set; }  //  Example: 1,6
+
+		public ICollection<TermViewModel> Terms { get; set; }
 	}
 
 	public class QuestionEditForm
