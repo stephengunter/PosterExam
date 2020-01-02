@@ -25,6 +25,8 @@ namespace ApplicationCore.Services
 		void LoadSubItems(IEnumerable<Term> list);
 		Task LoadParentIdsAsync(Term term);
 
+		//IEnumerable<Term> FilterByKeyword(ICollection<string> keywords);
+
 		Task<int> GetMaxOrderAsync(Subject subject, int parentId);
 
 		List<int> ResolveSelectedIds(int[] selectedIds);
@@ -74,6 +76,7 @@ namespace ApplicationCore.Services
 			return term;
 
 		}
+		
 
 		public async Task LoadParentIdsAsync(Term term) => term.LoadParentIds(await _termRepository.ListAllAsync());
 

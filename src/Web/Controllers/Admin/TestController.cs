@@ -13,35 +13,44 @@ using ApplicationCore.ViewServices;
 
 namespace Web.Controllers.Admin
 {
-	public class TestController : ControllerBase
+	public class ATestController : ControllerBase
 	{
 
-		private readonly IRecruitsService _recruitsService;
 		private readonly IMapper _mapper;
+		private readonly ITermsService _termsService;
+		private readonly ISubjectsService _subjectsService;
 
-		public TestController(IRecruitsService recruitsService, IMapper mapper)
-
+		public ATestController(ITermsService termsService, ISubjectsService subjectsService, IMapper mapper)
 		{
-			_recruitsService = recruitsService;
 			_mapper = mapper;
+			_termsService = termsService;
+			_subjectsService = subjectsService;
 		}
 
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index()
+		public async Task<ActionResult> Index(int subject, int parent = -1, string keyword = "", bool subItems = true)
 		{
-			var model = new RecruitViewModel { Title = "jiji", Year = 105 };
-			model.SubItems = new List<RecruitViewModel>()
+			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
+			if (selectedSubject == null)
 			{
-				new RecruitViewModel { Title = "qq" , SubjectId = 1},
-				new RecruitViewModel { Title = "pl" , SubjectId = 2}
-			};
+				ModelState.AddModelError("subject", "科目不存在");
+				return BadRequest(ModelState);
+			}
 
-			var recruit = model.MapEntity(_mapper, "");
+			var terms = await _termsService.FetchAsync(selectedSubject, parent);
+			if (terms.HasItems())
+			{
+				if (subItems) _termsService.LoadSubItems(terms);
 
-			recruit = await _recruitsService.CreateAsync(recruit, recruit.SubItems);
+				var keywords = keyword.GetKeywords();
+				if (keywords.HasItems()) terms = terms.FilterByKeyword(keywords);
 
-			return Ok(recruit.Id);
+				terms = terms.GetOrdered();
+			}
+
+
+			return Ok(terms.MapViewModelList(_mapper));
 		}
 
 		

@@ -27,7 +27,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject, int parent = -1, bool subItems = true)
+		public async Task<ActionResult> Index(int subject, int parent = -1, string keyword = "", bool subItems = true)
 		{
 			Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
 			if (selectedSubject == null)
@@ -35,12 +35,19 @@ namespace Web.Controllers.Admin
 				ModelState.AddModelError("subject", "科目不存在");
 				return BadRequest(ModelState);
 			}
-			
 
 			var terms = await _termsService.FetchAsync(selectedSubject, parent);
-			terms = terms.GetOrdered();
+			if (terms.HasItems())
+			{
+				if (subItems) _termsService.LoadSubItems(terms);
 
-			if (subItems) _termsService.LoadSubItems(terms);
+				var keywords = keyword.GetKeywords();
+				if(keywords.HasItems()) terms = terms.FilterByKeyword(keywords);
+				
+				terms = terms.GetOrdered();
+			}
+
+			
 			return Ok(terms.MapViewModelList(_mapper));
 		}
 

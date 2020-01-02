@@ -35,8 +35,7 @@ namespace ApplicationCore.Helpers
 		public static IList<string> GetKeywords(this string input)
 		{
 			if (String.IsNullOrWhiteSpace(input) || String.IsNullOrEmpty(input)) return null;
-
-			return input.Split(new string[] { "-", " " }, StringSplitOptions.RemoveEmptyEntries);
+			return input.Split(new string[] { "-", " ", "," }, StringSplitOptions.RemoveEmptyEntries);
 
 		}
 

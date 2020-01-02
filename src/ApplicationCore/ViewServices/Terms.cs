@@ -25,14 +25,17 @@ namespace ApplicationCore.ViewServices
 			var entity = mapper.Map<TermViewModel, Term>(model);
 			entity.Text = entity.Text.ReplaceNewLine();
 
-			if(model.Id == 0) entity.SetCreated(currentUserId);
+			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);
 
 			return entity;
 		}
-		
+
 
 		public static IEnumerable<Term> GetOrdered(this IEnumerable<Term> terms)
 			=> terms.OrderBy(item => item.Order);
+
+		public static IEnumerable<Term> FilterByKeyword(this IEnumerable<Term> terms, ICollection<string> keywords)
+			=> terms.Where(item => keywords.Any(item.Text.Contains)).ToList();
 	}
 }
