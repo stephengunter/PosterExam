@@ -11,6 +11,8 @@ namespace ApplicationCore.Views
 
 		public int SubjectId { get; set; }
 
+		public SubjectViewModel Subject { get; set; }
+
 		public string Text { get; set; }
 
 		public string FullText => $"{Title} {Text}";
