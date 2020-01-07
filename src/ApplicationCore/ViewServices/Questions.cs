@@ -17,14 +17,24 @@ namespace ApplicationCore.ViewServices
 		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper)
 			=> mapper.Map<QuestionViewModel>(question);
 
-		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper, ICollection<Recruit> rootRecruits)
+		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper, ICollection<Recruit> allRecruits)
 		{
-			if (question.Recruits.HasItems())
+			//if (question.Recruits.HasItems())
+			//{
+			//	var parentList = question.Recruits.Select(item => item.GetParent(allRecruits));
+			//	question.SetRecruitsText(parentList.ToList());
+			//}
+			//return mapper.Map<QuestionViewModel>(question);
+			foreach (var item in question.Recruits)
 			{
-				var parentList = question.Recruits.Select(item => item.GetParent(rootRecruits));
-				question.SetRecruitsText(parentList.ToList());
+				item.LoadParents(allRecruits);
 			}
-			return mapper.Map<QuestionViewModel>(question);
+
+
+			var model = mapper.Map<QuestionViewModel>(question);
+			model.Recruits = question.Recruits.MapViewModelList(mapper);
+
+			return model;
 		}
 		
 
@@ -65,11 +75,11 @@ namespace ApplicationCore.ViewServices
 			return pageList;
 		}
 
-		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits, int page = 1, int pageSize = 999)
+		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> allRecruits, int page = 1, int pageSize = 999)
 		{
 			var pageList = new PagedList<Question, QuestionViewModel>(questions, page, pageSize);
 
-			pageList.ViewList = pageList.List.MapViewModelList(mapper, rootRecruits);
+			pageList.ViewList = pageList.List.MapViewModelList(mapper, allRecruits);
 
 			pageList.List = null;
 

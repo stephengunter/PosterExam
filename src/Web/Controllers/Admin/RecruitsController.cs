@@ -62,6 +62,13 @@ namespace Web.Controllers.Admin
 				}
 			}
 
+			foreach (var item in recruits)
+			{
+				item.LoadParent(recruits);
+			}
+
+			
+
 			return Ok(recruits.MapViewModelList(_mapper));
 		}
 
@@ -81,7 +88,7 @@ namespace Web.Controllers.Admin
 		[HttpPost("")]
 		public async Task<ActionResult> Store([FromBody] RecruitViewModel model)
 		{
-			ValidateRequest(model);
+			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			model.Order = model.Active ? 0 : -1;
@@ -102,8 +109,16 @@ namespace Web.Controllers.Admin
 			_recruitsService.LoadSubItems(recruit);
 			var model = new RecruitEditForm() {  Recruit = recruit.MapViewModel(_mapper) };
 
-			var subjects = _subjectsService.FetchRootItems();
-			model.SubjectOptions = subjects.Select(item => new BaseOption<int>(item.Id, item.Title)).ToList();
+			if (recruit.ParentId > 0)
+			{
+				var parent = await _recruitsService.GetByIdAsync(recruit.ParentId);
+				if (parent != null) model.Recruit.Parent = parent.MapViewModel(_mapper);
+			}
+			else
+			{
+				var subjects = _subjectsService.FetchRootItems();
+				model.SubjectOptions = subjects.Select(item => new BaseOption<int>(item.Id, item.Title)).ToList();
+			}
 
 			return Ok(model);
 		}
@@ -113,8 +128,8 @@ namespace Web.Controllers.Admin
 		{
 			var existingEntity = _recruitsService.GetById(id);
 			if (existingEntity == null) return NotFound();
-		
-			ValidateRequest(model);
+
+			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			if (model.Active)
@@ -152,21 +167,39 @@ namespace Web.Controllers.Admin
 			return Ok();
 		}
 
-		void ValidateRequest(RecruitViewModel model)
+		async Task ValidateRequestAsync(RecruitViewModel model)
 		{
 			if (String.IsNullOrEmpty(model.Title)) ModelState.AddModelError("subjectId", "請填寫標題");
 
-			if (model.Year <= 0) ModelState.AddModelError("year", "請填寫年度");
-
-			if (model.SubItems.IsNullOrEmpty()) ModelState.AddModelError("subItems", "必須要有筆試項目");
-
-			var subjectIds = model.SubItems.Select(x => x.SubjectId).Distinct();
-			if (subjectIds.Count() != model.SubItems.Count())
+			if (model.ParentId > 0)
 			{
-				ModelState.AddModelError("subItems", "筆試科目重複了");
+				var parent = await _recruitsService.GetByIdAsync(model.ParentId);
+				if (parent == null) ModelState.AddModelError("parentId", "父項目錯誤");
+				else
+				{
+					if (model.SubItems.HasItems())
+					{
+						var points = model.SubItems.Select(x => x.Points).ToList();
+						if (points.Sum() != 100)
+						{
+							ModelState.AddModelError("points", "分數錯誤");
+						}
+					}
+
+				}
+
 			}
+			else
+			{
+				if (model.Year <= 0) ModelState.AddModelError("year", "請填寫年度");
+				if (model.SubItems.IsNullOrEmpty()) ModelState.AddModelError("subItems", "必須要有筆試項目");
 
-
+				var subjectIds = model.SubItems.Select(x => x.SubjectId).Distinct();
+				if (subjectIds.Count() != model.SubItems.Count())
+				{
+					ModelState.AddModelError("subItems", "筆試科目重複了");
+				}
+			}
 		}
 
 	}

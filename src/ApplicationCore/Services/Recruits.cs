@@ -13,7 +13,6 @@ namespace ApplicationCore.Services
 	public interface IRecruitsService
 	{
 		Task<IEnumerable<Recruit>> FetchAsync(int parentId, bool active);
-		IEnumerable<Recruit> FetchRootItems();
 		Task<Recruit> GetByIdAsync(int id);
 		Task<IEnumerable<Recruit>> GetAllAsync();
 		Task<Recruit> CreateAsync(Recruit recruit, ICollection<Recruit> subItems = null);
@@ -22,12 +21,12 @@ namespace ApplicationCore.Services
 		Task UpdateAsync(Recruit recruit);
 		Task UpdateAsync(Recruit existingEntity, Recruit model, ICollection<Recruit> subItems = null);
 		Task RemoveAsync(Recruit recruit);
-
+		
 		void LoadSubItems(Recruit entity);
 		void LoadSubItems(IEnumerable<Recruit> list);
 		Recruit GetById(int id);
-
-		void LoadRecruitsText(IEnumerable<Question> list);
+		
+		Subject FindSubject(Recruit recruit, IEnumerable<Subject> subjects);
 	}
 
 	public class RecruitsService : BaseCategoriesService<Recruit>, IRecruitsService
@@ -38,8 +37,8 @@ namespace ApplicationCore.Services
 		{
 			this._recruitRepository = recruitRepository;
 		}
+		IEnumerable<Recruit> FetchRootItems() => AllRootItems(_recruitRepository.DbSet);
 
-		
 		public async Task<IEnumerable<Recruit>> GetAllAsync() => await _recruitRepository.ListAsync(new RecruitFilterSpecification());
 
 		public async Task<IEnumerable<Recruit>> FetchAsync(int parentId, bool active)
@@ -51,7 +50,7 @@ namespace ApplicationCore.Services
 			return list.Where(x => x.Active == active);
 		}
 
-		public IEnumerable<Recruit> FetchRootItems() => AllRootItems(_recruitRepository.DbSet);
+		
 
 		public async Task<Recruit> GetByIdAsync(int id) => await _recruitRepository.GetByIdAsync(id);
 
@@ -133,29 +132,31 @@ namespace ApplicationCore.Services
 			return recruit;
 		}
 
-		public void LoadRecruitsText(IEnumerable<Question> questions)
-		{
-			var rootItems =  AllRootItems(_recruitRepository.DbSet);
+		
 
-			foreach (var question in questions)
+		public Subject FindSubject(Recruit recruit, IEnumerable<Subject> subjects)
+		{
+			if (recruit.RecruitEntityType == RecruitEntityType.Part)
 			{
-				var parentList = question.Recruits.Select(item => item.GetParent(rootItems));
-				question.SetRecruitsText(parentList.ToList());
+				var parent = GetById(recruit.ParentId);
+				return subjects.FirstOrDefault(x => x.Id == parent.SubjectId);
 			}
+			return subjects.FirstOrDefault(x => x.Id == recruit.SubjectId);
 		}
 
 		public void LoadSubItems(IEnumerable<Recruit> list)
 		{
 			if (list.IsNullOrEmpty()) return;
 
-			var subItems = AllSubItems(_recruitRepository.DbSet);
+			var subItems = AllSubItems(_recruitRepository.DbSet).ToList();
 
 
 			foreach (var entity in list)
 			{
-				entity.LoadSubItems(subItems.ToList());
+				entity.LoadSubItems(subItems);
 			}
 		}
+
 
 		public void LoadSubItems(Recruit entity)
 		{

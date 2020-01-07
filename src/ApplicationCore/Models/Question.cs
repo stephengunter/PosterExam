@@ -35,13 +35,6 @@ namespace ApplicationCore.Models
 			}
 		}
 
-		public void SetRecruitsText(ICollection<Recruit> parentRecruits) 
-			=> RecruitsText = Recruits.IsNullOrEmpty() ? "" : String.Join(",", parentRecruits.Select(item => item.Title));
-		
-
-	    [NotMapped]
-		public string RecruitsText { get;  private set; }
-
 
 		[NotMapped]
 		public ICollection<Term> Terms { get; private set; }

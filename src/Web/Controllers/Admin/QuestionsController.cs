@@ -61,9 +61,9 @@ namespace Web.Controllers.Admin
 
 			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
 
-			var rootRecruits = _recruitsService.FetchRootItems().ToList();
+			var allRecruits = await _recruitsService.GetAllAsync();
 
-			var pageList = questions.GetPagedList(_mapper, rootRecruits, page, pageSize);
+			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), page, pageSize);
 
 			foreach (var item in pageList.ViewList)
 			{

@@ -20,7 +20,13 @@ namespace ApplicationCore.Views
 
 		public string PS { get; set; }
 
+		public int Points { get; set; }
+
 		public string DoneText => this.Done ? "已結束" : "";
+
+		public RecruitViewModel Parent { get; set; }
+
+		public ICollection<RecruitViewModel> Parents { get; set; }
 
 		public ICollection<RecruitViewModel> SubItems { get; set; }
 

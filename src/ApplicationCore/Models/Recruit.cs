@@ -20,9 +20,30 @@ namespace ApplicationCore.Models
 
 		public int SubjectId { get; set; }
 
+		public int Points { get; set; }
+
 		public string PS { get; set; }
 
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; }
+
+
+        #region Helpers
+
+        [NotMapped]
+		public RecruitEntityType RecruitEntityType
+		{
+			get
+			{
+				if (ParentId == 0) return RecruitEntityType.Year;
+				if (SubjectId > 0 && ParentId > 0) return RecruitEntityType.SubItem;
+				if (ParentId > 0 && SubjectId == 0) return RecruitEntityType.Part;
+
+				return RecruitEntityType.Unknown;
+			}
+		}
+
+		[NotMapped]
+		public Recruit Parent { get; set; }
 
 		[NotMapped]
 		public Subject Subject { get; set; }
@@ -56,10 +77,41 @@ namespace ApplicationCore.Models
 			}
 		}
 
-		public Recruit GetParent(IEnumerable<Recruit> rootItems) => rootItems.FirstOrDefault(x => x.Id == ParentId);
+		public void LoadParent(IEnumerable<Recruit> allItems) => Parent = GetParent(allItems);
+
+		public Recruit GetParent(IEnumerable<Recruit> allItems) => allItems.FirstOrDefault(x => x.Id == ParentId);
+
+		public void LoadParents(IEnumerable<Recruit> allItems)
+		{
+			var entity = this;
+			Recruit root = null;
+			if (ParentId > 0)
+			{
+
+				do
+				{
+					entity.LoadParent(allItems);
+					if (entity.Parent == null) throw new Exception($"Recruit not found. id = {ParentId}");
+
+					if (entity.Parent.IsRootItem) root = entity.Parent;
+					else entity = entity.Parent;
+
+				} while (root == null);
+			}
+			
+		}
+
+		#endregion
+
+	}
 
 
-
+	public enum RecruitEntityType
+	{ 
+		Year = 0,
+		SubItem = 1,
+		Part = 2,
+		Unknown = -1
 	}
 
 }

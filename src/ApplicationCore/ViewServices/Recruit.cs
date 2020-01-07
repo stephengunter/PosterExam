@@ -28,6 +28,17 @@ namespace ApplicationCore.ViewServices
 				}
 				model.SubjectIds = subjectIds;
 			}
+
+			var parents = new List<RecruitViewModel>();
+			var entity = model;
+			while (entity.Parent != null)
+			{
+				parents.Insert(0, entity.Parent);
+				entity = entity.Parent;
+			}
+
+			model.Parents = parents;
+
 			return model;
 		}
 

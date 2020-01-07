@@ -35,23 +35,28 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int recruit)
 		{
-			Recruit selectedRecruit = await _recruitsService.GetByIdAsync(recruit);
+			Recruit selectedRecruit = _recruitsService.GetById(recruit);
 			if (selectedRecruit == null)
 			{
-				ModelState.AddModelError("recruit", "科目不存在");
+				ModelState.AddModelError("recruit", "年度不存在");
 				return BadRequest(ModelState);
 			}
 
-			if (selectedRecruit.SubjectId == 0) return Ok(new List<Question>().GetPagedList(_mapper));
+			if (selectedRecruit.RecruitEntityType == RecruitEntityType.Year) return Ok(new List<Question>().GetPagedList(_mapper));
 
-			Subject selectedSubject = _subjectsService.GetById(selectedRecruit.SubjectId);
-			if (selectedSubject == null)
+			var allSubjects = await _subjectsService.FetchAsync();
+
+			var subject = _recruitsService.FindSubject(selectedRecruit, allSubjects);
+
+			if (subject == null)
 			{
 				ModelState.AddModelError("subject", "科目不存在");
 				return BadRequest(ModelState);
 			}
 
-			var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, selectedSubject);
+			_subjectsService.LoadSubItems(subject);
+
+			var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
 			if (questions.HasItems())
 			{
 				var allTerms = await _termsService.FetchAllAsync();

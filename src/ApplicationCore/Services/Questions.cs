@@ -73,7 +73,10 @@ namespace ApplicationCore.Services
 			var spec = new QuestionSubjectIdsFilterSpecification(subjectIds);
 			var list = await _questionRepository.ListAsync(spec);
 
-			var questionIds = FetchQuestionIdsByRecruit(recruit);
+			var recruitIds = recruit.GetSubIds();
+			recruitIds.Add(recruit.Id);
+
+			var questionIds = FetchQuestionIdsByRecruits(recruitIds);
 
 			return list.Where(item => questionIds.Contains(item.Id)).ToList();
 		}

@@ -11,7 +11,7 @@ namespace ApplicationCore.DataAccess
 		public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
 		{
 		}
-
+		public DbSet<UploadFile> UploadFiles { get; set; }
 		public DbSet<RefreshToken> RefreshTokens { get; set; }
 		public DbSet<OAuth> OAuth { get; set; }
 		public DbSet<Exam> Exams { get; set; }

@@ -10,28 +10,19 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
-using Microsoft.Extensions.Options;
-using ApplicationCore.Settings;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Web.Controllers.Admin
 {
-	public class ATestController : ControllerBase
+	public class UploadsController : BaseAdminController
 	{
-
 		private readonly IQuestionsService _questionsService;
 		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
-		private readonly IHostingEnvironment environment;
-		private readonly AppSettings appSettings;
-
-		public ATestController(IQuestionsService questionsService, IRecruitsService recruitsService,
-			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper,
-			IHostingEnvironment environment, IOptions<AppSettings> appSettings)
+		public UploadsController(IQuestionsService questionsService, IRecruitsService recruitsService,
+			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
 		{
 			_questionsService = questionsService;
 			_recruitsService = recruitsService;
@@ -39,34 +30,7 @@ namespace Web.Controllers.Admin
 			_termsService = termsService;
 
 			_mapper = mapper;
-
-			this.environment = environment;
-			this.appSettings = appSettings.Value;
 		}
-
-		string UploadFilesPath => Path.Combine(environment.WebRootPath, appSettings.UploadPath);
-
-		[HttpGet("test")]
-		public async Task<ActionResult> Test()
-		{
-			//var question = _questionsService.GetById(24);
-			//var allRecruits = await _recruitsService.GetAllAsync();
-
-
-
-			//return Ok(question.MapViewModel(_mapper, allRecruits.ToList()));
-			var recruit = await _recruitsService.GetByIdAsync(24);
-
-			var allItems = await _recruitsService.GetAllAsync();
-
-			recruit.LoadParents(allItems);
-
-			var model = recruit.MapViewModel(_mapper);
-
-			return Ok(UploadFilesPath);
-		}
-
-
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int recruit)
@@ -107,8 +71,6 @@ namespace Web.Controllers.Admin
 
 			return Ok(pageList);
 		}
-
-
 
 	}
 }
