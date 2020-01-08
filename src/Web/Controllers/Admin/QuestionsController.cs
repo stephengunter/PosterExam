@@ -94,7 +94,21 @@ namespace Web.Controllers.Admin
 
 			question = await _questionsService.CreateAsync(question);
 
-			return Ok(question.Id);
+			foreach (var option in question.Options)
+			{
+				foreach (var attachment in option.Attachments)
+				{
+					attachment.PostType = PostType.Option;
+					attachment.PostId = option.Id;
+					attachment.SetCreated(CurrentUserId);
+					await _attachmentsService.CreateAsync(attachment);
+				}
+			}
+
+			var options = question.Options;
+			var view = question.MapViewModel(_mapper);
+
+			return Ok(view);
 		}
 
 		[HttpGet("edit/{id}")]

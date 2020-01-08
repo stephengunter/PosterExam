@@ -12,9 +12,9 @@ namespace ApplicationCore.DtoMapper
 	{
 		public UploadFileMappingProfile()
 		{
-			CreateMap<UploadFile, MediaViewModel>();
+			CreateMap<UploadFile, AttachmentViewModel>();
 
-			CreateMap<MediaViewModel, UploadFile>();
+			CreateMap<AttachmentViewModel, UploadFile>();
 		}
 	}
 }

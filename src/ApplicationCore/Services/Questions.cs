@@ -172,6 +172,5 @@ namespace ApplicationCore.Services
 			await _context.SaveChangesAsync();
 		}
 
-		
 	}
 }

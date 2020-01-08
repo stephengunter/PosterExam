@@ -14,7 +14,7 @@ namespace ApplicationCore.Views
 		public bool Correct { get; set; }
 		public int QuestionId { get; set; }
 
-		public ICollection<MediaViewModel> Attachments { get; set; } = new List<MediaViewModel>();
+		public ICollection<AttachmentViewModel> Attachments { get; set; } = new List<AttachmentViewModel>();
 
 	}
 
