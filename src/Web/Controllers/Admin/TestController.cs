@@ -8,105 +8,110 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using ApplicationCore.Helpers;
-using AutoMapper;
-using ApplicationCore.ViewServices;
-using Microsoft.Extensions.Options;
-using ApplicationCore.Settings;
+using Microsoft.AspNetCore.Http;
+using SixLabors.ImageSharp;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Options;
+using System.Diagnostics;
+using ApplicationCore.Settings;
 
 namespace Web.Controllers.Admin
 {
 	public class ATestController : ControllerBase
 	{
 
-		private readonly IQuestionsService _questionsService;
-		private readonly IRecruitsService _recruitsService;
-		private readonly ISubjectsService _subjectsService;
-		private readonly ITermsService _termsService;
-		private readonly IMapper _mapper;
+		private readonly IAttachmentsService _attachmentsService;
+		private readonly IHostingEnvironment _environment;
+		private readonly AppSettings _appSettings;
 
-		private readonly IHostingEnvironment environment;
-		private readonly AppSettings appSettings;
-
-		public ATestController(IQuestionsService questionsService, IRecruitsService recruitsService,
-			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper,
-			IHostingEnvironment environment, IOptions<AppSettings> appSettings)
+		public ATestController(IHostingEnvironment environment, IOptions<AppSettings> appSettings, IAttachmentsService attachmentsService)
 		{
-			_questionsService = questionsService;
-			_recruitsService = recruitsService;
-			_subjectsService = subjectsService;
-			_termsService = termsService;
-
-			_mapper = mapper;
-
-			this.environment = environment;
-			this.appSettings = appSettings.Value;
+			_environment = environment;
+			_appSettings = appSettings.Value;
+			_attachmentsService = attachmentsService;
 		}
 
-		string UploadFilesPath => Path.Combine(environment.WebRootPath, appSettings.UploadPath);
+		string UploadFilesPath => Path.Combine(_environment.WebRootPath, _appSettings.UploadPath);
 
-		[HttpGet("test")]
-		public async Task<ActionResult> Test()
+
+
+		[HttpPost("")]
+		public async Task<IActionResult> Store([FromForm] UploadForm form)
 		{
-			//var question = _questionsService.GetById(24);
-			//var allRecruits = await _recruitsService.GetAllAsync();
-
-
-
-			//return Ok(question.MapViewModel(_mapper, allRecruits.ToList()));
-			var recruit = await _recruitsService.GetByIdAsync(24);
-
-			var allItems = await _recruitsService.GetAllAsync();
-
-			recruit.LoadParents(allItems);
-
-			var model = recruit.MapViewModel(_mapper);
-
-			return Ok(UploadFilesPath);
-		}
-
-
-
-		[HttpGet("")]
-		public async Task<ActionResult> Index(int recruit)
-		{
-			Recruit selectedRecruit = _recruitsService.GetById(recruit);
-			if (selectedRecruit == null)
+			PostType postType = form.GetPostType();
+			if (postType == PostType.Unknown)
 			{
-				ModelState.AddModelError("recruit", "年度不存在");
+				ModelState.AddModelError("PostType", "錯誤的PostType");
 				return BadRequest(ModelState);
 			}
 
-			if (selectedRecruit.RecruitEntityType == RecruitEntityType.Year) return Ok(new List<Question>().GetPagedList(_mapper));
+			var attachments = new List<UploadFile>();
 
-			var allSubjects = await _subjectsService.FetchAsync();
-
-			var subject = _recruitsService.FindSubject(selectedRecruit, allSubjects);
-
-			if (subject == null)
+			foreach (var file in form.Files)
 			{
-				ModelState.AddModelError("subject", "科目不存在");
-				return BadRequest(ModelState);
-			}
-
-			_subjectsService.LoadSubItems(subject);
-
-			var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
-			if (questions.HasItems())
-			{
-				var allTerms = await _termsService.FetchAllAsync();
-				foreach (var question in questions)
+				if (file.Length > 0)
 				{
-					question.LoadTerms(allTerms);
-					question.Options = question.Options.OrderByDescending(o => o.Correct).ToList();
+					//var attachment = await _attachmentsService.FindByNameAsync(file.FileName, postType, form.PostId);
+					//if (attachment == null) throw new Exception(String.Format("attachmentService.FindByName({0},{1})", file.FileName, form.PostId));
+
+					var attachment = new UploadFile();
+
+					var upload = await SaveFile(file);
+					attachment.PostType = postType;
+					attachment.Type = upload.Type;
+					attachment.Path = upload.Path;
+
+					switch (upload.Type)
+					{
+						case ".jpg":
+						case ".jpeg":
+						case ".png":
+						case ".gif":
+							var image = Image.Load(file.OpenReadStream());
+							attachment.Width = image.Width;
+							attachment.Height = image.Height;
+							attachment.PreviewPath = upload.Path;
+							break;
+					}
+
+					attachments.Add(attachment);
 				}
 			}
 
-			var pageList = questions.GetPagedList(_mapper);
 
-			return Ok(pageList);
+			_attachmentsService.UpdateRange(attachments);
+			return Ok();
+
 		}
+
+
+		async Task<UploadFile> SaveFile(IFormFile file)
+		{
+			//檢查檔案路徑
+			string folderName = DateTime.Now.ToString("yyyyMMdd");
+			string folderPath = Path.Combine(this.UploadFilesPath, folderName);
+			if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+
+			string extension = Path.GetExtension(file.FileName).ToLower();
+
+			string fileName = String.Format("{0}{1}", Guid.NewGuid(), extension);
+			string filePath = Path.Combine(folderPath, fileName);
+			using (var fileStream = new FileStream(filePath, FileMode.Create))
+			{
+				await file.CopyToAsync(fileStream);
+			}
+
+
+			var entity = new UploadFile()
+			{
+				Type = extension,
+				Path = folderName + "/" + fileName
+			};
+
+			return entity;
+		}
+
 
 
 

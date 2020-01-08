@@ -16,6 +16,7 @@ namespace ApplicationCore.DtoMapper
 				mc.AddProfile(new QuestionMappingProfile());
 				mc.AddProfile(new OptionMappingProfile());
 				mc.AddProfile(new RecruitMappingProfile());
+				mc.AddProfile(new UploadFileMappingProfile());
 			});
 
 			return mappingConfig;

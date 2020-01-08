@@ -16,16 +16,18 @@ namespace Web.Controllers.Admin
 	public class QuestionsController : BaseAdminController
 	{
 		private readonly IQuestionsService _questionsService;
+		private readonly IAttachmentsService _attachmentsService;
 		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
-		public QuestionsController(IQuestionsService questionsService, IRecruitsService recruitsService,
+		public QuestionsController(IQuestionsService questionsService, IRecruitsService recruitsService, IAttachmentsService attachmentsService,
 			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
 		{
 			_questionsService = questionsService;
 			_recruitsService = recruitsService;
+			_attachmentsService = attachmentsService;
 			_subjectsService = subjectsService;
 			_termsService = termsService;
 
@@ -63,7 +65,10 @@ namespace Web.Controllers.Admin
 
 			var allRecruits = await _recruitsService.GetAllAsync();
 
-			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), page, pageSize);
+			//選項的附圖
+			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
+
+			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments.ToList(), page, pageSize);
 
 			foreach (var item in pageList.ViewList)
 			{
@@ -92,22 +97,17 @@ namespace Web.Controllers.Admin
 			return Ok(question.Id);
 		}
 
-		//async Task<TermViewModel> LoadTermViewModelAsync(int termId)
-		//{
-		//	var term = await _termsService.GetByIdAsync(termId);
-		//	if (term == null) return null;
-
-		//	await _termsService.LoadParentIdsAsync(term);
-		//	return term.MapViewModel(_mapper);
-		//}
-
 		[HttpGet("edit/{id}")]
-		public ActionResult Edit(int id)
+		public async Task<ActionResult> Edit(int id)
 		{
 			var question = _questionsService.GetById(id);
 			if (question == null) return NotFound();
 
-			var model = question.MapViewModel(_mapper);
+			var allRecruits = await _recruitsService.GetAllAsync();
+			//選項的附圖
+			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
+
+			var model = question.MapViewModel(_mapper, allRecruits.ToList(), attachments.ToList());
 			
 			return Ok(model);
 		}
@@ -145,23 +145,16 @@ namespace Web.Controllers.Admin
 			var subject = await _subjectsService.GetByIdAsync(model.SubjectId);
 			if (subject == null) ModelState.AddModelError("subjectId", "科目不存在");
 
-			if (model.Options.IsNullOrEmpty())
-			{
-				ModelState.AddModelError("options", "必須要有選項");
-			}
-			else
+			if (model.Options.HasItems())
 			{
 				var correctOptions = model.Options.Where(item => item.Correct).ToList();
 				if (correctOptions.IsNullOrEmpty()) ModelState.AddModelError("options", "必須要有正確的選項");
-				else if (correctOptions.Count > 1) 
+				else if (correctOptions.Count > 1)
 				{
-					if(!model.MultiAnswers) ModelState.AddModelError("options", "單選題只能有一個正確選項");
+					if (!model.MultiAnswers) ModelState.AddModelError("options", "單選題只能有一個正確選項");
 
-				} 
+				}
 			}
-
-
-
 									
 		}
 

@@ -24,7 +24,8 @@ namespace ApplicationCore.Services
 		Task UpdateAsync(Question existingEntity, Question model);
 		Question GetById(int id);
 
-		
+		Task<Option> AddOptionAsync(Option option);
+
 	}
 
 	public class QuestionsService : IQuestionsService
@@ -122,10 +123,7 @@ namespace ApplicationCore.Services
 			await _questionRepository.UpdateAsync(question);
 		}
 
-		public void LoadRecruitsText(IEnumerable<Question> list)
-		{
-
-		}
+		public async Task<Option> AddOptionAsync(Option option) => await _optionRepository.AddAsync(option);
 
 		IEnumerable<int> FetchQuestionIdsByRecruit(Recruit recruit)
 		{

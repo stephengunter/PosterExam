@@ -1,4 +1,5 @@
 ﻿using Infrastructure.Views;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,5 +14,8 @@ namespace ApplicationCore.Views
 		public bool Correct { get; set; }
 		public int QuestionId { get; set; }
 
+		public ICollection<MediaViewModel> Attachments { get; set; } = new List<MediaViewModel>();
+
 	}
+
 }

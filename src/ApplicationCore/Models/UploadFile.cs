@@ -7,7 +7,8 @@ namespace ApplicationCore.Models
 {
 	public enum PostType
 	{
-		Option
+		Option = 0,
+		Unknown = -1
 	}
 
 	public class UploadFile : BaseUploadFile

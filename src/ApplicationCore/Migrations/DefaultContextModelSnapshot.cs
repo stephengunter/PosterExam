@@ -261,6 +261,47 @@ namespace ApplicationCore.Migrations
                     b.ToTable("TermQuestions");
                 });
 
+            modelBuilder.Entity("ApplicationCore.Models.UploadFile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreatedAt");
+
+                    b.Property<string>("Description");
+
+                    b.Property<int>("Height");
+
+                    b.Property<DateTime>("LastUpdated");
+
+                    b.Property<string>("Name");
+
+                    b.Property<int>("Order");
+
+                    b.Property<string>("Path");
+
+                    b.Property<int>("PostId");
+
+                    b.Property<int>("PostType");
+
+                    b.Property<string>("PreviewPath");
+
+                    b.Property<bool>("Removed");
+
+                    b.Property<string>("Title");
+
+                    b.Property<string>("Type");
+
+                    b.Property<string>("UpdatedBy");
+
+                    b.Property<int>("Width");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UploadFiles");
+                });
+
             modelBuilder.Entity("ApplicationCore.Models.User", b =>
                 {
                     b.Property<string>("Id")

@@ -30,6 +30,7 @@ using ApplicationCore.Services;
 using AutoMapper;
 using ApplicationCore.DtoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Web.Helpers;
 
 namespace Web
 {
@@ -127,7 +128,7 @@ namespace Web
 			services.AddSwaggerGen(c =>
 			{
 				c.SwaggerDoc("v1", new Info { Title = "PosterExamStarter", Version = "v1" });
-				
+				c.OperationFilter<SwaggerFileUploadFilter>();
 				c.AddSecurityDefinition("Bearer", new ApiKeyScheme
 				{
 					In = "header",
