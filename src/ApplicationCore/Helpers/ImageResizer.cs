@@ -6,6 +6,13 @@ using System.IO;
 
 namespace ApplicationCore.Helpers
 {
+	public enum ImageResizeType
+	{
+		Scale = 0,
+		Croped = 1,
+		Unknown = -1
+	}
+
 	public class ImageResizer
 	{
 		public static Image GetResizedImage(Image imgSource, int width, int height)

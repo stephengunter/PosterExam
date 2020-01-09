@@ -16,15 +16,17 @@ namespace Web.Controllers.Admin
 	public class RecruitQuestionsController : BaseAdminController
 	{
 		private readonly IQuestionsService _questionsService;
+		private readonly IAttachmentsService _attachmentsService;
 		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
 		public RecruitQuestionsController(IQuestionsService questionsService, IRecruitsService recruitsService,
-			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
+			IAttachmentsService attachmentsService, ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
 		{
 			_questionsService = questionsService;
+			_attachmentsService = attachmentsService;
 			_recruitsService = recruitsService;
 			_subjectsService = subjectsService;
 			_termsService = termsService;
@@ -57,17 +59,22 @@ namespace Web.Controllers.Admin
 			_subjectsService.LoadSubItems(subject);
 
 			var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
+
+			List<Term> allTerms = null;
+			List<Recruit> allRecruits = null;
+			List<UploadFile> attachments = null;
 			if (questions.HasItems())
 			{
-				var allTerms = await _termsService.FetchAllAsync();
-				foreach (var question in questions)
-				{
-					question.LoadTerms(allTerms);
-					question.Options = question.Options.OrderByDescending(o => o.Correct).ToList();
-				}
+				attachments = (await _attachmentsService.FetchAsync(PostType.Option)).ToList();
+				allTerms = (await _termsService.FetchAllAsync()).ToList();
 			}
 
-			var pageList = questions.GetPagedList(_mapper);
+			var pageList = questions.GetPagedList(_mapper, allRecruits, attachments, allTerms);
+			foreach (var item in pageList.ViewList)
+			{
+				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
+			}
+			
 
 			return Ok(pageList);
 		}

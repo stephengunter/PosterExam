@@ -19,22 +19,10 @@ namespace ApplicationCore.ViewServices
 		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper)
 			=> mapper.Map<QuestionViewModel>(question);
 
-		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper, ICollection<Recruit> allRecruits)
+		static void LoadQuestionData(Question question, ICollection<Recruit> allRecruits, 
+			ICollection<UploadFile> attachmentsList = null, ICollection<Term> allTerms = null)
 		{
-			LoadQuestionData(question, allRecruits);
-			if (question.Recruits.HasItems())
-			{
-				var model = mapper.Map<QuestionViewModel>(question);
-				model.Recruits = question.Recruits.MapViewModelList(mapper);
-
-				return model;
-			}
-			else return mapper.Map<QuestionViewModel>(question);
-
-		}
-
-		static void LoadQuestionData(Question question, ICollection<Recruit> allRecruits, ICollection<UploadFile> attachmentsList = null)
-		{
+			
 			if (allRecruits.HasItems())
 			{
 				if (question.Recruits.HasItems())
@@ -54,11 +42,15 @@ namespace ApplicationCore.ViewServices
 				}
 			}
 
+			if (allTerms.HasItems()) question.LoadTerms(allTerms);
+
 		}
 
-		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper, ICollection<Recruit> allRecruits, ICollection<UploadFile> attachmentsList)
+		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper, ICollection<Recruit> allRecruits, 
+			ICollection<UploadFile> attachmentsList = null, ICollection<Term> allTerms = null)
+
 		{
-			LoadQuestionData(question, allRecruits, attachmentsList);
+			LoadQuestionData(question, allRecruits, attachmentsList, allTerms);
 
 			if (question.Recruits.HasItems())
 			{
@@ -74,11 +66,9 @@ namespace ApplicationCore.ViewServices
 		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper)
 			=> questions.Select(item => MapViewModel(item, mapper)).ToList();
 
-		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits)
-			=> questions.Select(item => MapViewModel(item, mapper, rootRecruits)).ToList();
-
-		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits, ICollection<UploadFile> attachments)
-			=> questions.Select(item => MapViewModel(item, mapper, rootRecruits, attachments)).ToList();
+		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits,
+			ICollection<UploadFile> attachments = null, ICollection<Term> allTerms = null)
+			=> questions.Select(item => MapViewModel(item, mapper, rootRecruits, attachments, allTerms)).ToList();
 
 
 		#endregion
@@ -96,23 +86,13 @@ namespace ApplicationCore.ViewServices
 			return pageList;
 		}
 
-		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> allRecruits, int page = 1, int pageSize = 999)
+
+		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> allRecruits,
+			 ICollection<UploadFile> attachments = null, ICollection<Term> allTerms = null, int page = 1, int pageSize = 999)
 		{
 			var pageList = new PagedList<Question, QuestionViewModel>(questions, page, pageSize);
 
-			pageList.ViewList = pageList.List.MapViewModelList(mapper, allRecruits);
-
-			pageList.List = null;
-
-			return pageList;
-		}
-
-		public static PagedList<Question, QuestionViewModel> GetPagedList(this IEnumerable<Question> questions, IMapper mapper,
-			ICollection<Recruit> allRecruits, ICollection<UploadFile> attachments, int page = 1, int pageSize = 999)
-		{
-			var pageList = new PagedList<Question, QuestionViewModel>(questions, page, pageSize);
-
-			pageList.ViewList = pageList.List.MapViewModelList(mapper, allRecruits, attachments);
+			pageList.ViewList = pageList.List.MapViewModelList(mapper, allRecruits, attachments, allTerms);
 
 			pageList.List = null;
 

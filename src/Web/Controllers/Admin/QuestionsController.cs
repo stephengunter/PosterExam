@@ -68,7 +68,10 @@ namespace Web.Controllers.Admin
 			//選項的附圖
 			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
 
-			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments.ToList(), page, pageSize);
+			//不載入條文
+			List<Term> allTerms = null;
+
+			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments.ToList(), allTerms, page, pageSize);
 
 			foreach (var item in pageList.ViewList)
 			{
@@ -104,11 +107,9 @@ namespace Web.Controllers.Admin
 					await _attachmentsService.CreateAsync(attachment);
 				}
 			}
+			
 
-			var options = question.Options;
-			var view = question.MapViewModel(_mapper);
-
-			return Ok(view);
+			return Ok(question.MapViewModel(_mapper));
 		}
 
 		[HttpGet("edit/{id}")]
@@ -119,7 +120,9 @@ namespace Web.Controllers.Admin
 
 			var allRecruits = await _recruitsService.GetAllAsync();
 			//選項的附圖
-			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
+
+			var optionIds = question.Options.Select(x => x.Id).ToList();
+			var attachments = await _attachmentsService.FetchAsync(PostType.Option, optionIds);
 
 			var model = question.MapViewModel(_mapper, allRecruits.ToList(), attachments.ToList());
 			
@@ -139,7 +142,22 @@ namespace Web.Controllers.Admin
 
 			await _questionsService.UpdateAsync(existingEntity, question);
 
-			return Ok();
+			foreach (var option in question.Options)
+			{
+				foreach (var attachment in option.Attachments)
+				{
+					attachment.PostType = PostType.Option;
+					attachment.PostId = option.Id;
+
+					if (attachment.Id > 0) attachment.SetUpdated(CurrentUserId);
+					else attachment.SetCreated(CurrentUserId);
+				}
+
+				await _attachmentsService.SyncAttachmentsAsync(option, option.Attachments);
+			}
+
+
+			return Ok(question.MapViewModel(_mapper));
 		}
 
 		[HttpDelete("{id}")]

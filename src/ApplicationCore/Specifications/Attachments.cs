@@ -12,19 +12,19 @@ namespace ApplicationCore.Specifications
 	public class AttachmentFilterSpecifications : BaseSpecification<UploadFile>
 	{
 		public AttachmentFilterSpecifications(PostType postType)
-			: base(a => a.PostType == postType)
+			: base(item => !item.Removed && item.PostType == postType)
 		{
 
 		}
 
 
 		public AttachmentFilterSpecifications(PostType postType, int postId)
-			: base(a => a.PostType == postType && a.PostId == postId)
+			: base(item => !item.Removed && item.PostType == postType && item.PostId == postId)
 		{
 
 		}
 
-		public AttachmentFilterSpecifications(IList<int> ids) : base(a => ids.Contains(a.Id))
+		public AttachmentFilterSpecifications(IList<int> ids) : base(item => !item.Removed &&ids.Contains(item.Id))
 		{
 
 		}

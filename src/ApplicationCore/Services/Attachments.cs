@@ -15,6 +15,8 @@ namespace ApplicationCore.Services
 	{
 		Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, int postId = 0);
 
+		Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, IList<int> postIds);
+
 		Task<UploadFile> FindByNameAsync(string name, PostType postType, int postId);
 
 		Task<IEnumerable<UploadFile>> FetchByIdsAsync(IList<int> ids);
@@ -32,6 +34,8 @@ namespace ApplicationCore.Services
 		Task DeleteAsync(UploadFile attachment);
 
 		Task LoadAttachmentsAsync(Option option);
+
+		Task SyncAttachmentsAsync(Option option, ICollection<UploadFile> latestList);
 
 	}
 
@@ -54,6 +58,13 @@ namespace ApplicationCore.Services
 
 			return await _uploadFileRepository.ListAsync(new AttachmentFilterSpecifications(postType));
 
+		}
+
+		public async Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, IList<int> postIds)
+		{ 
+			var list = await _uploadFileRepository.ListAsync(new AttachmentFilterSpecifications(postType));
+
+			return list.Where(x => postIds.Contains(x.PostId));
 		}
 
 		public async Task<UploadFile> FindByNameAsync(string name, PostType postType, int postId)
@@ -84,12 +95,44 @@ namespace ApplicationCore.Services
 		public void DeleteRange(IEnumerable<UploadFile> attachments) => _uploadFileRepository.DeleteRange(attachments);
 
 		public async Task LoadAttachmentsAsync(Option option)
-		{ 
+		{
 			var attachments = await FetchAsync(PostType.Option, option.Id);
 
 			option.Attachments = attachments.HasItems() ? attachments.ToList() : new List<UploadFile>();
 
-		}	
+		}
+
+		public async Task SyncAttachmentsAsync(Option option, ICollection<UploadFile> latestList)
+		{
+			var existingList = await FetchAsync(PostType.Option, option.Id);
+
+			SyncAttachments(existingList.ToList(), latestList);
+		}
+
+		void SyncAttachments(ICollection<UploadFile> existingList, ICollection<UploadFile> latestList)
+		{
+			if (latestList.IsNullOrEmpty()) latestList = new List<UploadFile>();
+
+			foreach (var existingItem in existingList)
+			{
+				if (!latestList.Any(item => item.Id == existingItem.Id))
+				{
+					existingItem.Removed = true;
+				}
+			}
+
+			foreach (var latestItem in latestList)
+			{
+				var existingItem = existingList.Where(item => item.Id == latestItem.Id).FirstOrDefault();
+
+				if (existingItem != null) _uploadFileRepository.DbContext.Entry(existingItem).CurrentValues.SetValues(latestItem);
+				else _uploadFileRepository.DbSet.Add(latestItem);
+
+			}
+
+			_uploadFileRepository.DbContext.SaveChanges();
+
+		}
 
 	}
 }

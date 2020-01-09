@@ -8,111 +8,46 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using ApplicationCore.Helpers;
-using Microsoft.AspNetCore.Http;
-using SixLabors.ImageSharp;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Options;
-using System.Diagnostics;
-using ApplicationCore.Settings;
+using AutoMapper;
+using ApplicationCore.ViewServices;
 
 namespace Web.Controllers.Admin
 {
 	public class ATestController : ControllerBase
 	{
 
+		private readonly IQuestionsService _questionsService;
 		private readonly IAttachmentsService _attachmentsService;
-		private readonly IHostingEnvironment _environment;
-		private readonly AppSettings _appSettings;
+		private readonly IRecruitsService _recruitsService;
+		private readonly ISubjectsService _subjectsService;
+		private readonly ITermsService _termsService;
+		private readonly IMapper _mapper;
 
-		public ATestController(IHostingEnvironment environment, IOptions<AppSettings> appSettings, IAttachmentsService attachmentsService)
+		public ATestController(IQuestionsService questionsService, IRecruitsService recruitsService, IAttachmentsService attachmentsService,
+			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
 		{
-			_environment = environment;
-			_appSettings = appSettings.Value;
+			_questionsService = questionsService;
+			_recruitsService = recruitsService;
 			_attachmentsService = attachmentsService;
+			_subjectsService = subjectsService;
+			_termsService = termsService;
+
+			_mapper = mapper;
 		}
-
-		string UploadFilesPath => Path.Combine(_environment.WebRootPath, _appSettings.UploadPath);
-
-
-
-		[HttpPost("")]
-		public async Task<IActionResult> Store([FromForm] UploadForm form)
+		[HttpGet("")]
+		public async Task<ActionResult> Index(int id)
 		{
-			PostType postType = form.GetPostType();
-			if (postType == PostType.Unknown)
-			{
-				ModelState.AddModelError("PostType", "錯誤的PostType");
-				return BadRequest(ModelState);
-			}
+			var question = _questionsService.GetById(id);
+			if (question == null) return NotFound();
 
-			var attachments = new List<UploadFile>();
+			var allRecruits = await _recruitsService.GetAllAsync();
+			//選項的附圖
+			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
 
-			foreach (var file in form.Files)
-			{
-				if (file.Length > 0)
-				{
-					//var attachment = await _attachmentsService.FindByNameAsync(file.FileName, postType, form.PostId);
-					//if (attachment == null) throw new Exception(String.Format("attachmentService.FindByName({0},{1})", file.FileName, form.PostId));
+			var model = question.MapViewModel(_mapper, allRecruits.ToList(), attachments.ToList());
 
-					var attachment = new UploadFile();
-
-					var upload = await SaveFile(file);
-					attachment.PostType = postType;
-					attachment.Type = upload.Type;
-					attachment.Path = upload.Path;
-
-					switch (upload.Type)
-					{
-						case ".jpg":
-						case ".jpeg":
-						case ".png":
-						case ".gif":
-							var image = Image.Load(file.OpenReadStream());
-							attachment.Width = image.Width;
-							attachment.Height = image.Height;
-							attachment.PreviewPath = upload.Path;
-							break;
-					}
-
-					attachments.Add(attachment);
-				}
-			}
-
-
-			_attachmentsService.UpdateRange(attachments);
-			return Ok();
-
+			return Ok(model);
 		}
-
-
-		async Task<UploadFile> SaveFile(IFormFile file)
-		{
-			//檢查檔案路徑
-			string folderName = DateTime.Now.ToString("yyyyMMdd");
-			string folderPath = Path.Combine(this.UploadFilesPath, folderName);
-			if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-
-			string extension = Path.GetExtension(file.FileName).ToLower();
-
-			string fileName = String.Format("{0}{1}", Guid.NewGuid(), extension);
-			string filePath = Path.Combine(folderPath, fileName);
-			using (var fileStream = new FileStream(filePath, FileMode.Create))
-			{
-				await file.CopyToAsync(fileStream);
-			}
-
-
-			var entity = new UploadFile()
-			{
-				Type = extension,
-				Path = folderName + "/" + fileName
-			};
-
-			return entity;
-		}
-
-
 
 
 	}
