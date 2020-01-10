@@ -19,6 +19,8 @@ namespace Web.Models
     { 
         public int Points { get; set; }
 
+        public string Title { get; set; }
+
         public PagedList<Question, QuestionViewModel> Questions { get; set; }
     }
 
