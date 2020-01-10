@@ -10,6 +10,7 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
+using ApplicationCore.Logging;
 
 namespace Web.Controllers.Admin
 {
@@ -23,8 +24,10 @@ namespace Web.Controllers.Admin
 		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
+		private readonly ILogger _logger;
+
 		public ATestController(IQuestionsService questionsService, IRecruitsService recruitsService, IAttachmentsService attachmentsService,
-			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
+			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper, ILogger logger)
 		{
 			_questionsService = questionsService;
 			_recruitsService = recruitsService;
@@ -33,20 +36,15 @@ namespace Web.Controllers.Admin
 			_termsService = termsService;
 
 			_mapper = mapper;
+			_logger = logger;
 		}
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int id)
+		public async Task<ActionResult> Index(int recruit)
 		{
-			var question = _questionsService.GetById(id);
-			if (question == null) return NotFound();
-
-			var allRecruits = await _recruitsService.GetAllAsync();
-			//選項的附圖
-			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
-
-			var model = question.MapViewModel(_mapper, allRecruits.ToList(), attachments.ToList());
-
-			return Ok(model);
+			Recruit selectedRecruit = _recruitsService.GetById(recruit);
+			
+			
+			return Ok(selectedRecruit.MapViewModel(_mapper));
 		}
 
 

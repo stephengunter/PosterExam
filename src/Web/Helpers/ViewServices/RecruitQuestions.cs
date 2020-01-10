@@ -5,16 +5,23 @@ using System.Collections.Generic;
 using System.Text;
 using ApplicationCore.Helpers;
 using System.Linq;
+using ApplicationCore.Models;
+using ApplicationCore.ViewServices;
+using Web.Models;
 
-namespace ApplicationCore.ViewServices
+namespace Web.Helpers
 {
     public static class RecruitQuestionsViewService
     {
-        //public static List<T> ToList<T>() => Enum.GetValues(typeof(T)).Cast<T>().ToList();
-
         public static void LoadModeOptions(this RQIndexViewModel model)
         {
             model.ModeOptions = GetModeOptions();
+        }
+
+        public static void LoadYearOptions(this RQIndexViewModel model, IEnumerable<Recruit> recruits)
+        {
+            var years = recruits.Where(x => x.RecruitEntityType == RecruitEntityType.Year).GetOrdered();
+            model.YearOptions = years.Select(item => item.ToOption()).ToList();
         }
 
 
@@ -38,6 +45,26 @@ namespace ApplicationCore.ViewServices
             if (model == RQMode.Read) return "閱讀";
             if (model == RQMode.Exam) return "測驗";
             return "";
+        }
+
+        public static RQMode ToRQModeType(this int val)
+        {
+            try
+            {
+
+                if (Enum.IsDefined(typeof(RQMode), val))
+                {
+                    RQMode type = (RQMode)val;
+                    return type;
+                }
+                return RQMode.Unknown;
+
+
+            }
+            catch (Exception ex)
+            {
+                return RQMode.Unknown;
+            }
         }
     }
 }

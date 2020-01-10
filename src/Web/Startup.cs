@@ -31,6 +31,7 @@ using AutoMapper;
 using ApplicationCore.DtoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Web.Helpers;
+using ApplicationCore.Middlewares;
 
 namespace Web
 {
@@ -173,15 +174,6 @@ namespace Web
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 		{
-			//app.Use(async (ctx, next) =>
-			//{
-			//	await next();
-			//	if (ctx.Response.StatusCode == 204)
-			//	{
-			//		ctx.Response.ContentLength = 0;
-			//	}
-			//});
-
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
@@ -189,7 +181,7 @@ namespace Web
 			}
 			else
 			{
-				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+				app.UseMiddleware<ExceptionMiddleware>();
 				app.UseHsts();
 			}
 

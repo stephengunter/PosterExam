@@ -12,7 +12,7 @@ namespace ApplicationCore.Services
 {
 	public interface IRecruitsService
 	{
-		Task<IEnumerable<Recruit>> FetchAsync(int parentId, bool active);
+		Task<IEnumerable<Recruit>> FetchAsync(int parentId = -1, bool active = true);
 		Task<Recruit> GetByIdAsync(int id);
 		Task<IEnumerable<Recruit>> GetAllAsync();
 		Task<Recruit> CreateAsync(Recruit recruit, ICollection<Recruit> subItems = null);
@@ -41,7 +41,7 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Recruit>> GetAllAsync() => await _recruitRepository.ListAsync(new RecruitFilterSpecification());
 
-		public async Task<IEnumerable<Recruit>> FetchAsync(int parentId, bool active)
+		public async Task<IEnumerable<Recruit>> FetchAsync(int parentId = -1, bool active = true)
 		{
 			IEnumerable<Recruit> list;
 			if (parentId < 0) list = await GetAllAsync();

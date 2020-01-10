@@ -71,5 +71,9 @@ namespace ApplicationCore.ViewServices
 
 		public static IEnumerable<Recruit> GetOrdered(this IEnumerable<Recruit> recruits)
 			=> recruits.OrderByDescending(item => item.Year).ThenBy(item => item.Order);
+
+
+		public static BaseOption<int> ToOption(this Recruit recruit) 
+			=> new BaseOption<int>(recruit.Id, recruit.Title);
 	}
 }
