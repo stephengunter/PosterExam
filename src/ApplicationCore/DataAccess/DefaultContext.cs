@@ -18,12 +18,16 @@ namespace ApplicationCore.DataAccess
 		//public DbSet<ExamQuestion> ExamQuestions { get; set; }
 		public DbSet<Question> Questions { get; set; }
 		public DbSet<Option> Options { get; set; }
+		public DbSet<Resolve> Resolves { get; set; }
 		public DbSet<Subject> Subjects { get; set; }
 		
+
 		public DbSet<Term> Terms { get; set; }
 		public DbSet<TermQuestion> TermQuestions { get; set; }
 		public DbSet<Recruit> Recruits { get; set; }
 		public DbSet<RecruitQuestion> RecruitQuestions { get; set; }
+
+		public DbSet<ReviewRecord> ReviewRecords { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{

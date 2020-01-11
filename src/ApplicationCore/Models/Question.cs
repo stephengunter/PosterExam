@@ -21,7 +21,9 @@ namespace ApplicationCore.Models
 		public string TermIds { get; set; }  //  Example: 1,6
 
 		public ICollection<Option> Options { get; set; } = new List<Option>();
-	
+
+		public ICollection<Resolve> Resolves { get; set; } = new List<Resolve>();
+
 
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; } = new List<RecruitQuestion>();
 

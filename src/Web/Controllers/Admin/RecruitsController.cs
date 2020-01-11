@@ -28,9 +28,11 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int parent = 0, bool active = true, int year = 0)
+		public async Task<ActionResult> Index(int parent = 0, int active = 1, int year = 0)
 		{
-			var recruits = await _recruitsService.FetchAsync(parent, active);
+			var recruits = await _recruitsService.FetchAsync(parent);
+
+			if(active >= 0) recruits = recruits.Where(x => x.Active == active.ToBoolean());
 			if (year > 0) recruits = recruits.Where(x => x.Year == year);
 
 			recruits = recruits.GetOrdered();

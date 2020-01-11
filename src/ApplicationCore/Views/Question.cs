@@ -17,7 +17,8 @@ namespace ApplicationCore.Views
 
 		public string OptionsText { get; set; }
 		public ICollection<OptionViewModel> Options { get; set; } = new List<OptionViewModel>();
-		
+
+		public ICollection<ResolveViewModel> Resolves { get; set; } = new List<ResolveViewModel>();
 
 		public ICollection<RecruitViewModel> Recruits { get; set; } = new List<RecruitViewModel>();
 

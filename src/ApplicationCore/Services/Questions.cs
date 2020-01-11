@@ -34,7 +34,8 @@ namespace ApplicationCore.Services
 		private readonly IDefaultRepository<Option> _optionRepository;
 		private readonly DefaultContext _context;
 
-		public QuestionsService(IDefaultRepository<Question> questionRepository, IDefaultRepository<Option> optionRepository, DefaultContext context)
+		public QuestionsService(IDefaultRepository<Question> questionRepository, IDefaultRepository<Option> optionRepository,
+			DefaultContext context)
 		{
 			_questionRepository = questionRepository;
 			_optionRepository = optionRepository;
