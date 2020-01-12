@@ -18,6 +18,8 @@ namespace ApplicationCore.Views
 
         public string Source { get; set; } //json string
 
+        public bool Reviewed { get; set; }
+
         public ICollection<string> Sources { get; set; }
 
         public ICollection<string> Highlights { get; set; }

@@ -15,6 +15,7 @@ namespace ApplicationCore.Services
 		Task<Resolve> GetByIdAsync(int id);
 		Task<Resolve> CreateAsync(Resolve resolve);
 		Task UpdateAsync(Resolve resolve);
+		Task UpdateAsync(Resolve existingEntity, Resolve resolve);
 		Task RemoveAsync(Resolve resolve);
 	
 	}
@@ -34,7 +35,9 @@ namespace ApplicationCore.Services
 		public async Task<Resolve> CreateAsync(Resolve resolve) => await _resolveRepository.AddAsync(resolve);
 
 		public async Task UpdateAsync(Resolve resolve) => await _resolveRepository.UpdateAsync(resolve);
-		
+
+		public async Task UpdateAsync(Resolve existingEntity, Resolve resolve) => await _resolveRepository.UpdateAsync(existingEntity, resolve);
+
 		public async Task RemoveAsync(Resolve resolve)
 		{
 			resolve.Removed = true;

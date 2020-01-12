@@ -21,6 +21,5 @@ namespace ApplicationCore.Models
 
         public string Source { get; set; } //json string
 
-        
     }
 }

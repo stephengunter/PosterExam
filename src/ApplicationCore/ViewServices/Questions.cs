@@ -22,7 +22,9 @@ namespace ApplicationCore.ViewServices
 		static void LoadQuestionData(Question question, ICollection<Recruit> allRecruits, 
 			ICollection<UploadFile> attachmentsList = null, ICollection<Term> allTerms = null)
 		{
-			
+
+			if (question.Resolves.HasItems()) question.Resolves = question.Resolves.Where(item => !item.Removed).ToList();
+
 			if (allRecruits.HasItems())
 			{
 				if (question.Recruits.HasItems())

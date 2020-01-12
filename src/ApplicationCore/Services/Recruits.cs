@@ -25,7 +25,10 @@ namespace ApplicationCore.Services
 		void LoadSubItems(Recruit entity);
 		void LoadSubItems(IEnumerable<Recruit> list);
 		Recruit GetById(int id);
-		
+
+		ICollection<int> GetSubIds(int id);
+
+
 		Subject FindSubject(Recruit recruit, IEnumerable<Subject> subjects);
 	}
 
@@ -131,7 +134,14 @@ namespace ApplicationCore.Services
 			return recruit;
 		}
 
-		
+		public ICollection<int> GetSubIds(int id)
+		{
+			var recruit = GetById(id);
+			if (recruit == null) return null;
+
+			return recruit.GetSubIds();
+		}
+
 
 		public Subject FindSubject(Recruit recruit, IEnumerable<Subject> subjects)
 		{

@@ -35,7 +35,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject, int term, string recruits = "", int page = 1, int pageSize = 10)
+		public async Task<ActionResult> Index(int subject, int term = 0, int recruit = 0, int page = 1, int pageSize = 10)
 		{
 			Subject selectedSubject = _subjectsService.GetById(subject);
 			if (selectedSubject == null)
@@ -59,11 +59,32 @@ namespace Web.Controllers.Admin
 				termIds.Add(selectedTerm.Id);
 			}
 
-			var recruitIds = recruits.SplitToIds();
+			var allRecruits = await _recruitsService.GetAllAsync();
+
+			Recruit selectedRecruit = null;
+			List<int> recruitIds = new List<int>();
+			if (recruit > 0)
+			{
+				selectedRecruit = allRecruits.FirstOrDefault(x => x.Id == recruit);
+
+				if (selectedRecruit == null)
+				{
+					ModelState.AddModelError("recruit", "招考年度不存在");
+					return BadRequest(ModelState);
+				}
+
+				recruitIds.Add(recruit);
+				if (selectedRecruit.RecruitEntityType == RecruitEntityType.SubItem)
+				{
+					var partIds = allRecruits.Where(x => x.ParentId == recruit).Select(part => part.Id);
+					recruitIds.AddRange(partIds.ToList());
+					recruitIds.Add(recruit);
+				}
+			}
 
 			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
 
-			var allRecruits = await _recruitsService.GetAllAsync();
+			
 
 			//選項的附圖
 			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
@@ -73,6 +94,7 @@ namespace Web.Controllers.Admin
 
 			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments.ToList(), allTerms, page, pageSize);
 
+			
 			foreach (var item in pageList.ViewList)
 			{
 				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();

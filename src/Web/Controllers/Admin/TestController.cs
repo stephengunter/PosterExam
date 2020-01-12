@@ -39,12 +39,58 @@ namespace Web.Controllers.Admin
 			_logger = logger;
 		}
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int recruit)
+		public async Task<ActionResult> Index(int recruit = 0)
 		{
-			Recruit selectedRecruit = _recruitsService.GetById(recruit);
+			Subject selectedSubject = _subjectsService.GetById(1);
+			ICollection<int> termIds = null;
+
+			//var recruitIds = _recruitsService.GetSubIds(recruit);
+			//if (recruitIds.HasItems()) recruitIds.Add(recruit);
+
+			var allRecruits = await _recruitsService.GetAllAsync();
+
+			Recruit selectedRecruit = null;
+			List<int> recruitIds = new List<int>();
+			if (recruit > 0)
+			{
 			
+				selectedRecruit = allRecruits.FirstOrDefault(x => x.Id == recruit); // await _recruitsService.GetByIdAsync(recruit);
 			
-			return Ok(selectedRecruit.MapViewModel(_mapper));
+				if (selectedRecruit == null)
+				{
+					ModelState.AddModelError("recruit", "招考年度不存在");
+					return BadRequest(ModelState);
+				}
+
+				recruitIds.Add(recruit);
+
+				if (selectedRecruit.RecruitEntityType == RecruitEntityType.SubItem)
+				{
+					var partIds = allRecruits.Where(x => x.ParentId == recruit).Select(part => part.Id);
+					recruitIds.AddRange(partIds.ToList());
+					recruitIds.Add(recruit);
+				}
+			}
+
+
+			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
+
+			
+
+			//選項的附圖
+			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
+
+			//不載入條文
+			List<Term> allTerms = null;
+
+			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments.ToList(), allTerms);
+
+			foreach (var item in pageList.ViewList)
+			{
+				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
+			}
+
+			return Ok(pageList);
 		}
 
 
