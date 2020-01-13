@@ -10,6 +10,7 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
+using Newtonsoft.Json;
 
 namespace Web.Controllers.Admin
 {
@@ -24,6 +25,15 @@ namespace Web.Controllers.Admin
 			_resolvesService = resolvesService;
 			_reviewRecordsService = reviewRecordsService;
 			_mapper = mapper;
+		}
+
+		[HttpGet("")]
+		public async Task<ActionResult> Index(int question = 0, int page = 1, int pageSize = 10)
+		{
+			var resolves = await _resolvesService.FetchAsync(question);
+
+			var pageList = resolves.GetPagedList(_mapper, page, pageSize);
+			return Ok(pageList);
 		}
 
 		[HttpPost("")]

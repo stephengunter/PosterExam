@@ -17,80 +17,33 @@ namespace Web.Controllers.Admin
 	public class ATestController : ControllerBase
 	{
 
-		private readonly IQuestionsService _questionsService;
-		private readonly IAttachmentsService _attachmentsService;
-		private readonly IRecruitsService _recruitsService;
-		private readonly ISubjectsService _subjectsService;
-		private readonly ITermsService _termsService;
+		private readonly IResolvesService _resolvesService;
+		private readonly IReviewRecordsService _reviewRecordsService;
 		private readonly IMapper _mapper;
 
-		private readonly ILogger _logger;
-
-		public ATestController(IQuestionsService questionsService, IRecruitsService recruitsService, IAttachmentsService attachmentsService,
-			ISubjectsService subjectsService, ITermsService termsService, IMapper mapper, ILogger logger)
+		public ATestController(IResolvesService resolvesService, IReviewRecordsService reviewRecordsService, IMapper mapper)
 		{
-			_questionsService = questionsService;
-			_recruitsService = recruitsService;
-			_attachmentsService = attachmentsService;
-			_subjectsService = subjectsService;
-			_termsService = termsService;
-
+			_resolvesService = resolvesService;
+			_reviewRecordsService = reviewRecordsService;
 			_mapper = mapper;
-			_logger = logger;
 		}
+
+
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int recruit = 0)
+		public async Task<ActionResult> Index()
 		{
-			Subject selectedSubject = _subjectsService.GetById(1);
-			ICollection<int> termIds = null;
-
-			//var recruitIds = _recruitsService.GetSubIds(recruit);
-			//if (recruitIds.HasItems()) recruitIds.Add(recruit);
-
-			var allRecruits = await _recruitsService.GetAllAsync();
-
-			Recruit selectedRecruit = null;
-			List<int> recruitIds = new List<int>();
-			if (recruit > 0)
+			
+			var resolves = await _resolvesService.FetchAsync();
+			foreach (var entity in resolves)
 			{
-			
-				selectedRecruit = allRecruits.FirstOrDefault(x => x.Id == recruit); // await _recruitsService.GetByIdAsync(recruit);
-			
-				if (selectedRecruit == null)
-				{
-					ModelState.AddModelError("recruit", "招考年度不存在");
-					return BadRequest(ModelState);
-				}
+				//entity.Text = entity.Text.ReplaceNewLine();
 
-				recruitIds.Add(recruit);
 
-				if (selectedRecruit.RecruitEntityType == RecruitEntityType.SubItem)
-				{
-					var partIds = allRecruits.Where(x => x.ParentId == recruit).Select(part => part.Id);
-					recruitIds.AddRange(partIds.ToList());
-					recruitIds.Add(recruit);
-				}
+				entity.Text = entity.Text.Replace("<br>", "<br/>");
+				await _resolvesService.UpdateAsync(entity);
 			}
 
-
-			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
-
-			
-
-			//選項的附圖
-			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
-
-			//不載入條文
-			List<Term> allTerms = null;
-
-			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments.ToList(), allTerms);
-
-			foreach (var item in pageList.ViewList)
-			{
-				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
-			}
-
-			return Ok(pageList);
+			return Ok();
 		}
 
 

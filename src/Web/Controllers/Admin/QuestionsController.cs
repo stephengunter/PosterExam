@@ -84,15 +84,16 @@ namespace Web.Controllers.Admin
 
 			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
 
-			
 
-			//選項的附圖
-			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
-
-			//不載入條文
 			List<Term> allTerms = null;
+			List<UploadFile> attachments = null;
+			if (questions.HasItems())
+			{
+				attachments = (await _attachmentsService.FetchAsync(PostType.Option)).ToList();
+				allTerms = (await _termsService.FetchAllAsync()).ToList();
+			}
 
-			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments.ToList(), allTerms, page, pageSize);
+			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments, allTerms, page, pageSize);
 
 			
 			foreach (var item in pageList.ViewList)

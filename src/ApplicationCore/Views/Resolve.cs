@@ -20,8 +20,16 @@ namespace ApplicationCore.Views
 
         public bool Reviewed { get; set; }
 
-        public ICollection<string> Sources { get; set; }
+        public ICollection<SourceViewModel> Sources { get; set; }
 
         public ICollection<string> Highlights { get; set; }
     }
+
+
+    public class SourceViewModel
+    { 
+        public string Link { get; set; }
+        public string Text { get; set; }
+    }
+
 }

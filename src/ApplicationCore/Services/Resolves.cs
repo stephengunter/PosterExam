@@ -12,12 +12,12 @@ namespace ApplicationCore.Services
 {
 	public interface IResolvesService
 	{
+		Task<IEnumerable<Resolve>> FetchAsync(int questionId = 0);
 		Task<Resolve> GetByIdAsync(int id);
 		Task<Resolve> CreateAsync(Resolve resolve);
 		Task UpdateAsync(Resolve resolve);
 		Task UpdateAsync(Resolve existingEntity, Resolve resolve);
 		Task RemoveAsync(Resolve resolve);
-	
 	}
 
 	public class ResolvesService : IResolvesService
@@ -29,7 +29,15 @@ namespace ApplicationCore.Services
 			this._resolveRepository = resolveRepository;
 		}
 
-		
+		public async Task<IEnumerable<Resolve>> FetchAsync(int questionId = 0)
+		{
+			if (questionId > 0)
+			{
+				return await _resolveRepository.ListAsync(new ResolveFilterSpecification(questionId));
+			}
+			return await _resolveRepository.ListAsync(new ResolveFilterSpecification());
+		}
+
 		public async Task<Resolve> GetByIdAsync(int id) => await _resolveRepository.GetByIdAsync(id);
 
 		public async Task<Resolve> CreateAsync(Resolve resolve) => await _resolveRepository.AddAsync(resolve);
