@@ -8,6 +8,7 @@ namespace ApplicationCore.Models
 	public enum PostType
 	{
 		Option = 0,
+		Resolve = 1,
 		Unknown = -1
 	}
 

@@ -15,17 +15,19 @@ namespace ApplicationCore.ViewServices
 {
 	public static class ResolveViewService
 	{
-		public static ResolveViewModel MapViewModel(this Resolve option, IMapper mapper)
+		public static ResolveViewModel MapViewModel(this Resolve resolve, IMapper mapper, ICollection<UploadFile> attachmentsList = null)
 		{
-			var model = mapper.Map<ResolveViewModel>(option);
+			if (attachmentsList.HasItems()) resolve.LoadAttachments(attachmentsList);
+
+			var model = mapper.Map<ResolveViewModel>(resolve);
 			model.Highlights = JsonConvert.DeserializeObject<ICollection<string>>(model.Highlight);
-			
-			
+			model.Sources = JsonConvert.DeserializeObject<ICollection<SourceViewModel>>(model.Source);
+
 			return model;
 		}
 
-		public static List<ResolveViewModel> MapViewModelList(this IEnumerable<Resolve> resolves, IMapper mapper)
-			=> resolves.Select(item => MapViewModel(item, mapper)).ToList();
+		public static List<ResolveViewModel> MapViewModelList(this IEnumerable<Resolve> resolves, IMapper mapper, ICollection<UploadFile> attachmentsList = null)
+			=> resolves.Select(item => MapViewModel(item, mapper, attachmentsList)).ToList();
 
 		public static Resolve MapEntity(this ResolveViewModel model, IMapper mapper, string currentUserId)
 		{
@@ -36,17 +38,17 @@ namespace ApplicationCore.ViewServices
 			entity.Text = entity.Text.ReplaceNewLine();
 
 			entity.Highlight = model.Highlights.HasItems() ? JsonConvert.SerializeObject(model.Highlights) : "";
-
-
+			entity.Source = model.Sources.HasItems() ? JsonConvert.SerializeObject(model.Sources) : "";
 
 			return entity;
 		}
 
-		public static PagedList<Resolve, ResolveViewModel> GetPagedList(this IEnumerable<Resolve> resolves, IMapper mapper, int page = 1, int pageSize = 999)
+		public static PagedList<Resolve, ResolveViewModel> GetPagedList(this IEnumerable<Resolve> resolves, IMapper mapper,
+			ICollection<UploadFile> attachmentsList = null, int page = 1, int pageSize = 999)
 		{
 			var pageList = new PagedList<Resolve, ResolveViewModel>(resolves, page, pageSize);
 
-			pageList.ViewList = pageList.List.MapViewModelList(mapper);
+			pageList.ViewList = pageList.List.MapViewModelList(mapper, attachmentsList);
 
 			pageList.List = null;
 

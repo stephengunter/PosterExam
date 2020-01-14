@@ -18,12 +18,15 @@ namespace Web.Controllers.Admin
 	{
 		private readonly IResolvesService _resolvesService;
 		private readonly IReviewRecordsService _reviewRecordsService;
+		private readonly IAttachmentsService _attachmentsService;
 		private readonly IMapper _mapper;
 
-		public ResolvesController(IResolvesService resolvesService, IReviewRecordsService reviewRecordsService, IMapper mapper)
+		public ResolvesController(IResolvesService resolvesService, IReviewRecordsService reviewRecordsService,
+			IAttachmentsService attachmentsService,IMapper mapper)
 		{
 			_resolvesService = resolvesService;
 			_reviewRecordsService = reviewRecordsService;
+			_attachmentsService = attachmentsService;
 			_mapper = mapper;
 		}
 
@@ -32,7 +35,16 @@ namespace Web.Controllers.Admin
 		{
 			var resolves = await _resolvesService.FetchAsync(question);
 
-			var pageList = resolves.GetPagedList(_mapper, page, pageSize);
+			List<UploadFile> attachments = null;
+
+			if (resolves.IsNullOrEmpty()) return Ok(resolves.GetPagedList(_mapper, attachments, page, pageSize));
+
+			var postIds = resolves.Select(x => x.Id).ToList();
+
+			attachments = (await _attachmentsService.FetchAsync(PostType.Resolve, postIds)).ToList();
+
+
+			var pageList = resolves.GetPagedList(_mapper, attachments.ToList(), page, pageSize);
 			return Ok(pageList);
 		}
 
@@ -47,12 +59,26 @@ namespace Web.Controllers.Admin
 			resolve.Reviewed = true;
 			resolve = await _resolvesService.CreateAsync(resolve);
 
+			if (model.Attachments.HasItems())
+			{
+				var attachments = model.Attachments.Select(item => item.MapEntity(_mapper, CurrentUserId)).ToList();
+				foreach (var attachment in attachments)
+				{
+					attachment.PostType = PostType.Resolve;
+					attachment.PostId = resolve.Id;
+				}
+
+				_attachmentsService.CreateMany(attachments);
+
+				resolve.Attachments = attachments;
+			}
+
 			var reviewRecord = new ReviewRecord { Reviewed = true, Type = ReviewableType.Resolve, PostId = resolve.Id };
 			reviewRecord.SetCreated(CurrentUserId);
 			await _reviewRecordsService.CreateAsync(reviewRecord);
+			
 
-
-			return Ok(resolve.Id);
+			return Ok(resolve.MapViewModel(_mapper));
 		}
 
 		[HttpPut("{id}")]
@@ -65,8 +91,32 @@ namespace Web.Controllers.Admin
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			var resolve = model.MapEntity(_mapper, CurrentUserId);
+			resolve.Reviewed = true;
 
 			await _resolvesService.UpdateAsync(existingEntity, resolve);
+
+
+			if (model.Attachments.HasItems())
+			{
+				var attachments = model.Attachments.Select(item => item.MapEntity(_mapper, CurrentUserId)).ToList();
+				foreach (var attachment in attachments)
+				{
+					attachment.PostType = PostType.Resolve;
+					attachment.PostId = resolve.Id;
+				}
+
+				await _attachmentsService.SyncAttachmentsAsync(resolve, attachments);
+
+				resolve.Attachments = attachments;
+			}
+			else
+			{
+				await _attachmentsService.SyncAttachmentsAsync(resolve, null);
+			}
+
+			var reviewRecord = new ReviewRecord { Reviewed = true, Type = ReviewableType.Resolve, PostId = resolve.Id };
+			reviewRecord.SetCreated(CurrentUserId);
+			await _reviewRecordsService.CreateAsync(reviewRecord);
 
 			return Ok();
 		}
@@ -85,7 +135,7 @@ namespace Web.Controllers.Admin
 
 		void ValidateRequest(ResolveViewModel model)
 		{
-			if (String.IsNullOrEmpty(model.Text))
+			if (String.IsNullOrEmpty(model.Text) && model.Attachments.IsNullOrEmpty())
 			{
 				ModelState.AddModelError("text", "必須填寫內容");
 				return;

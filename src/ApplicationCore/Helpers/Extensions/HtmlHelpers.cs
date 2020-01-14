@@ -7,9 +7,9 @@ namespace ApplicationCore.Helpers
 {
 	public static class HtmlHelpers
 	{
-		public static string ReplaceNewLine(this string text, string replacement = "<br>") => Regex.Replace(text, @"\r\n?|\n", replacement);
+		public static string ReplaceNewLine(this string text, string replacement = "<br>") => String.IsNullOrEmpty(text) ? text : Regex.Replace(text, @"\r\n?|\n", replacement);
 
-		public static string ReplaceBrToNewLine(this string text) => text.Replace("<br>", System.Environment.NewLine);
+		public static string ReplaceBrToNewLine(this string text) => String.IsNullOrEmpty(text) ? text : text.Replace("<br>", System.Environment.NewLine);
 
 		public static string RemoveScriptTags(this string htmlString)
 		{

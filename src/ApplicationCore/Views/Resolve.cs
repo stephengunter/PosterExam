@@ -23,6 +23,8 @@ namespace ApplicationCore.Views
         public ICollection<SourceViewModel> Sources { get; set; }
 
         public ICollection<string> Highlights { get; set; }
+
+        public ICollection<AttachmentViewModel> Attachments { get; set; } = new List<AttachmentViewModel>();
     }
 
 

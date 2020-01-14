@@ -21,5 +21,15 @@ namespace ApplicationCore.Models
 
         public string Source { get; set; } //json string
 
+        [NotMapped]
+        public ICollection<UploadFile> Attachments { get; set; }
+
+
+        public void LoadAttachments(IEnumerable<UploadFile> uploadFiles)
+        {
+            var attachments = uploadFiles.Where(x => x.PostType == PostType.Resolve && x.PostId == Id);
+            this.Attachments = attachments.HasItems() ? attachments.ToList() : new List<UploadFile>();
+        }
+
     }
 }

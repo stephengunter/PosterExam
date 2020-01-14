@@ -25,6 +25,8 @@ namespace ApplicationCore.Services
 
 		Task<UploadFile> GetByIdAsync(int id);
 
+		void CreateMany(ICollection<UploadFile> attachments);
+
 		Task UpdateAsync(UploadFile attachment);
 
 		void UpdateRange(IEnumerable<UploadFile> attachments);
@@ -36,6 +38,10 @@ namespace ApplicationCore.Services
 		Task LoadAttachmentsAsync(Option option);
 
 		Task SyncAttachmentsAsync(Option option, ICollection<UploadFile> latestList);
+
+		Task LoadAttachmentsAsync(Resolve resolve);
+
+		Task SyncAttachmentsAsync(Resolve resolve, ICollection<UploadFile> latestList);
 
 	}
 
@@ -86,6 +92,8 @@ namespace ApplicationCore.Services
 
 		public async Task<UploadFile> CreateAsync(UploadFile attachment) => await _uploadFileRepository.AddAsync(attachment);
 
+		public void CreateMany(ICollection<UploadFile> attachments) => _uploadFileRepository.AddRange(attachments);
+
 		public async Task UpdateAsync(UploadFile attachment) => await _uploadFileRepository.UpdateAsync(attachment);
 
 		public async Task DeleteAsync(UploadFile attachment) => await _uploadFileRepository.DeleteAsync(attachment);
@@ -105,6 +113,21 @@ namespace ApplicationCore.Services
 		public async Task SyncAttachmentsAsync(Option option, ICollection<UploadFile> latestList)
 		{
 			var existingList = await FetchAsync(PostType.Option, option.Id);
+
+			SyncAttachments(existingList.ToList(), latestList);
+		}
+
+		public async Task LoadAttachmentsAsync(Resolve resolve)
+		{
+			var attachments = await FetchAsync(PostType.Resolve, resolve.Id);
+
+			resolve.Attachments = attachments.HasItems() ? attachments.ToList() : new List<UploadFile>();
+
+		}
+
+		public async Task SyncAttachmentsAsync(Resolve resolve, ICollection<UploadFile> latestList)
+		{
+			var existingList = await FetchAsync(PostType.Resolve, resolve.Id);
 
 			SyncAttachments(existingList.ToList(), latestList);
 		}

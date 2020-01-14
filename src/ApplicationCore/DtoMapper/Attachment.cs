@@ -8,9 +8,9 @@ using System.Text;
 
 namespace ApplicationCore.DtoMapper
 {
-	public class UploadFileMappingProfile : Profile
+	public class AttachmentMappingProfile : Profile
 	{
-		public UploadFileMappingProfile()
+		public AttachmentMappingProfile()
 		{
 			CreateMap<UploadFile, AttachmentViewModel>();
 
