@@ -42,6 +42,11 @@ namespace ApplicationCore.ViewServices
 				{
 					option.LoadAttachments(attachmentsList);
 				}
+
+				foreach (var resolve in question.Resolves)
+				{
+					resolve.LoadAttachments(attachmentsList);
+				}
 			}
 
 			if (allTerms.HasItems()) question.LoadTerms(allTerms);
@@ -54,14 +59,13 @@ namespace ApplicationCore.ViewServices
 		{
 			LoadQuestionData(question, allRecruits, attachmentsList, allTerms);
 
-			if (question.Recruits.HasItems())
-			{
-				var model = mapper.Map<QuestionViewModel>(question);
-				model.Recruits = question.Recruits.MapViewModelList(mapper);
+			var model = mapper.Map<QuestionViewModel>(question);
 
-				return model;
-			}
-			else return mapper.Map<QuestionViewModel>(question);
+			if (question.Recruits.HasItems()) model.Recruits = question.Recruits.MapViewModelList(mapper);
+
+			if (question.Resolves.HasItems()) model.Resolves = question.Resolves.MapViewModelList(mapper);
+
+			return model;
 		}
 
 

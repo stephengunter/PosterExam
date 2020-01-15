@@ -20,8 +20,9 @@ namespace ApplicationCore.ViewServices
 			if (attachmentsList.HasItems()) resolve.LoadAttachments(attachmentsList);
 
 			var model = mapper.Map<ResolveViewModel>(resolve);
-			model.Highlights = JsonConvert.DeserializeObject<ICollection<string>>(model.Highlight);
-			model.Sources = JsonConvert.DeserializeObject<ICollection<SourceViewModel>>(model.Source);
+
+			if (!String.IsNullOrEmpty(model.Highlight)) model.Highlights =  JsonConvert.DeserializeObject<ICollection<string>>(model.Highlight);
+			if (!String.IsNullOrEmpty(model.Source)) model.Sources = JsonConvert.DeserializeObject<ICollection<SourceViewModel>>(model.Source);
 
 			return model;
 		}

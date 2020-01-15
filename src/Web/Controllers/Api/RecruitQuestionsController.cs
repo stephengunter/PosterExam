@@ -81,7 +81,10 @@ namespace Web.Controllers.Api
 
 
 			var allTerms = await _termsService.FetchAllAsync();
-			var attachments = await _attachmentsService.FetchAsync(PostType.Option);
+
+			var types = new List<PostType> { PostType.Option, PostType.Resolve };
+			var attachments = await _attachmentsService.FetchByTypesAsync(types);
+			
 			List<Recruit> allRecruits = null;
 
 			var parts = selectedRecruit.SubItems;

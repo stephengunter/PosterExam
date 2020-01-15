@@ -24,7 +24,13 @@ namespace ApplicationCore.Specifications
 
 		}
 
-		public AttachmentFilterSpecifications(IList<int> ids) : base(item => !item.Removed &&ids.Contains(item.Id))
+		public AttachmentFilterSpecifications(IList<int> ids) : base(item => !item.Removed && ids.Contains(item.Id))
+		{
+
+		}
+
+		public AttachmentFilterSpecifications(ICollection<PostType> postTypes)
+			: base(item => !item.Removed & postTypes.Contains(item.PostType))
 		{
 
 		}

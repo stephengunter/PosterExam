@@ -17,6 +17,8 @@ namespace ApplicationCore.Services
 
 		Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, IList<int> postIds);
 
+		Task<IEnumerable<UploadFile>> FetchByTypesAsync(ICollection<PostType> postTypes);
+
 		Task<UploadFile> FindByNameAsync(string name, PostType postType, int postId);
 
 		Task<IEnumerable<UploadFile>> FetchByIdsAsync(IList<int> ids);
@@ -65,6 +67,9 @@ namespace ApplicationCore.Services
 			return await _uploadFileRepository.ListAsync(new AttachmentFilterSpecifications(postType));
 
 		}
+
+		public async Task<IEnumerable<UploadFile>> FetchByTypesAsync(ICollection<PostType> postTypes)
+			=> await _uploadFileRepository.ListAsync(new AttachmentFilterSpecifications(postTypes));
 
 		public async Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, IList<int> postIds)
 		{ 

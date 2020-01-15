@@ -20,9 +20,9 @@ namespace ApplicationCore.Views
 
         public bool Reviewed { get; set; }
 
-        public ICollection<SourceViewModel> Sources { get; set; }
+        public ICollection<SourceViewModel> Sources { get; set; } = new List<SourceViewModel>();
 
-        public ICollection<string> Highlights { get; set; }
+        public ICollection<string> Highlights { get; set; } = new List<string>();
 
         public ICollection<AttachmentViewModel> Attachments { get; set; } = new List<AttachmentViewModel>();
     }
