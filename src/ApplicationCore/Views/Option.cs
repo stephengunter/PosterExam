@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ApplicationCore.Views
 {
-	public class OptionViewModel : BaseRecordView
+	public class OptionViewModel
 	{
 		public int Id { get; set; }
 		public string Title { get; set; }

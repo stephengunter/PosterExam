@@ -136,6 +136,7 @@ namespace Web.Controllers.Api
 						for (int i = 1; i < questions.Count; i++)
 						{
 							var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
+							
 							examQuestion.Order = i + 1;
 							examPart.ExamQuestions.Add(examQuestion);
 						}
@@ -147,14 +148,9 @@ namespace Web.Controllers.Api
 					await _examsService.CreateAsync(exam, CurrentUserId);
 				}
 
-				return Ok();
+				return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
 
 			}
-
-			
-
-			
-
 			
 
 		}

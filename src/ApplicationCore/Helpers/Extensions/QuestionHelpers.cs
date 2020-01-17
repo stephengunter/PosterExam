@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ApplicationCore.Exceptions;
 
 namespace ApplicationCore.Helpers
 {
@@ -12,15 +13,14 @@ namespace ApplicationCore.Helpers
         {
             if (optionCount > question.Options.Count)
             {
-                var id = question.Id;
-                throw new Exception();
+                throw new OptionToLessException($"OptionToLess. QuestionId: {question.Id} , OptionCount: {question.Options.Count} , Need: {optionCount} ");
             }
             var options = question.Options.ToList().Shuffle(optionCount);
             var examQuestion = new ExamQuestion
             {
                 QuestionId = question.Id,
-                OptionIds = String.Join(",", options.Select(x => x.Id)) 
-
+                Options = options,
+                OptionIds = String.Join(",", options.Select(x => x.Id))
             };
 
             return examQuestion;
