@@ -46,5 +46,8 @@ namespace ApplicationCore.Models
 			var termIds = TermIds.SplitToIds();
 			this.Terms = allTerms.Where(x => termIds.Contains(x.Id)).ToList();
 		}
+
+
+		
 	}
 }

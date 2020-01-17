@@ -171,7 +171,7 @@ namespace Web.Controllers.Admin
 
 		async Task ValidateRequestAsync(RecruitViewModel model)
 		{
-			if (String.IsNullOrEmpty(model.Title)) ModelState.AddModelError("subjectId", "請填寫標題");
+			if (String.IsNullOrEmpty(model.Title)) ModelState.AddModelError("title", "請填寫標題");
 
 			if (model.ParentId > 0)
 			{

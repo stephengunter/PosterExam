@@ -24,16 +24,19 @@ namespace Web.Controllers.Api
 		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
+		private readonly IExamsService _examsService;
 		private readonly IMapper _mapper;
 
 		public RecruitQuestionsController(IQuestionsService questionsService, IRecruitsService recruitsService,
-			IAttachmentsService attachmentsService, ISubjectsService subjectsService, ITermsService termsService, IMapper mapper)
+			IAttachmentsService attachmentsService, ISubjectsService subjectsService, ITermsService termsService,
+			IExamsService examsService, IMapper mapper)
 		{
 			_questionsService = questionsService;
 			_attachmentsService = attachmentsService;
 			_recruitsService = recruitsService;
 			_subjectsService = subjectsService;
 			_termsService = termsService;
+			_examsService = examsService;
 
 			_mapper = mapper;
 		}
@@ -80,7 +83,7 @@ namespace Web.Controllers.Api
 			_subjectsService.LoadSubItems(subject);
 
 
-			var allTerms = await _termsService.FetchAllAsync();
+			var allTerms = new List<Term>();
 
 			var types = new List<PostType> { PostType.Option, PostType.Resolve };
 			var attachments = await _attachmentsService.FetchByTypesAsync(types);
@@ -88,29 +91,71 @@ namespace Web.Controllers.Api
 			List<Recruit> allRecruits = null;
 
 			var parts = selectedRecruit.SubItems;
-			if (parts.HasItems())
+
+			if (selectMode == RQMode.Read)
 			{
-				foreach (var part in parts)
+				if (parts.HasItems())
 				{
-					var questions = await _questionsService.FetchByRecruitAsync(part, subject);
-					var partView = new RQPartViewModel { Points = part.Points };
-					partView.Questions = questions.GetPagedList(_mapper, allRecruits, attachments.ToList(), allTerms.ToList());
+					foreach (var part in parts)
+					{
+						var questions = await _questionsService.FetchByRecruitAsync(part, subject);
+						var partView = new RQPartViewModel { Points = part.Points };
+						partView.Questions = questions.GetPagedList(_mapper, allRecruits, attachments.ToList(), allTerms);
+						model.Parts.Add(partView);
+					}
+
+				}
+				else
+				{
+					var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
+
+					var partView = new RQPartViewModel { Points = 100 };
+					partView.Questions = questions.GetPagedList(_mapper, allRecruits, attachments.ToList(), allTerms);
 					model.Parts.Add(partView);
 				}
-				
+
+				return Ok(model);
 			}
 			else
 			{
-				var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
+				if (String.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
 
-				var partView = new RQPartViewModel { Points = 100 };
-				partView.Questions = questions.GetPagedList(_mapper, allRecruits, attachments.ToList(), allTerms.ToList());
-				model.Parts.Add(partView);
+				var rootRecruit = await _recruitsService.GetByIdAsync(selectedRecruit.ParentId);
+
+				var exam = new Exam() { ExamType = ExamType.Recruit, RecruitExamType = RecruitExamType.Exactly };
+				exam.OptionType = selectedRecruit.OptionType;
+				exam.Year = rootRecruit.Year;
+				exam.SubjectId = selectedRecruit.SubjectId;
+
+				if (parts.HasItems())
+				{
+					foreach (var part in parts)
+					{
+						var questions = (await _questionsService.FetchByRecruitAsync(part, subject)).ToList();
+						var examPart = new ExamPart() {  Points = part.Points, OptionCount = part.OptionCount };
+						for (int i = 1; i < questions.Count; i++)
+						{
+							var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
+							examQuestion.Order = i + 1;
+							examPart.ExamQuestions.Add(examQuestion);
+						}
+
+						exam.ExamParts.Add(examPart);
+					}
+
+
+					await _examsService.CreateAsync(exam, CurrentUserId);
+				}
+
+				return Ok();
+
 			}
 
 			
 
-			return Ok(model);
+			
+
+			
 
 		}
 

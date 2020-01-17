@@ -17,14 +17,12 @@ namespace Web.Controllers.Admin
 	public class ATestController : ControllerBase
 	{
 
-		private readonly IResolvesService _resolvesService;
-		private readonly IReviewRecordsService _reviewRecordsService;
+		private readonly IQuestionsService _questionsService;
 		private readonly IMapper _mapper;
 
-		public ATestController(IResolvesService resolvesService, IReviewRecordsService reviewRecordsService, IMapper mapper)
+		public ATestController(IQuestionsService questionsService, IMapper mapper)
 		{
-			_resolvesService = resolvesService;
-			_reviewRecordsService = reviewRecordsService;
+			_questionsService = questionsService;
 			_mapper = mapper;
 		}
 
@@ -32,18 +30,13 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
+			var question = _questionsService.GetById(24);
+
+		
+			question.Options = question.Options.ToList().Shuffle(4);
 			
-			var resolves = await _resolvesService.FetchAsync();
-			foreach (var entity in resolves)
-			{
-				//entity.Text = entity.Text.ReplaceNewLine();
 
-
-				entity.Text = entity.Text.Replace("<br>", "<br/>");
-				await _resolvesService.UpdateAsync(entity);
-			}
-
-			return Ok();
+			return Ok(question.MapViewModel(_mapper));
 		}
 
 

@@ -15,7 +15,8 @@ namespace ApplicationCore.DataAccess
 		public DbSet<RefreshToken> RefreshTokens { get; set; }
 		public DbSet<OAuth> OAuth { get; set; }
 		public DbSet<Exam> Exams { get; set; }
-		//public DbSet<ExamQuestion> ExamQuestions { get; set; }
+		public DbSet<ExamPart> ExamParts { get; set; }
+		public DbSet<ExamQuestion> ExamQuestions { get; set; }
 		public DbSet<Question> Questions { get; set; }
 		public DbSet<Option> Options { get; set; }
 		public DbSet<Resolve> Resolves { get; set; }

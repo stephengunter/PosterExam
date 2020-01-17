@@ -22,6 +22,12 @@ namespace ApplicationCore.Models
 
 		public int Points { get; set; }
 
+		public OptionType OptionType { get; set; }
+
+		public int OptionCount { get; set; }
+
+		public bool MultiAnswers { get; set; }
+
 		public string PS { get; set; }
 
 		public ICollection<RecruitQuestion> RecruitQuestions { get; set; }

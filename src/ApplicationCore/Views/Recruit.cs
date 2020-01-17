@@ -22,6 +22,10 @@ namespace ApplicationCore.Views
 
 		public int Points { get; set; }
 
+		public int OptionCount { get; set; }
+
+		public bool MultiAnswers { get; set; }
+
 		public string DoneText => this.Done ? "已結束" : "";
 
 		public RecruitViewModel Parent { get; set; }

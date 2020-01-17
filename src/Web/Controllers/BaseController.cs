@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using ApplicationCore.Helpers;
 
 namespace Web.Controllers
 {
@@ -12,9 +13,9 @@ namespace Web.Controllers
 	{
 		protected string RemoteIpAddress => Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
-		protected string CurrentUserName => User.Claims.Where(c => c.Type == "sub").FirstOrDefault().Value;
+		protected string CurrentUserName => User.Claims.IsNullOrEmpty() ? "" : User.Claims.Where(c => c.Type == "sub").FirstOrDefault().Value;
 
-		protected string CurrentUserId => User.Claims.Where(c => c.Type == "id").FirstOrDefault().Value;
+		protected string CurrentUserId => User.Claims.IsNullOrEmpty() ? "" : User.Claims.Where(c => c.Type == "id").FirstOrDefault().Value;
 
 		protected IActionResult RequestError(string key, string msg)
 		{
