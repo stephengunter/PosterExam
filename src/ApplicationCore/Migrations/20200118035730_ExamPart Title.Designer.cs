@@ -4,14 +4,16 @@ using ApplicationCore.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ApplicationCore.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    partial class DefaultContextModelSnapshot : ModelSnapshot
+    [Migration("20200118035730_ExamPart Title")]
+    partial class ExamPartTitle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,8 +41,6 @@ namespace ApplicationCore.Migrations
 
                     b.Property<bool>("Removed");
 
-                    b.Property<bool>("Reserved");
-
                     b.Property<double>("Score");
 
                     b.Property<int>("SubjectId");
@@ -65,8 +65,6 @@ namespace ApplicationCore.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("ExamId");
-
-                    b.Property<bool>("MultiAnswers");
 
                     b.Property<int>("OptionCount");
 
@@ -601,7 +599,7 @@ namespace ApplicationCore.Migrations
             modelBuilder.Entity("ApplicationCore.Models.ExamPart", b =>
                 {
                     b.HasOne("ApplicationCore.Models.Exam", "Exam")
-                        .WithMany("Parts")
+                        .WithMany("ExamParts")
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -609,7 +607,7 @@ namespace ApplicationCore.Migrations
             modelBuilder.Entity("ApplicationCore.Models.ExamQuestion", b =>
                 {
                     b.HasOne("ApplicationCore.Models.ExamPart", "ExamPart")
-                        .WithMany("Questions")
+                        .WithMany("ExamQuestions")
                         .HasForeignKey("ExamPartId")
                         .OnDelete(DeleteBehavior.Cascade);
 

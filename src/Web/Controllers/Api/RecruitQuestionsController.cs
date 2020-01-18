@@ -16,7 +16,6 @@ using Web.Helpers;
 
 namespace Web.Controllers.Api
 {
-	
 	public class RecruitQuestionsController : BaseController
 	{
 		private readonly IQuestionsService _questionsService;
@@ -100,7 +99,7 @@ namespace Web.Controllers.Api
 					{
 						var questions = await _questionsService.FetchByRecruitAsync(part, subject);
 						var partView = new RQPartViewModel { Points = part.Points };
-						partView.Questions = questions.GetPagedList(_mapper, allRecruits, attachments.ToList(), allTerms);
+						partView.Questions = questions.MapViewModelList(_mapper, allRecruits, attachments.ToList(), allTerms);
 						model.Parts.Add(partView);
 					}
 
@@ -110,7 +109,7 @@ namespace Web.Controllers.Api
 					var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
 
 					var partView = new RQPartViewModel { Points = 100 };
-					partView.Questions = questions.GetPagedList(_mapper, allRecruits, attachments.ToList(), allTerms);
+					partView.Questions = questions.MapViewModelList(_mapper, allRecruits, attachments.ToList(), allTerms);
 					model.Parts.Add(partView);
 				}
 
@@ -132,21 +131,42 @@ namespace Web.Controllers.Api
 					foreach (var part in parts)
 					{
 						var questions = (await _questionsService.FetchByRecruitAsync(part, subject)).ToList();
-						var examPart = new ExamPart() {  Points = part.Points, OptionCount = part.OptionCount };
-						for (int i = 1; i < questions.Count; i++)
+						var examPart = new ExamPart() 
+						{ 
+							Points = part.Points, OptionCount = part.OptionCount, MultiAnswers = part.MultiAnswers 
+						};
+						for (int i = 0; i < questions.Count; i++)
 						{
 							var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
 							
 							examQuestion.Order = i + 1;
-							examPart.ExamQuestions.Add(examQuestion);
+							examPart.Questions.Add(examQuestion);
 						}
 
-						exam.ExamParts.Add(examPart);
+						exam.Parts.Add(examPart);
+					}
+					
+				}
+				else
+				{
+					var questions = (await _questionsService.FetchByRecruitAsync(selectedRecruit, subject)).ToList();
+
+					var examPart = new ExamPart() 
+					{ 
+						Points = selectedRecruit.Points, OptionCount = selectedRecruit.OptionCount, MultiAnswers = selectedRecruit.MultiAnswers
+					};
+					for (int i = 0; i < questions.Count; i++)
+					{
+						var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
+
+						examQuestion.Order = i + 1;
+						examPart.Questions.Add(examQuestion);
 					}
 
-
-					await _examsService.CreateAsync(exam, CurrentUserId);
+					exam.Parts.Add(examPart);
 				}
+
+				await _examsService.CreateAsync(exam, CurrentUserId);
 
 				return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
 

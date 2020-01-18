@@ -16,7 +16,7 @@ namespace ApplicationCore.ViewServices
 	{
 		public static ExamViewModel MapViewModel(this Exam exam, IMapper mapper, ICollection<UploadFile> attachments, ICollection<Resolve> resolves = null)
 		{
-			var options = exam.ExamParts.SelectMany(c => c.ExamQuestions)
+			var options = exam.Parts.SelectMany(c => c.Questions)
 								 .SelectMany(t => t.Options);
 
 			bool hasResolves = resolves.HasItems();
@@ -26,8 +26,21 @@ namespace ApplicationCore.ViewServices
 				option.LoadAttachments(attachments);
 			}
 
+			if (hasResolves)
+			{
+
+			}
+			else
+			{
+				var questions = exam.Parts.SelectMany(c => c.Questions);
+				foreach (var question in questions)
+				{
+					question.Question.Resolves = new List<Resolve>();
+				}
+			}
+
 			var model = mapper.Map<ExamViewModel>(exam);
-			var optionViews = model.ExamParts.SelectMany(c => c.ExamQuestions)
+			var optionViews = model.Parts.SelectMany(c => c.Questions)
 								 .SelectMany(t => t.Options);
 
 			foreach (var optionView in optionViews)
@@ -35,14 +48,7 @@ namespace ApplicationCore.ViewServices
 				optionView.Correct = false;
 			}
 
-			if (resolves.HasItems())
-			{
-
-			}
-			else
-			{ 
-				
-			}
+			
 
 			return model;
 		}

@@ -17,9 +17,10 @@ namespace ApplicationCore.Models
 		
 
 		public double Score { get; set; }
+		public bool Reserved { get; set; }
 		public string UserId { get; set; }
 
-		public ICollection<ExamPart> ExamParts { get; set; } = new List<ExamPart>();
+		public ICollection<ExamPart> Parts { get; set; } = new List<ExamPart>();
 
 		public User User { get; set; }
 		
@@ -29,9 +30,11 @@ namespace ApplicationCore.Models
 	public class ExamPart : BaseEntity
 	{ 
 		public int ExamId { get; set; }
+		public string Title { get; set; }
 		public int OptionCount { get; set; }
 		public double Points { get; set; }
-		public ICollection<ExamQuestion> ExamQuestions { get; set; } = new List<ExamQuestion>();
+		public bool MultiAnswers { get; set; }
+		public ICollection<ExamQuestion> Questions { get; set; } = new List<ExamQuestion>();
 		public Exam Exam { get; set; }
 	}
 

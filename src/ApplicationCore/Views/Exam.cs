@@ -18,9 +18,10 @@ namespace ApplicationCore.Views
 
 
 		public double Score { get; set; }
+		public bool Reserved { get; set; }
 		public string UserId { get; set; }
 
-		public ICollection<ExamPartViewModel> ExamParts { get; set; } = new List<ExamPartViewModel>();
+		public ICollection<ExamPartViewModel> Parts { get; set; } = new List<ExamPartViewModel>();
 
 		
 	}
@@ -28,11 +29,13 @@ namespace ApplicationCore.Views
 	public class ExamPartViewModel
 	{
 		public int Id { get; set; }
+		public string Title { get; set; }
 		public int ExamId { get; set; }
 		public int OptionCount { get; set; }
+		public bool MultiAnswers { get; set; }
 		public double Points { get; set; }
 
 
-		public ICollection<ExamQuestionViewModel> ExamQuestions { get; set; } = new List<ExamQuestionViewModel>();
+		public ICollection<ExamQuestionViewModel> Questions { get; set; } = new List<ExamQuestionViewModel>();
 	}
 }

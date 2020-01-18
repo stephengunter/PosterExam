@@ -17,6 +17,8 @@ namespace ApplicationCore.Views
 
 		public string UserAnswerIndexes { get; set; }
 
+		public QuestionViewModel Question { get; set; }
+
 		public ICollection<OptionViewModel> Options { get; set; } = new List<OptionViewModel>();
 	}
 }
