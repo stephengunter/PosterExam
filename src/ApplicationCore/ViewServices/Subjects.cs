@@ -31,5 +31,8 @@ namespace ApplicationCore.ViewServices
 		}
 		public static IEnumerable<Subject> GetOrdered(this IEnumerable<Subject> subjects)
 			=> subjects.OrderBy(item => item.Order);
+
+		public static BaseOption<int> ToOption(this Subject subject)
+			=> new BaseOption<int>(subject.Id, subject.Title);
 	}
 }

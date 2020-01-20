@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+
 namespace Infrastructure.Views
 {
 	public abstract class BaseRecordView
@@ -17,6 +18,8 @@ namespace Infrastructure.Views
 		public bool Active { get; set; }
 
 		public string StatusText => this.Active ? "上架中" : "已下架";
+
+		public string LastUpdatedText => LastUpdated.ToString("yyyy/MM/dd H:mm:ss");
 
 		public void SetUpdated(string userId)
 		{

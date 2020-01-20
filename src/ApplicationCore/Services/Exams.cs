@@ -13,30 +13,52 @@ namespace ApplicationCore.Services
 {
 	public interface IExamsService
 	{
-		
+		Task<IEnumerable<Exam>> FetchAsync(User user);
+		void SaveExam(Exam existingEntity, Exam exam);
+
+		Exam GetById(int id);
 		Task<Exam> CreateAsync(Exam exam, string userId);
 		Task<Exam> GetByIdAsync(int id);
 		Task UpdateAsync(Exam exam);
+		Task UpdateAsync(Exam existingEntity, Exam model);
 		Task RemoveAsync(Exam exam);
-		
+		Task DeleteAsync(Exam exam);
 
 	}
 
 	public class ExamsService : IExamsService
 	{
 		private readonly IDefaultRepository<Exam> _examRepository;
-		private readonly IDefaultRepository<Option> _optionRepository;
-		private readonly DefaultContext _context;
+		private readonly IDefaultRepository<ExamQuestion> _examQuestionRepository;
 
-		public ExamsService(IDefaultRepository<Exam> examRepository, IDefaultRepository<Option> optionRepository,
-			DefaultContext context)
+		public ExamsService(IDefaultRepository<Exam> examRepository, IDefaultRepository<ExamQuestion> examQuestionRepository)			
 		{
 			_examRepository = examRepository;
-			_optionRepository = optionRepository;
-			_context = context;
+			_examQuestionRepository = examQuestionRepository;
 		}
 
-		
+		public async Task<IEnumerable<Exam>> FetchAsync(User user)
+		{
+			var spec = new ExamFilterSpecification(user);
+			var exams = await _examRepository.ListAsync(spec);
+			return exams.Where(x => x.Reserved);
+		}
+
+		public void SaveExam(Exam existingEntity, Exam exam)
+		{
+			//指針對問題更新
+			var examQuestions = exam.Parts.SelectMany(p => p.Questions);
+			_examQuestionRepository.UpdateRange(examQuestions);
+
+			exam.Reserved = true;
+			_examRepository.Update(existingEntity, exam);
+		}
+
+		public Exam GetById(int id)
+		{
+			var spec = new ExamFilterSpecification(id);
+			return _examRepository.GetSingleBySpec(spec);
+		}
 
 		public async Task<Exam> GetByIdAsync(int id) => await _examRepository.GetByIdAsync(id);
 
@@ -50,7 +72,7 @@ namespace ApplicationCore.Services
 
 		public async Task UpdateAsync(Exam exam) => await _examRepository.UpdateAsync(exam);
 
-		
+		public async Task UpdateAsync(Exam existingEntity, Exam exam) => await _examRepository.UpdateAsync(existingEntity, exam);
 
 		public async Task RemoveAsync(Exam exam)
 		{
@@ -58,7 +80,7 @@ namespace ApplicationCore.Services
 			await _examRepository.UpdateAsync(exam);
 		}
 
-		
+		public async Task DeleteAsync(Exam exam) => await _examRepository.DeleteAsync(exam);
 
 	}
 }

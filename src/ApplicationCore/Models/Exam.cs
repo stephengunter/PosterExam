@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using Infrastructure.Entities;
 using Infrastructure.Interfaces;
+using System.Linq;
 
 namespace ApplicationCore.Models
 {
@@ -14,20 +16,34 @@ namespace ApplicationCore.Models
 
 		public int Year { get; set; }
 		public int SubjectId { get; set; }
-		
 
-		public double Score { get; set; }
+		public double Score { get; set; } = -1;
 		public bool Reserved { get; set; }
+		public string Title { get; set; }
 		public string UserId { get; set; }
 
 		public ICollection<ExamPart> Parts { get; set; } = new List<ExamPart>();
 
 		public User User { get; set; }
-		
+
+		[NotMapped]
+		public Subject Subject { get; private set; }
+		public void LoadSubject(IEnumerable<Subject> subjects) => Subject = subjects.FirstOrDefault(x => x.Id == SubjectId);
+
+		#region Helpers
+
+		public bool IsComplete => this.Score >= 0;
+
+		public bool CanDelete => !Reserved && !IsComplete;
+
+		#endregion
+
+
+
 	}
 
 
-	public class ExamPart : BaseEntity
+    public class ExamPart : BaseEntity
 	{ 
 		public int ExamId { get; set; }
 		public string Title { get; set; }

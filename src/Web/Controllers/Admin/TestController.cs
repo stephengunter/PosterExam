@@ -30,13 +30,10 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-			var question = _questionsService.GetById(24);
+			var entity = new Question { Id = 1 };
+			string t = entity.GetType().Name;
 
-		
-			question.Options = question.Options.ToList().Shuffle(4);
-			
-
-			return Ok(question.MapViewModel(_mapper));
+			return Ok(t);
 		}
 
 

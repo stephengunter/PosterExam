@@ -19,11 +19,17 @@ namespace ApplicationCore.Views
 
 		public double Score { get; set; }
 		public bool Reserved { get; set; }
+		public string Title { get; set; }
 		public string UserId { get; set; }
 
 		public ICollection<ExamPartViewModel> Parts { get; set; } = new List<ExamPartViewModel>();
+		public SubjectViewModel Subject { get; set; }
 
-		
+
+		public string ExamStatusText => Score < 0 ? "未完成" : "已完成";
+
+		public bool IsComplete { get; }
+		public bool CanDelete { get; }
 	}
 
 	public class ExamPartViewModel
