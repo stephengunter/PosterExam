@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using Infrastructure.Entities;
 using Infrastructure.Interfaces;
+using ApplicationCore.Helpers;
+using System.Linq;
 
 namespace ApplicationCore.Models
 {
@@ -23,6 +25,18 @@ namespace ApplicationCore.Models
 
 		[NotMapped]
 		public ICollection<Option> Options { get; set; }
+
+		public void LoadOptions()
+		{
+			this.Options = new List<Option>();
+			var ids = OptionIds.SplitToIds();
+			for (int i = 0; i < ids.Count; i++)
+			{
+				var item = Question.Options.FirstOrDefault(x => x.Id == ids[i]);
+				this.Options.Add(item);
+			}
+
+		}
 
 	}
 }

@@ -43,24 +43,30 @@ namespace Web.Controllers.Api
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int mode, int recruit)
 		{
-			var model = new RQIndexViewModel();
-
 			RQMode selectMode = mode.ToRQModeType();
 			if (selectMode == RQMode.Unknown)
 			{
 				//初次載入頁面
-				
-				model.LoadModeOptions();
+				var rqIndexModel = new RQIndexViewModel();
+				rqIndexModel.LoadModeOptions();
 
 				var recruits = await _recruitsService.FetchAsync();
-				model.LoadYearOptions(recruits);
+				rqIndexModel.LoadYearOptions(recruits);
 
 				var subitems = recruits.Where(x => x.RecruitEntityType == RecruitEntityType.SubItem);
-				model.Subjects = subitems.MapViewModelList(_mapper);
+				rqIndexModel.Subjects = subitems.MapViewModelList(_mapper);
 
-
-				return Ok(model);
+				return Ok(rqIndexModel);
 			}
+
+
+			if (selectMode != RQMode.Read)
+			{
+				ModelState.AddModelError("RQMode", "僅支援閱讀模式");
+				return BadRequest(ModelState);
+			}
+
+			var model = new RQViewModel();
 
 			Recruit selectedRecruit = _recruitsService.GetById(recruit);			
 
@@ -91,86 +97,31 @@ namespace Web.Controllers.Api
 
 			var parts = selectedRecruit.SubItems;
 
-			if (selectMode == RQMode.Read)
+			
+			if (parts.HasItems())
 			{
-				if (parts.HasItems())
+				foreach (var part in parts)
 				{
-					foreach (var part in parts)
-					{
-						var questions = await _questionsService.FetchByRecruitAsync(part, subject);
-						var partView = new RQPartViewModel { Points = part.Points };
-						partView.Questions = questions.MapViewModelList(_mapper, allRecruits, attachments.ToList(), allTerms);
-						model.Parts.Add(partView);
-					}
-
-				}
-				else
-				{
-					var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
-
-					var partView = new RQPartViewModel { Points = 100 };
+					var questions = await _questionsService.FetchByRecruitAsync(part, subject);
+					var partView = new RQPartViewModel { Points = part.Points };
 					partView.Questions = questions.MapViewModelList(_mapper, allRecruits, attachments.ToList(), allTerms);
 					model.Parts.Add(partView);
 				}
 
-				return Ok(model);
 			}
 			else
 			{
-				if (String.IsNullOrEmpty(CurrentUserId)) return Unauthorized();
+				var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
 
-				var rootRecruit = await _recruitsService.GetByIdAsync(selectedRecruit.ParentId);
-
-				var exam = new Exam() { ExamType = ExamType.Recruit, RecruitExamType = RecruitExamType.Exactly };
-				exam.OptionType = selectedRecruit.OptionType;
-				exam.Year = rootRecruit.Year;
-				exam.SubjectId = selectedRecruit.SubjectId;
-
-				if (parts.HasItems())
-				{
-					foreach (var part in parts)
-					{
-						var questions = (await _questionsService.FetchByRecruitAsync(part, subject)).ToList();
-						var examPart = new ExamPart() 
-						{ 
-							Points = part.Points, OptionCount = part.OptionCount, MultiAnswers = part.MultiAnswers 
-						};
-						for (int i = 0; i < questions.Count; i++)
-						{
-							var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
-							
-							examQuestion.Order = i + 1;
-							examPart.Questions.Add(examQuestion);
-						}
-
-						exam.Parts.Add(examPart);
-					}
-					
-				}
-				else
-				{
-					var questions = (await _questionsService.FetchByRecruitAsync(selectedRecruit, subject)).ToList();
-
-					var examPart = new ExamPart() 
-					{ 
-						Points = selectedRecruit.Points, OptionCount = selectedRecruit.OptionCount, MultiAnswers = selectedRecruit.MultiAnswers
-					};
-					for (int i = 0; i < questions.Count; i++)
-					{
-						var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
-
-						examQuestion.Order = i + 1;
-						examPart.Questions.Add(examQuestion);
-					}
-
-					exam.Parts.Add(examPart);
-				}
-
-				await _examsService.CreateAsync(exam, CurrentUserId);
-
-				return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
-
+				var partView = new RQPartViewModel { Points = 100 };
+				partView.Questions = questions.MapViewModelList(_mapper, allRecruits, attachments.ToList(), allTerms);
+				model.Parts.Add(partView);
 			}
+
+			model.LoadTitle();
+
+			return Ok(model);
+			
 			
 
 		}

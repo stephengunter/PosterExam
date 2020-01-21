@@ -5,6 +5,8 @@ using ApplicationCore.Models;
 using ApplicationCore.Paging;
 using ApplicationCore.Views;
 using Infrastructure.Views;
+using System.Linq;
+using ApplicationCore.Helpers;
 
 namespace Web.Models
 {
@@ -15,11 +17,41 @@ namespace Web.Models
         Unknown = -1
     }
 
-    public class RQPartViewModel
-    { 
-        public int Points { get; set; }
-
+    public class RQViewModel
+    {
         public string Title { get; set; }
+
+        public RecruitViewModel Recruit { get; set; }
+
+        public List<RQPartViewModel> Parts { get; set; } = new List<RQPartViewModel>();
+
+
+        public void LoadTitle()
+        {
+          
+            bool multiParts = Parts.Count > 1;
+            for (int i = 0; i < Parts.Count; i++)
+            {
+                var part = Parts[i];
+                int questionCount = part.Questions.Count;
+                var pointsPerQuestion = questionCount > 0 ? (part.Points / questionCount) : 0;
+                if (multiParts)
+                {
+                    part.Title = $"第{(i + 1).ToCNNumber()}部份 - 共 {questionCount} 題 每題 {pointsPerQuestion} 分";
+                }
+                else
+                {
+                    part.Title = $"共 {questionCount} 題 每題{pointsPerQuestion} 分";
+                }
+            }
+        }
+    }
+
+    public class RQPartViewModel
+    {
+        public string Title { get; set; }
+        public double Points { get; set; }
+        public bool MultiAnswers { get; set; }
 
         public ICollection<QuestionViewModel> Questions { get; set; }
     }
@@ -31,8 +63,6 @@ namespace Web.Models
         public ICollection<BaseOption<int>> YearOptions { get; set; } = new List<BaseOption<int>>();
 
         public ICollection<RecruitViewModel> Subjects { get; set; } = new List<RecruitViewModel>();
-
-        public ICollection<RQPartViewModel> Parts { get; set; } = new List<RQPartViewModel>();
 
         
     }

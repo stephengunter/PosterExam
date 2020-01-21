@@ -17,7 +17,7 @@ namespace ApplicationCore.Specifications
 
 		public ExamFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)
 		{
-			AddInclude("Parts.Questions");
+			AddInclude("Parts.Questions.Question");
 		}
 
 		public ExamFilterSpecification(User user) : base(item => !item.Removed && item.UserId == user.Id)

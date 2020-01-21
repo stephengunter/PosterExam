@@ -25,7 +25,7 @@ namespace ApplicationCore.Services
 		Question GetById(int id);
 
 		Task<Option> AddOptionAsync(Option option);
-
+		Task<IEnumerable<Option>> FetchAllOptionsAsync();
 	}
 
 	public class QuestionsService : IQuestionsService
@@ -125,6 +125,8 @@ namespace ApplicationCore.Services
 		}
 
 		public async Task<Option> AddOptionAsync(Option option) => await _optionRepository.AddAsync(option);
+
+		public async Task<IEnumerable<Option>> FetchAllOptionsAsync() => await _optionRepository.ListAllAsync();
 
 		IEnumerable<int> FetchQuestionIdsByRecruit(Recruit recruit)
 		{

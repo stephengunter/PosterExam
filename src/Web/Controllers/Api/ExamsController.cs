@@ -21,14 +21,24 @@ namespace Web.Controllers
 	public class ExamsController : BaseController
 	{
 		private readonly UserManager<User> _userManager;
+
+		private readonly IQuestionsService _questionsService;
+		private readonly IAttachmentsService _attachmentsService;
+		private readonly IRecruitsService _recruitsService;
 		private readonly IExamsService _examsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly IMapper _mapper;
 
-		public ExamsController(UserManager<User> userManager, IExamsService examsService, ISubjectsService subjectsService,
+		public ExamsController(UserManager<User> userManager, IQuestionsService questionsService,
+			IAttachmentsService attachmentsService, IRecruitsService recruitsService, 
+			IExamsService examsService, ISubjectsService subjectsService,
 			IMapper mapper)
 		{
 			_userManager = userManager;
+
+			_questionsService = questionsService;
+			_recruitsService = recruitsService;
+			_attachmentsService = attachmentsService;
 			_examsService = examsService;
 			_subjectsService = subjectsService;
 			_mapper = mapper;
@@ -75,6 +85,96 @@ namespace Web.Controllers
 			return Ok(model);
 		}
 
+		[HttpGet("create")]
+		public async Task<ActionResult> Create(int recruit = 0)
+		{
+			var exam = new Exam();
+			var allSubjects = await _subjectsService.FetchAsync();
+
+			Subject selectedSubject = null;
+			Recruit selectedRecruit = null;
+
+			if (recruit > 0)
+			{
+				selectedRecruit = _recruitsService.GetById(recruit);
+				if (selectedRecruit == null) throw new EntityNotFoundException(new Recruit { Id = recruit });
+
+				if (selectedRecruit.RecruitEntityType != RecruitEntityType.SubItem)
+				{
+					ModelState.AddModelError("recruit", "年度錯誤");
+					return BadRequest(ModelState);
+				}
+
+				selectedSubject = _recruitsService.FindSubject(selectedRecruit, allSubjects);
+				_subjectsService.LoadSubItems(selectedSubject);
+
+				var rootRecruit = await _recruitsService.GetByIdAsync(selectedRecruit.ParentId);
+
+				exam.ExamType = ExamType.Recruit;
+				exam.RecruitExamType = RecruitExamType.Exactly;
+				exam.OptionType = selectedRecruit.OptionType;
+				exam.Year = rootRecruit.Year;
+				exam.SubjectId = selectedRecruit.SubjectId;
+
+				var parts = selectedRecruit.SubItems;
+
+				if (parts.HasItems())
+				{
+					foreach (var part in parts)
+					{
+						var questions = (await _questionsService.FetchByRecruitAsync(part, selectedSubject)).ToList();
+						var examPart = new ExamPart()
+						{
+							Points = part.Points,
+							OptionCount = part.OptionCount,
+							MultiAnswers = part.MultiAnswers
+						};
+						for (int i = 0; i < questions.Count; i++)
+						{
+							var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
+
+							examQuestion.Order = i + 1;
+							examPart.Questions.Add(examQuestion);
+						}
+
+						exam.Parts.Add(examPart);
+					}
+
+				}
+				else
+				{
+					var questions = (await _questionsService.FetchByRecruitAsync(selectedRecruit, selectedSubject)).ToList();
+
+					var examPart = new ExamPart()
+					{
+						Points = selectedRecruit.Points,
+						OptionCount = selectedRecruit.OptionCount,
+						MultiAnswers = selectedRecruit.MultiAnswers
+					};
+					for (int i = 0; i < questions.Count; i++)
+					{
+						var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
+
+						examQuestion.Order = i + 1;
+						examPart.Questions.Add(examQuestion);
+					}
+
+					exam.Parts.Add(examPart);
+				}
+
+				
+
+			}
+			
+
+			var types = new List<PostType> { PostType.Option, PostType.Resolve };
+			var attachments = await _attachmentsService.FetchByTypesAsync(types);
+
+			await _examsService.CreateAsync(exam, CurrentUserId);
+
+			return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
+		}
+
 		[HttpPut("{id}")]
 		public async Task<ActionResult> Save(int id, [FromBody] ExamViewModel model)
 		{
@@ -89,6 +189,21 @@ namespace Web.Controllers
 			_examsService.SaveExam(existingEntity, exam);
 
 			return Ok();
+		}
+
+		[HttpGet("edit/{id}")]
+		public async Task<ActionResult> Edit(int id)
+		{
+			var exam = _examsService.GetById(id);
+			var alloptions = await _questionsService.FetchAllOptionsAsync();
+
+			//var examQuestions = exam.Parts.SelectMany(p => p.Questions);
+			//foreach (var item in examQuestions) item.LoadOptions(alloptions);
+
+			var types = new List<PostType> { PostType.Option, PostType.Resolve };
+			var attachments = await _attachmentsService.FetchByTypesAsync(types);
+
+			return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
 		}
 
 		[HttpDelete("{id}")]
@@ -126,6 +241,14 @@ namespace Web.Controllers
 			if (!exam.CanDelete) ModelState.AddModelError("exam", "此測驗無法刪除");
 
 			if (exam.UserId != CurrentUserId) ModelState.AddModelError("userId", "權限不足");
+		}
+
+		void ValidateEditRequest(Exam exam)
+		{
+			if (exam.UserId != CurrentUserId) ModelState.AddModelError("userId", "權限不足");
+
+			if (exam.IsComplete) ModelState.AddModelError("isComplete", "此測驗已經完成");
+
 		}
 	}
 }

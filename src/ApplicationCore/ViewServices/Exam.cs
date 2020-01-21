@@ -35,10 +35,11 @@ namespace ApplicationCore.ViewServices
 			}
 			else
 			{
-				var questions = exam.Parts.SelectMany(p => p.Questions);
-				foreach (var question in questions)
+				var examQuestions = exam.Parts.SelectMany(p => p.Questions);
+				foreach (var examQuestion in examQuestions)
 				{
-					question.Question.Resolves = new List<Resolve>();
+					if(examQuestion.Question != null) examQuestion.Question.Resolves = new List<Resolve>();
+
 				}
 			}
 
