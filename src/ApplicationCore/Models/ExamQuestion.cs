@@ -28,6 +28,8 @@ namespace ApplicationCore.Models
 
 		public void LoadOptions()
 		{
+			if (Question.Options.IsNullOrEmpty()) return;
+
 			this.Options = new List<Option>();
 			var ids = OptionIds.SplitToIds();
 			for (int i = 0; i < ids.Count; i++)

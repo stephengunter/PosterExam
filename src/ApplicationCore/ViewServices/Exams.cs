@@ -12,48 +12,34 @@ using AutoMapper;
 
 namespace ApplicationCore.ViewServices
 {
-	public static class ExamViewService
+	public static class ExamsViewService
 	{
 		#region  MapViewModel
 		public static ExamViewModel MapViewModel(this Exam exam, IMapper mapper) => mapper.Map<ExamViewModel>(exam);
 
 		public static ExamViewModel MapViewModel(this Exam exam, IMapper mapper, ICollection<UploadFile> attachments, ICollection<Resolve> resolves = null)
 		{
-			var options = exam.Parts.SelectMany(p => p.Questions)
-								 .SelectMany(q => q.Options);
-
 			bool hasResolves = resolves.HasItems();
 
-			foreach (var option in options)
+			var examQuestions = exam.Parts.SelectMany(p => p.Questions);
+			foreach (var examQuestion in examQuestions)
 			{
-				option.LoadAttachments(attachments);
-			}
-
-			if (hasResolves)
-			{
-
-			}
-			else
-			{
-				var examQuestions = exam.Parts.SelectMany(p => p.Questions);
-				foreach (var examQuestion in examQuestions)
+				examQuestion.LoadOptions();
+				if (hasResolves) 
 				{
-					if(examQuestion.Question != null) examQuestion.Question.Resolves = new List<Resolve>();
-
-				}
+					if (examQuestion.Question != null) examQuestion.Question.Resolves = new List<Resolve>();
+				} 
 			}
+
+			var options = exam.Parts.SelectMany(p => p.Questions).SelectMany(q => q.Options);
+			foreach (var option in options) option.LoadAttachments(attachments);
+
 
 			var model = mapper.Map<ExamViewModel>(exam);
 
-			var optionViews = model.Parts.SelectMany(c => c.Questions)
-								 .SelectMany(t => t.Options);
+			var optionViews = model.Parts.SelectMany(c => c.Questions).SelectMany(t => t.Options);
 
-			foreach (var optionView in optionViews)
-			{
-				optionView.Correct = false;
-			}
-
-			
+			foreach (var optionView in optionViews) optionView.Correct = false;
 
 			return model;
 		}

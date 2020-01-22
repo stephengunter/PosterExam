@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 
 namespace ApplicationCore.ViewServices
 {
-	public static class ResolveViewService
+	public static class ResolvesViewService
 	{
 		public static ResolveViewModel MapViewModel(this Resolve resolve, IMapper mapper, ICollection<UploadFile> attachmentsList = null)
 		{

@@ -75,5 +75,7 @@ namespace ApplicationCore.ViewServices
 
 		public static BaseOption<int> ToOption(this Recruit recruit) 
 			=> new BaseOption<int>(recruit.Id, recruit.Title);
+
+		
 	}
 }

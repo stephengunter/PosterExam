@@ -12,7 +12,7 @@ using AutoMapper;
 
 namespace ApplicationCore.ViewServices
 {
-	public static class ExamQuestionViewService
+	public static class ExamQuestionsViewService
 	{
 		public static ExamQuestionViewModel MapViewModel(this ExamQuestion examQuestion, IMapper mapper)
 		{

@@ -12,7 +12,7 @@ using AutoMapper;
 
 namespace ApplicationCore.ViewServices
 {
-	public static class AttachmentViewService
+	public static class AttachmentsViewService
 	{
 		public static AttachmentViewModel MapViewModel(this UploadFile attachment, IMapper mapper)
 			=> mapper.Map<AttachmentViewModel>(attachment);

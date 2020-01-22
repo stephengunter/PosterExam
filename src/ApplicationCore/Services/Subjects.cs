@@ -20,6 +20,7 @@ namespace ApplicationCore.Services
 		Task RemoveAsync(Subject subject);
 
 		IEnumerable<Subject> FetchRootItems();
+		Task<IEnumerable<Subject>> FetchExamSubjectsAsync();
 		void LoadSubItems(Subject entity);
 		void LoadSubItems(IEnumerable<Subject> list);
 		Subject GetById(int id);
@@ -74,6 +75,13 @@ namespace ApplicationCore.Services
 
 
 		public IEnumerable<Subject> FetchRootItems() => AllRootItems(_subjectRepository.DbSet);
+
+		public async Task<IEnumerable<Subject>> FetchExamSubjectsAsync()
+		{
+			int parentId = 0;
+			var spec = new SubjectFilterSpecification(parentId);
+			return await _subjectRepository.ListAsync(spec);
+		}
 
 		public void LoadSubItems(IEnumerable<Subject> list)
 		{

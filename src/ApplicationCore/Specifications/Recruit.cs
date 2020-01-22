@@ -18,6 +18,12 @@ namespace ApplicationCore.Specifications
 		{
 
 		}
-		
+
+		public RecruitFilterSpecification(RecruitEntityType type) : base(item => !item.Removed && item.RecruitEntityType == type)
+		{
+
+		}
+
+
 	}
 }

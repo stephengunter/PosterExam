@@ -12,7 +12,7 @@ using AutoMapper;
 
 namespace ApplicationCore.ViewServices
 {
-	public static class OptionViewService
+	public static class OptionsViewService
 	{
 		public static OptionViewModel MapViewModel(this Option option, IMapper mapper)
 			=> mapper.Map<OptionViewModel>(option);
