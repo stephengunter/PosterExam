@@ -16,7 +16,7 @@ namespace ApplicationCore.Services
 		Task<IEnumerable<Exam>> FetchAsync(User user);
 		void SaveExam(Exam existingEntity, Exam exam);
 
-		Exam GetById(int id);
+		Exam GetById(int id, bool withOptions = false);
 		Task<Exam> CreateAsync(Exam exam, string userId);
 		Task<Exam> GetByIdAsync(int id);
 		Task UpdateAsync(Exam exam);
@@ -54,9 +54,9 @@ namespace ApplicationCore.Services
 			_examRepository.Update(existingEntity, exam);
 		}
 
-		public Exam GetById(int id)
+		public Exam GetById(int id, bool withOptions = false)
 		{
-			var spec = new ExamFilterSpecification(id);
+			var spec = new ExamFilterSpecification(id, withOptions);
 			return _examRepository.GetSingleBySpec(spec);
 		}
 

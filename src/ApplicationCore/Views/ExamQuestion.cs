@@ -20,5 +20,8 @@ namespace ApplicationCore.Views
 		public QuestionViewModel Question { get; set; }
 
 		public ICollection<OptionViewModel> Options { get; set; } = new List<OptionViewModel>();
+
+		public int Index { get; set; }
+		public bool Correct { get; set; }
 	}
 }

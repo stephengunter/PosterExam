@@ -72,6 +72,7 @@ namespace Web.Controllers
 			}
 
 			var exams = await _examsService.FetchAsync(user);
+			
 
 			if (exams.HasItems())
 			{
@@ -174,7 +175,7 @@ namespace Web.Controllers
 			return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
 		}
 
-		[HttpPut("{id}")]
+		[HttpPut("{id}/{action}")]
 		public async Task<ActionResult> Save(int id, [FromBody] ExamViewModel model)
 		{
 			var existingEntity = await _examsService.GetByIdAsync(id);
@@ -186,6 +187,25 @@ namespace Web.Controllers
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			_examsService.SaveExam(existingEntity, exam);
+
+			return Ok();
+		}
+
+		[HttpPut("{id}")]
+		public async Task<ActionResult> Update(int id, [FromBody] ExamViewModel model)
+		{
+			var exam = await _examsService.GetByIdAsync(id);
+			if (exam == null) return NotFound();
+
+			//只更新 title
+			exam.Title = model.Title;
+			exam.Reserved = true;
+			exam.SetUpdated(CurrentUserId);
+
+			ValidateSaveRequest(exam);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			await _examsService.UpdateAsync(exam);
 
 			return Ok();
 		}
@@ -203,6 +223,33 @@ namespace Web.Controllers
 			var attachments = await _attachmentsService.FetchByTypesAsync(types);
 
 			return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
+		}
+
+		[HttpPost("")]
+		public async Task<ActionResult> Store([FromBody] ExamViewModel model)
+		{
+			int id = model.Id;
+			var existingEntity = await _examsService.GetByIdAsync(id);
+			if (existingEntity == null) return NotFound();
+
+			var exam = model.MapEntity(_mapper, CurrentUserId);
+
+			//先存檔
+			ValidateSaveRequest(exam);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			_examsService.SaveExam(existingEntity, exam);
+
+			//對答案
+			bool withOptions = true;
+			exam = _examsService.GetById(id, withOptions);
+
+			exam.SetAnswers();
+			exam.Finish();
+
+			await _examsService.UpdateAsync(exam);
+
+			return Ok();
 		}
 
 		[HttpDelete("{id}")]
@@ -300,8 +347,7 @@ namespace Web.Controllers
 		}
 
 		#endregion
-
-
+		
 		#region Validate
 
 		void ValidateSaveRequest(Exam exam)
@@ -311,8 +357,6 @@ namespace Web.Controllers
 
 		void ValidateDeleteRequest(Exam exam)
 		{
-			if (!exam.CanDelete) ModelState.AddModelError("exam", "此測驗無法刪除");
-
 			if (exam.UserId != CurrentUserId) ModelState.AddModelError("userId", "權限不足");
 		}
 

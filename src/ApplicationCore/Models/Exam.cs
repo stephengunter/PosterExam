@@ -32,9 +32,33 @@ namespace ApplicationCore.Models
 
 		#region Helpers
 
-		public bool IsComplete => this.Score >= 0;
+		public void SetAnswers()
+		{
+			var examQuestions = Parts.SelectMany(p => p.Questions);
+			foreach (var examQuestion in examQuestions)
+			{
+				examQuestion.SetAnswerIndexes();
+			}
+		}
 
-		public bool CanDelete => !Reserved && !IsComplete;
+		public void Finish()
+		{
+			double totalScore = 0;
+			foreach (var part in Parts)
+			{
+				var pointsPerQuestion = part.Points / part.Questions.Count;
+				foreach (var examQuestion in part.Questions)
+				{
+					examQuestion.SetCorrect();
+					if (examQuestion.Correct) totalScore += pointsPerQuestion;
+
+				}
+			}
+
+			this.Score = totalScore;			
+		}
+
+		public bool IsComplete => this.Score >= 0;
 
 		#endregion
 

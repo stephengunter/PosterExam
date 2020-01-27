@@ -6,6 +6,7 @@ using Infrastructure.Entities;
 using Infrastructure.Interfaces;
 using ApplicationCore.Helpers;
 using System.Linq;
+using ApplicationCore.Exceptions;
 
 namespace ApplicationCore.Models
 {
@@ -18,6 +19,15 @@ namespace ApplicationCore.Models
 		public string OptionIds { get; set; } // 12,4,34,15
 
 		public string UserAnswerIndexes { get; set; }
+
+		public bool Correct { get; private set; }
+		
+		public void SetCorrect()
+		{
+			if (AnswerIndexList.IsNullOrEmpty()) throw new NoAnswerToFinishException(ExamPart.ExamId, this.Id);
+			Correct = UserAnswerIndexList.AllTheSame(AnswerIndexList);
+		}
+
 
 		public ExamPart ExamPart { get; set; }
 		public Question Question { get; set; }
@@ -39,6 +49,30 @@ namespace ApplicationCore.Models
 			}
 
 		}
+
+		public void SetAnswerIndexes()
+		{
+			var answerIndexList = new List<int>();
+			var correctOptionIds = Question.Options.Where(o => o.Correct).Select(o => o.Id);
+
+			for (int i = 0; i < OptionIdsList.Count; i++)
+			{
+				if (correctOptionIds.Contains(OptionIdsList[i])) answerIndexList.Add(i);
+			}
+
+			AnswerIndexes = answerIndexList.JoinToStringIntegers();
+
+		}
+
+
+		public List<int> OptionIdsList => OptionIds.SplitToIntList();
+
+		public List<int> AnswerIndexList => AnswerIndexes.SplitToIntList();
+
+		public List<int> UserAnswerIndexList => UserAnswerIndexes.SplitToIntList();
+
+		
+			
 
 	}
 }

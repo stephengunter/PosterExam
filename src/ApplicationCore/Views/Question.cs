@@ -27,6 +27,8 @@ namespace ApplicationCore.Views
 		public string TermIds { get; set; }  //  Example: 1,6
 
 		public ICollection<TermViewModel> Terms { get; set; }
+
+		public int Index { get; set; }
 	}
 
 	public class QuestionEditForm

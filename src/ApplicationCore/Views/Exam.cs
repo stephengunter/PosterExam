@@ -26,10 +26,9 @@ namespace ApplicationCore.Views
 		public SubjectViewModel Subject { get; set; }
 
 
-		public string ExamStatusText => Score < 0 ? "未完成" : "已完成";
+		public string ExamStatusText => IsComplete ? "已完成" : "未完成";
 
-		public bool IsComplete { get; }
-		public bool CanDelete { get; }
+		public bool IsComplete { get; set; }
 	}
 
 	public class ExamPartViewModel

@@ -92,6 +92,14 @@ namespace ApplicationCore.Helpers
 			return list;
 		}
 
+		public static string JoinToStringIntegers(this List<int> list, bool greaterThanZero = false)
+		{
+			if (greaterThanZero) list = list.Where(id => id > 0).ToList();
+			return String.Join(",", list.Select(x => x.ToString()));
+		}
+
+		public static bool AllTheSame(this List<int> listA, List<int> listB)
+			=> listB.All(listA.Contains) && listA.Count == listB.Count;
 
 		public static DateTime? ToDatetimeOrNull(this string str)
 		{

@@ -35,12 +35,15 @@ namespace Web.Controllers.Admin
 
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index()
+		public async Task<ActionResult> Index(int id)
 		{
-			var yearRecruits = await _recruitsService.FetchByTypeAsync(RecruitEntityType.Year);
+			var exam = _examsService.GetById(1);
 
+			var model = exam.MapViewModel(_mapper);
 
-			return Ok(yearRecruits.ToYearOptions()); ;
+			
+
+			return Ok(model);
 		}
 
 
