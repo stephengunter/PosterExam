@@ -21,6 +21,8 @@ namespace ApplicationCore.Views
 
 		public ICollection<OptionViewModel> Options { get; set; } = new List<OptionViewModel>();
 
+		public ICollection<ResolveViewModel> Resolves { get; set; } = new List<ResolveViewModel>();
+
 		public int Index { get; set; }
 		public bool Correct { get; set; }
 	}

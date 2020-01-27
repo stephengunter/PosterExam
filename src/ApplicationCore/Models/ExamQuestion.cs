@@ -22,19 +22,28 @@ namespace ApplicationCore.Models
 
 		public bool Correct { get; private set; }
 		
+		
+
+
+		public ExamPart ExamPart { get; set; }
+		public Question Question { get; set; }
+		
+		
+		[NotMapped]
+		public ICollection<Resolve> Resolves { get; set; }
+
+		[NotMapped]
+		public ICollection<Option> Options { get; set; }
+
+
+		#region Helpers
+
 		public void SetCorrect()
 		{
 			if (AnswerIndexList.IsNullOrEmpty()) throw new NoAnswerToFinishException(ExamPart.ExamId, this.Id);
 			Correct = UserAnswerIndexList.AllTheSame(AnswerIndexList);
 		}
 
-
-		public ExamPart ExamPart { get; set; }
-		public Question Question { get; set; }
-
-
-		[NotMapped]
-		public ICollection<Option> Options { get; set; }
 
 		public void LoadOptions()
 		{
@@ -64,6 +73,13 @@ namespace ApplicationCore.Models
 
 		}
 
+		public void LoadResolves(IEnumerable<Resolve> resolves)
+		{
+			Resolves = resolves.Where(x => x.QuestionId == QuestionId).HasItems() 
+								? resolves.Where(x => x.QuestionId == QuestionId).ToList() : new List<Resolve>();
+
+		}
+
 
 		public List<int> OptionIdsList => OptionIds.SplitToIntList();
 
@@ -71,8 +87,8 @@ namespace ApplicationCore.Models
 
 		public List<int> UserAnswerIndexList => UserAnswerIndexes.SplitToIntList();
 
-		
-			
+		#endregion
+
 
 	}
 }

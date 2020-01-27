@@ -5,6 +5,7 @@ using System.Text;
 using Infrastructure.Entities;
 using Infrastructure.Interfaces;
 using System.Linq;
+using ApplicationCore.Helpers;
 
 namespace ApplicationCore.Models
 {
@@ -58,7 +59,29 @@ namespace ApplicationCore.Models
 			this.Score = totalScore;			
 		}
 
+		public void LoadPartTitles()
+		{
+			bool multiParts = Parts.Count > 1;
+			var parts = Parts.ToList();
+			for (int i = 0; i < parts.Count; i++)
+			{
+				var part = parts[i];
+				int questionCount = part.Questions.Count;
+				var pointsPerQuestion = questionCount > 0 ? (part.Points / questionCount) : 0;
+				if (multiParts)
+				{
+					part.Title = $"第{(i + 1).ToCNNumber()}部份 - 共 {questionCount} 題 每題 {pointsPerQuestion} 分";
+				}
+				else
+				{
+					part.Title = $"共 {questionCount} 題 每題{pointsPerQuestion} 分";
+				}
+			}
+		}
+
 		public bool IsComplete => this.Score >= 0;
+
+		public List<int> QuestionIds => Parts.SelectMany(p => p.Questions).Select(x => x.QuestionId).ToList();
 
 		#endregion
 

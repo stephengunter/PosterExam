@@ -53,7 +53,7 @@ namespace ApplicationCore.ViewServices
 
 		}
 
-		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper, ICollection<Recruit> allRecruits, 
+		public static QuestionViewModel MapViewModel(this Question question, IMapper mapper, ICollection<Recruit> allRecruits = null, 
 			ICollection<UploadFile> attachmentsList = null, ICollection<Term> allTerms = null)
 
 		{
@@ -72,7 +72,7 @@ namespace ApplicationCore.ViewServices
 		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper)
 			=> questions.Select(item => MapViewModel(item, mapper)).ToList();
 
-		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits,
+		public static List<QuestionViewModel> MapViewModelList(this IEnumerable<Question> questions, IMapper mapper, ICollection<Recruit> rootRecruits = null,
 			ICollection<UploadFile> attachments = null, ICollection<Term> allTerms = null)
 			=> questions.Select(item => MapViewModel(item, mapper, rootRecruits, attachments, allTerms)).ToList();
 

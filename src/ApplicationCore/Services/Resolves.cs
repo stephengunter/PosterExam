@@ -18,6 +18,8 @@ namespace ApplicationCore.Services
 		Task UpdateAsync(Resolve resolve);
 		Task UpdateAsync(Resolve existingEntity, Resolve resolve);
 		Task RemoveAsync(Resolve resolve);
+
+		Task<IEnumerable<Resolve>> FetchExamResolvesAsync(Exam exam);
 	}
 
 	public class ResolvesService : IResolvesService
@@ -51,6 +53,9 @@ namespace ApplicationCore.Services
 			resolve.Removed = true;
 			await _resolveRepository.UpdateAsync(resolve);
 		}
-		
+
+		public async Task<IEnumerable<Resolve>> FetchExamResolvesAsync(Exam exam)
+			=> await _resolveRepository.ListAsync(new ResolveFilterSpecification(exam));
+
 	}
 }

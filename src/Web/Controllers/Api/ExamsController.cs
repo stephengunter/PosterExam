@@ -24,13 +24,14 @@ namespace Web.Controllers
 		private readonly UserManager<User> _userManager;
 
 		private readonly IQuestionsService _questionsService;
+		private readonly IResolvesService _resolvesService;
 		private readonly IAttachmentsService _attachmentsService;
 		private readonly IRecruitsService _recruitsService;
 		private readonly IExamsService _examsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly IMapper _mapper;
 
-		public ExamsController(UserManager<User> userManager, IQuestionsService questionsService,
+		public ExamsController(UserManager<User> userManager, IQuestionsService questionsService, IResolvesService resolvesService,
 			IAttachmentsService attachmentsService, IRecruitsService recruitsService, 
 			IExamsService examsService, ISubjectsService subjectsService,
 			IMapper mapper)
@@ -38,6 +39,7 @@ namespace Web.Controllers
 			_userManager = userManager;
 
 			_questionsService = questionsService;
+			_resolvesService = resolvesService;
 			_recruitsService = recruitsService;
 			_attachmentsService = attachmentsService;
 			_examsService = examsService;
@@ -167,12 +169,14 @@ namespace Web.Controllers
 
 			}
 
+			exam.LoadPartTitles();
+
 			await _examsService.CreateAsync(exam, CurrentUserId);
 
 			var types = new List<PostType> { PostType.Option, PostType.Resolve };
 			var attachments = await _attachmentsService.FetchByTypesAsync(types);
 
-			return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
+			return Ok(exam.MapExamViewModel(_mapper, attachments.ToList()));
 		}
 
 		[HttpPut("{id}/{action}")]
@@ -213,16 +217,17 @@ namespace Web.Controllers
 		[HttpGet("edit/{id}")]
 		public async Task<ActionResult> Edit(int id)
 		{
-			var exam = _examsService.GetById(id);
-			var alloptions = await _questionsService.FetchAllOptionsAsync();
+			bool withOptions = true;
+			var exam = _examsService.GetById(id, withOptions);
 
-			var examQuestions = exam.Parts.SelectMany(p => p.Questions);
-			foreach (var item in examQuestions) item.LoadOptions();
+			if (exam == null) return NotFound();
+			ValidateEditRequest(exam);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			var types = new List<PostType> { PostType.Option, PostType.Resolve };
 			var attachments = await _attachmentsService.FetchByTypesAsync(types);
 
-			return Ok(exam.MapViewModel(_mapper, attachments.ToList()));
+			return Ok(exam.MapExamViewModel(_mapper, attachments.ToList()));
 		}
 
 		[HttpPost("")]
@@ -250,6 +255,24 @@ namespace Web.Controllers
 			await _examsService.UpdateAsync(exam);
 
 			return Ok();
+		}
+
+		[HttpGet("{id}")]
+		public async Task<ActionResult> Details(int id)
+		{
+			bool withOptions = true;
+			var exam = _examsService.GetById(id, withOptions);
+			if (exam == null) return NotFound();
+
+			ValidateRequest(exam);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			var resolves = await _resolvesService.FetchExamResolvesAsync(exam);
+
+			var types = new List<PostType> { PostType.Option, PostType.Resolve };
+			var attachments = await _attachmentsService.FetchByTypesAsync(types);
+
+			return Ok(exam.MapExamViewModel(_mapper, attachments.ToList(), resolves.ToList()));
 		}
 
 		[HttpDelete("{id}")]
@@ -347,17 +370,22 @@ namespace Web.Controllers
 		}
 
 		#endregion
-		
+
 		#region Validate
 
-		void ValidateSaveRequest(Exam exam)
+		void ValidateRequest(Exam exam)
 		{
 			if (exam.UserId != CurrentUserId) ModelState.AddModelError("userId", "權限不足");
 		}
 
+		void ValidateSaveRequest(Exam exam)
+		{
+			ValidateRequest(exam);
+		}
+
 		void ValidateDeleteRequest(Exam exam)
 		{
-			if (exam.UserId != CurrentUserId) ModelState.AddModelError("userId", "權限不足");
+			ValidateRequest(exam);
 		}
 
 		void ValidateEditRequest(Exam exam)

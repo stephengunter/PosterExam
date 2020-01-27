@@ -18,6 +18,11 @@ namespace ApplicationCore.Specifications
 		{
 
 		}
-		
+
+		public ResolveFilterSpecification(Exam exam) : base(item => !item.Removed && exam.QuestionIds.Contains(item.QuestionId))
+		{
+
+		}
+
 	}
 }

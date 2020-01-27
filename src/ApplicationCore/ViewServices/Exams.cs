@@ -15,9 +15,9 @@ namespace ApplicationCore.ViewServices
 	public static class ExamsViewService
 	{
 		#region  MapViewModel
-		public static ExamViewModel MapViewModel(this Exam exam, IMapper mapper) => mapper.Map<ExamViewModel>(exam);
+		public static ExamViewModel MapExamViewModel(this Exam exam, IMapper mapper) => mapper.Map<ExamViewModel>(exam);
 
-		public static ExamViewModel MapViewModel(this Exam exam, IMapper mapper, ICollection<UploadFile> attachments, ICollection<Resolve> resolves = null)
+		public static ExamViewModel MapExamViewModel(this Exam exam, IMapper mapper, ICollection<UploadFile> attachments, ICollection<Resolve> resolves = null)
 		{
 			bool hasResolves = resolves.HasItems();
 
@@ -25,30 +25,41 @@ namespace ApplicationCore.ViewServices
 			foreach (var examQuestion in examQuestions)
 			{
 				examQuestion.LoadOptions();
-				if (hasResolves) 
-				{
-					if (examQuestion.Question != null) examQuestion.Question.Resolves = new List<Resolve>();
-				} 
+				if (hasResolves) examQuestion.LoadResolves(resolves);
 			}
 
 			var options = exam.Parts.SelectMany(p => p.Questions).SelectMany(q => q.Options);
 			foreach (var option in options) option.LoadAttachments(attachments);
 
-
 			var model = mapper.Map<ExamViewModel>(exam);
 
-			var optionViews = model.Parts.SelectMany(c => c.Questions).SelectMany(t => t.Options);
+			if (hasResolves)
+			{
+				//載入解析與附圖
+				var examQuestionModels = model.Parts.SelectMany(p => p.Questions);
+				foreach (var item in examQuestionModels)
+				{
+					var examQuestion = examQuestions.FirstOrDefault(x => x.Id == item.Id);
+					item.Resolves = examQuestion.Resolves.MapViewModelList(mapper, attachments);
+				}
+			}
+			else
+			{
+				//測驗模式, 不要顯示選項是否正確
+				var optionViews = model.Parts.SelectMany(c => c.Questions).SelectMany(t => t.Options);
+				foreach (var optionView in optionViews) optionView.Correct = false;
+			}
 
-			foreach (var optionView in optionViews) optionView.Correct = false;
+			
 
 			return model;
 		}
 
 		public static List<ExamViewModel> MapViewModelList(this IEnumerable<Exam> exams, IMapper mapper)
-			=> exams.Select(item => MapViewModel(item, mapper)).ToList();
+			=> exams.Select(item => MapExamViewModel(item, mapper)).ToList();
 
 		public static List<ExamViewModel> MapViewModelList(this IEnumerable<Exam> exams, IMapper mapper, ICollection<UploadFile> attachments, ICollection<Resolve> resolves = null)
-			=> exams.Select(item => MapViewModel(item, mapper, attachments, resolves)).ToList();
+			=> exams.Select(item => MapExamViewModel(item, mapper, attachments, resolves)).ToList();
 
 
 		public static PagedList<Exam, ExamViewModel> GetPagedList(this IEnumerable<Exam> exams, IMapper mapper, int page = 1, int pageSize = 999)

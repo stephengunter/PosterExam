@@ -37,13 +37,18 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int id)
 		{
-			var exam = _examsService.GetById(1);
+			var exam = _examsService.GetById(id);
 
-			var model = exam.MapViewModel(_mapper);
+			var qids = exam.Parts.SelectMany(p => p.Questions).Select(x => x.QuestionId);
 
 			
 
-			return Ok(model);
+
+
+
+
+
+			return Ok(qids);
 		}
 
 
