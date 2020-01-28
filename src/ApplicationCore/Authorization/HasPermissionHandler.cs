@@ -18,7 +18,6 @@ namespace ApplicationCore.Authorization
 
 		protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, HasPermissionRequirement requirement)
 		{
-
 			bool isDev = context.CurrentUserIsDev();
 			if (isDev)
 			{

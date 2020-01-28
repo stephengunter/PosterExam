@@ -12,43 +12,35 @@ using AutoMapper;
 using ApplicationCore.ViewServices;
 using ApplicationCore.Logging;
 using Web.Helpers.ViewServices;
+using ApplicationCore.DataAccess;
 
 namespace Web.Controllers.Admin
 {
 	public class ATestController : ControllerBase
 	{
-		private readonly IExamsService _examsService;
-		private readonly IRecruitsService _recruitsService;
-		private readonly IQuestionsService _questionsService;
-		private readonly IAttachmentsService _attachmentsService;
+		DefaultContext _context;
+		private readonly UserManager<User> _userManager;
+		private readonly RoleManager<IdentityRole> _roleManager;
 		private readonly IMapper _mapper;
 
-		public ATestController(IQuestionsService questionsService, IRecruitsService recruitsService, IExamsService examsService,
-			IAttachmentsService attachmentsService, IMapper mapper)
+		public ATestController(DefaultContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IMapper mapper)
 		{
-			_questionsService = questionsService;
-			_recruitsService = recruitsService;
-			_examsService = examsService;
-			_attachmentsService = attachmentsService;
+			_context = context;
+			_userManager = userManager;
+			_roleManager = roleManager;
 			_mapper = mapper;
 		}
-
+	
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int id)
 		{
-			var exam = _examsService.GetById(id);
+			var users = _userManager.Users;
+			var user = users.FirstOrDefault();
 
-			var qids = exam.Parts.SelectMany(p => p.Questions).Select(x => x.QuestionId);
+			var userRoles = _context.UserRoles.Where(x => x.UserId == user.Id);
 
-			
-
-
-
-
-
-
-			return Ok(qids);
+			return Ok(userRoles);
 		}
 
 

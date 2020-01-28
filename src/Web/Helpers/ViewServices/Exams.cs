@@ -178,7 +178,7 @@ namespace Web.Helpers
         public static IEnumerable<Exam> FilterByStatus(this IEnumerable<Exam> exams, ExamStaus staus)
         {
             if (staus == ExamStaus.Completed) return exams.Where(x => x.IsComplete);
-            if (staus == ExamStaus.Reserved) return exams.Where(x => x.Reserved);
+            if (staus == ExamStaus.Reserved) return exams.Where(x => x.Reserved && !x.IsComplete);
             return exams;
 
         }

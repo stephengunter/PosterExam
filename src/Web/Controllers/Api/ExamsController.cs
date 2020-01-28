@@ -48,7 +48,7 @@ namespace Web.Controllers
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject = 0, int status = -1, int page = 1, int pageSize = 10)
+		public async Task<ActionResult> Index(int subject = 0, int status = -1, string sortBy = "lastUpdated", bool desc = true, int page = 1, int pageSize = 10)
 		{
 			var user = await _userManager.FindByIdAsync(CurrentUserId);
 			if (user == null) throw new UserNotFoundException(CurrentUserId);
@@ -78,6 +78,7 @@ namespace Web.Controllers
 
 			if (exams.HasItems())
 			{
+				var ToExamStaus = status.ToExamStaus();
 				exams = exams.FilterByStatus(status.ToExamStaus());
 
 				var subjects = await _subjectsService.FetchAsync();
@@ -87,7 +88,7 @@ namespace Web.Controllers
 
 				foreach (var exam in exams) exam.LoadSubject(subjects);
 
-				exams = exams.GetOrdered();
+				exams = exams.GetOrdered(sortBy, desc);
 			}
 			
 			model.PagedList = exams.GetPagedList(_mapper, page, pageSize);

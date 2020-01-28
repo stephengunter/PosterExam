@@ -62,9 +62,10 @@ namespace ApplicationCore.ViewServices
 			=> exams.Select(item => MapExamViewModel(item, mapper, attachments, resolves)).ToList();
 
 
-		public static PagedList<Exam, ExamViewModel> GetPagedList(this IEnumerable<Exam> exams, IMapper mapper, int page = 1, int pageSize = 999)
+		public static PagedList<Exam, ExamViewModel> GetPagedList(this IEnumerable<Exam> exams, IMapper mapper, 
+			int page = 1, int pageSize = 999, string sortBy = "lastUpdated", bool desc = true)
 		{
-			var pageList = new PagedList<Exam, ExamViewModel>(exams, page, pageSize);
+			var pageList = new PagedList<Exam, ExamViewModel>(exams, page, pageSize, sortBy, desc);
 
 			pageList.ViewList = pageList.List.MapViewModelList(mapper);
 
@@ -108,8 +109,23 @@ namespace ApplicationCore.ViewServices
 		}
 		#endregion
 
-		public static IEnumerable<Exam> GetOrdered(this IEnumerable<Exam> exams)
-			=> exams.OrderByDescending(item => item.LastUpdated);
+		public static IEnumerable<Exam> GetOrdered(this IEnumerable<Exam> exams, string sortBy = "lastUpdated", bool desc = true)
+		{
+			if (String.IsNullOrEmpty(sortBy)) sortBy = "LastUpdated".ToLower();
+
+			if (sortBy.ToLower() == "Score".ToLower())
+			{ 
+				return desc ? exams.OrderByDescending(item => item.Score) : exams.OrderBy(item => item.Score);
+			}
+
+			if (sortBy.ToLower() == "LastUpdated".ToLower())
+			{
+				return desc ? exams.OrderByDescending(item => item.LastUpdated) : exams.OrderBy(item => item.LastUpdated);
+			}
+
+			return exams.OrderByDescending(item => item.LastUpdated);
+
+		}
 
 
 

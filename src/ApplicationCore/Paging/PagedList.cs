@@ -24,28 +24,33 @@ namespace ApplicationCore.Paging
 		int NextPageNumber { get; }
 		int PreviousPageNumber { get; }
 
+		string SortBy { get; }
+		bool Desc { get; }
+
 		IPagingHeader GetHeader();
 
 	}
 	public class PagedList<T,V> : IPagedList<T,V>
 	{
 		
-		public PagedList(IEnumerable<T> list, int pageNumber = 1, int pageSize = 999)
+		public PagedList(IEnumerable<T> list, int pageNumber = 1, int pageSize = -1, string sortBy = "", bool desc = true)
 		{
-			this.TotalItems = list.Count();
-			this.PageNumber = pageNumber < 1 ? 1 : pageNumber;
-			this.PageSize = pageSize;
+			TotalItems = list.Count();
+			PageNumber = pageNumber < 1 ? 1 : pageNumber;
+			PageSize = pageSize == 0 ? -1 : pageSize;
 
-			this.List = list.GetPaged(pageNumber, pageSize).ToList();
-			this.ViewList = new List<V>();
+			List = list.GetPaged(PageNumber, PageSize).ToList();
+			ViewList = new List<V>();
 
-			this.TotalPages= (int)Math.Ceiling(this.TotalItems / (double)this.PageSize);
+			TotalPages = (int)Math.Ceiling(TotalItems / (double)PageSize);
 
-			this.HasPreviousPage= this.PageNumber > 1;
-			this.HasNextPage = this.PageNumber < this.TotalPages;
-			this.NextPageNumber= this.HasNextPage ? this.PageNumber + 1 : this.TotalPages;
-			this.PreviousPageNumber = this.HasPreviousPage ? this.PageNumber - 1 : 1;
+			HasPreviousPage= PageNumber > 1;
+			HasNextPage = PageNumber < TotalPages;
+			NextPageNumber= HasNextPage ? PageNumber + 1 : TotalPages;
+			PreviousPageNumber = HasPreviousPage ? PageNumber - 1 : 1;
 
+			SortBy = sortBy;
+			Desc = desc;
 
 		}
 
@@ -62,12 +67,14 @@ namespace ApplicationCore.Paging
 		public bool HasNextPage { get; }
 
 		public int NextPageNumber { get; }
-
 		public int PreviousPageNumber { get; }
+
+		public string SortBy { get; }
+		public bool Desc { get; }
 
 		public IPagingHeader GetHeader()
 		{
-			return new PagingHeader(this.TotalItems, this.PageNumber, this.PageSize, this.TotalPages);
+			return new PagingHeader(TotalItems, PageNumber, PageSize, TotalPages);
 		}
 	}
 }

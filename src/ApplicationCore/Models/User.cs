@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace ApplicationCore.Models
@@ -17,5 +18,6 @@ namespace ApplicationCore.Models
 		public RefreshToken RefreshToken { get; set; }
 
 		public ICollection<Exam> Exams { get; set; }
+		
 	}
 }

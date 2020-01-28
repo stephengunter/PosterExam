@@ -24,8 +24,7 @@ namespace ApplicationCore.DataAccess
 			{
 				var defaultContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
 				defaultContext.Database.Migrate();
-
-
+				
 				var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 				var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
@@ -71,6 +70,8 @@ namespace ApplicationCore.DataAccess
 			var roles = new List<string>() { "Dev" };
 
 			await CreateUserIfNotExist(userManager, email, name, roles);
+
+			
 
 		}
 
