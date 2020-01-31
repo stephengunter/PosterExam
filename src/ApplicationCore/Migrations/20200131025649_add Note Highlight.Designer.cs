@@ -4,14 +4,16 @@ using ApplicationCore.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ApplicationCore.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    partial class DefaultContextModelSnapshot : ModelSnapshot
+    [Migration("20200131025649_add Note Highlight")]
+    partial class addNoteHighlight
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -141,8 +143,6 @@ namespace ApplicationCore.Migrations
                     b.Property<string>("UpdatedBy");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("TermId");
 
                     b.ToTable("Notes");
                 });
@@ -655,14 +655,6 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Question", "Question")
                         .WithMany()
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-
-            modelBuilder.Entity("ApplicationCore.Models.Note", b =>
-                {
-                    b.HasOne("ApplicationCore.Models.Term", "Term")
-                        .WithMany("Notes")
-                        .HasForeignKey("TermId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 

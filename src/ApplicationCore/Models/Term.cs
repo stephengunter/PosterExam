@@ -16,6 +16,8 @@ namespace ApplicationCore.Models
 
 		public Subject Subject { get; set; }
 
+		public ICollection<Note> Notes { get; private set; }
+
 		[NotMapped]
 		public ICollection<Term> SubItems { get; private set; }
 		
@@ -23,7 +25,7 @@ namespace ApplicationCore.Models
 		[NotMapped]
 		public ICollection<int> ParentIds { get; private set; } = new List<int>();
 
-
+		#region Helpers
 		public ICollection<int> GetSubIds()
 		{
 			var subIds = new List<int>();
@@ -70,7 +72,10 @@ namespace ApplicationCore.Models
 
 			ParentIds = parentIds;
 		}
+
+		#endregion
+
 	}
 
-	
+
 }

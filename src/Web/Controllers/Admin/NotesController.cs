@@ -10,21 +10,18 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
-using ApplicationCore.Logging;
-using Web.Helpers.ViewServices;
-using ApplicationCore.DataAccess;
 using Web.Models;
 
 namespace Web.Controllers.Admin
 {
-	public class ATestController : ControllerBase
+	public class NotesController : BaseAdminController
 	{
 		private readonly IAttachmentsService _attachmentsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
-		public ATestController(ISubjectsService subjectsService, ITermsService termsService,
+		public NotesController(ISubjectsService subjectsService, ITermsService termsService,
 			 IAttachmentsService attachmentsService, IMapper mapper)
 		{
 			_subjectsService = subjectsService;
@@ -47,17 +44,31 @@ namespace Web.Controllers.Admin
 				_subjectsService.LoadSubItems(rootSubjects);
 
 				model.RootSubjects = rootSubjects.MapViewModelList(_mapper);
+			
+				var subjectSubitems = rootSubjects.SelectMany(p => p.SubItems);
+				model.Subjects = subjectSubitems.MapViewModelList(_mapper);
 
-				//subitems
-				var subjects = rootSubjects.SelectMany(p => p.SubItems);
+				foreach (var subjectModel in model.Subjects)
+				{
+					int parentTermId = 0;
+					var terms = await _termsService.FetchAsync(subjectSubitems.FirstOrDefault(x => x.Id == subjectModel.Id), parentTermId);
+					if (terms.HasItems())
+					{
+						_termsService.LoadSubItems(terms);
+						terms = terms.GetOrdered();
+					}
 
+					model.Terms.AddRange(terms.MapViewModelList(_mapper));
+				}
 
-				model.Subjects = subjects.MapViewModelList(_mapper);
 				model.Subject = model.RootSubjects.FirstOrDefault();
 				subject = model.Subject.Id;
+
+
+
 			}
 
-
+		//subject: subjectId, parent: 0
 
 			//var subjects = await _subjectsService.FetchAsync(parent);
 			//subjects = subjects.GetOrdered();
@@ -73,33 +84,6 @@ namespace Web.Controllers.Admin
 
 			return Ok(model);
 		}
-
-
-		//[HttpGet("")]
-		//public async Task<ActionResult> Index(int subject)
-		//{
-		//	Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
-		//	if (selectedSubject == null)
-		//	{
-		//		ModelState.AddModelError("subject", "科目不存在");
-		//		return BadRequest(ModelState);
-		//	}
-
-		//	_subjectsService.LoadSubItems(selectedSubject);
-
-		//	//全部terms
-		//	int parentTermId = -1;
-		//	var terms = await _termsService.FetchAsync(selectedSubject, parentTermId);
-		//	if (terms.HasItems())
-		//	{
-		//		_termsService.LoadSubItems(terms);
-
-		//		terms = terms.GetOrdered();
-		//	}
-
-
-		//	return Ok(selectedSubject.MapViewModel(_mapper));
-		//}
 
 
 

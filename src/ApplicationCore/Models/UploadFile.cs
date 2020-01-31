@@ -9,6 +9,7 @@ namespace ApplicationCore.Models
 	{
 		Option = 0,
 		Resolve = 1,
+		Note = 2,
 		Unknown = -1
 	}
 
