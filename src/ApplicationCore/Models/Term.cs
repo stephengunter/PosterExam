@@ -49,6 +49,16 @@ namespace ApplicationCore.Models
 			}
 		}
 
+		public void LoadNotes(IEnumerable<Note> notes)
+		{
+			Notes = notes.Where(item => item.TermId == this.Id).OrderBy(item => item.Order).ToList();
+
+			foreach (var item in SubItems)
+			{
+				item.LoadNotes(notes);
+			}
+		}
+
 		public void LoadParentIds(IEnumerable<Term> allTerms)
 		{
 			var parentIds = new List<int>();

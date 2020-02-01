@@ -45,6 +45,10 @@ namespace ApplicationCore.Services
 
 		Task SyncAttachmentsAsync(Resolve resolve, ICollection<UploadFile> latestList);
 
+		Task LoadAttachmentsAsync(Note note);
+
+		Task SyncAttachmentsAsync(Note note, ICollection<UploadFile> latestList);
+
 	}
 
 	public class AttachmentsService : IAttachmentsService
@@ -160,6 +164,21 @@ namespace ApplicationCore.Services
 
 			_uploadFileRepository.DbContext.SaveChanges();
 
+		}
+
+		public async Task LoadAttachmentsAsync(Note note)
+		{
+			var attachments = await FetchAsync(PostType.Note, note.Id);
+
+			note.Attachments = attachments.HasItems() ? attachments.ToList() : new List<UploadFile>();
+
+		}
+
+		public async Task SyncAttachmentsAsync(Note note, ICollection<UploadFile> latestList)
+		{
+			var existingList = await FetchAsync(PostType.Note, note.Id);
+
+			SyncAttachments(existingList.ToList(), latestList);
 		}
 
 	}

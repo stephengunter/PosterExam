@@ -12,7 +12,7 @@ namespace ApplicationCore.Services
 {
 	public interface INotesService
 	{
-		Task<IEnumerable<Note>> FetchAllAsync();
+		Task<IEnumerable<Note>> FetchAsync(IList<int> termIds);
 		Task<Note> GetByIdAsync(int id);
 		Task<Note> CreateAsync(Note note);
 		Task UpdateAsync(Note note);
@@ -38,8 +38,7 @@ namespace ApplicationCore.Services
 			this._noteRepository = noteRepository;
 		}
 
-		public async Task<IEnumerable<Note>> FetchAllAsync() => await _noteRepository.ListAsync(new NoteFilterSpecification());
-		
+		public async Task<IEnumerable<Note>> FetchAsync(IList<int> termIds) => await _noteRepository.ListAsync(new NoteTermFilterSpecification(termIds));
 
 		public async Task<Note> GetByIdAsync(int id) => await _noteRepository.GetByIdAsync(id);
 
@@ -71,7 +70,7 @@ namespace ApplicationCore.Services
 
 		public async Task<int> GetMaxOrderAsync(Term term, int parentId)
 		{
-			var spec = new NoteFilterSpecification(term, parentId);
+			var spec = new NoteTermFilterSpecification(term, parentId);
 			var list = await _noteRepository.ListAsync(spec);
 
 			if (list.IsNullOrEmpty()) return 0;
