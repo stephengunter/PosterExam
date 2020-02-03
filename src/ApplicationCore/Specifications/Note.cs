@@ -12,12 +12,12 @@ namespace ApplicationCore.Specifications
 	{
 		public NoteFilterSpecification() : base(item => !item.Removed) 
 		{
-			
+			AddInclude(item => item.Term);
 		}
 
 		public NoteFilterSpecification(Term term) : base(item => !item.Removed && item.TermId == term.Id)
 		{
-
+			AddInclude(item => item.Term);
 		}
 
 	}
@@ -26,7 +26,7 @@ namespace ApplicationCore.Specifications
 	{
 		public NoteTermFilterSpecification(IList<int> termIds) : base(item => !item.Removed && termIds.Contains(item.TermId))
 		{
-
+			AddInclude(item => item.Term);
 		}
 
 		
@@ -34,7 +34,7 @@ namespace ApplicationCore.Specifications
 		public NoteTermFilterSpecification(Term term, int parentId)
 			: base(item => !item.Removed && item.TermId == term.Id && item.ParentId == parentId)
 		{
-
+			AddInclude(item => item.Term);
 		}
 
 	}

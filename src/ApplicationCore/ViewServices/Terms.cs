@@ -9,13 +9,22 @@ using System.Threading.Tasks;
 using System.Linq;
 using Infrastructure.Views;
 using AutoMapper;
+using Newtonsoft.Json;
 
 namespace ApplicationCore.ViewServices
 {
 	public static class TermsViewService
 	{
 		public static TermViewModel MapViewModel(this Term term, IMapper mapper)
-			=> mapper.Map<TermViewModel>(term);
+		{
+			var model = mapper.Map<TermViewModel>(term);
+			if (!String.IsNullOrEmpty(model.Highlight)) model.Highlights = JsonConvert.DeserializeObject<ICollection<string>>(model.Highlight);
+
+			if(term.SubItems.HasItems()) model.SubItems = term.SubItems.Select(item => item.MapViewModel(mapper)).ToList();
+
+
+			return model;
+		}
 
 		public static List<TermViewModel> MapViewModelList(this IEnumerable<Term> terms, IMapper mapper)
 			=> terms.Select(item => MapViewModel(item, mapper)).ToList();
@@ -24,6 +33,8 @@ namespace ApplicationCore.ViewServices
 		{
 			var entity = mapper.Map<TermViewModel, Term>(model);
 			entity.Text = entity.Text.ReplaceNewLine();
+
+			entity.Highlight = model.Highlights.HasItems() ? JsonConvert.SerializeObject(model.Highlights) : "";
 
 			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);

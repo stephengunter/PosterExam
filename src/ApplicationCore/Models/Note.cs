@@ -33,6 +33,13 @@ namespace ApplicationCore.Models
 
 
         #region Helpers
+
+        public bool HasKeyword(string keyword)
+        {
+            
+            if (String.IsNullOrEmpty(this.Text)) return false;
+            return this.Text.Contains(keyword);
+        }
        
         public void LoadAttachments(IEnumerable<UploadFile> uploadFiles)
         {

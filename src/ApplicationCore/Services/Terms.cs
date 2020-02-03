@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using ApplicationCore.Helpers;
+using Infrastructure.DataAccess;
 
 namespace ApplicationCore.Services
 {
@@ -20,7 +21,7 @@ namespace ApplicationCore.Services
 		Task UpdateAsync(Term existingEntity, Term model);
 		Task RemoveAsync(Term term);
 
-
+		Task<IEnumerable<Term>> FetchAsync(BaseSpecification<Term> spec);
 		Term GetById(int id);
 		void LoadSubItems(IEnumerable<Term> list);
 		Task LoadParentIdsAsync(Term term);
@@ -40,6 +41,8 @@ namespace ApplicationCore.Services
 		{
 			this._termRepository = termRepository;
 		}
+
+		public async Task<IEnumerable<Term>> FetchAsync(BaseSpecification<Term> spec) => await _termRepository.ListAsync(spec);
 
 		public async Task<IEnumerable<Term>> FetchAllAsync() => await _termRepository.ListAsync(new TermFilterSpecification());
 		

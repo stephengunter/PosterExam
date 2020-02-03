@@ -7,19 +7,21 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using ApplicationCore.Helpers;
+using Infrastructure.DataAccess;
 
 namespace ApplicationCore.Services
 {
 	public interface INotesService
 	{
 		Task<IEnumerable<Note>> FetchAsync(IList<int> termIds);
+		//Task<IEnumerable<Note>> FetchAsync(ICollection<string> keywords);
 		Task<Note> GetByIdAsync(int id);
 		Task<Note> CreateAsync(Note note);
 		Task UpdateAsync(Note note);
 		Task UpdateAsync(Note existingEntity, Note model);
 		Task RemoveAsync(Note note);
 
-
+		Task<IEnumerable<Note>> FetchAsync(BaseSpecification<Note> spec);
 		Note GetById(int id);
 		void LoadSubItems(IEnumerable<Note> list);
 		Task LoadParentIdsAsync(Note note);
@@ -38,7 +40,11 @@ namespace ApplicationCore.Services
 			this._noteRepository = noteRepository;
 		}
 
+		public async Task<IEnumerable<Note>> FetchAsync(BaseSpecification<Note> spec) => await _noteRepository.ListAsync(spec);
+
 		public async Task<IEnumerable<Note>> FetchAsync(IList<int> termIds) => await _noteRepository.ListAsync(new NoteTermFilterSpecification(termIds));
+
+		//public async Task<IEnumerable<Note>> FetchAsync(ICollection<string> keywords) => await _noteRepository.ListAsync(new NoteFilterSpecification(keywords));
 
 		public async Task<Note> GetByIdAsync(int id) => await _noteRepository.GetByIdAsync(id);
 

@@ -18,6 +18,10 @@ namespace ApplicationCore.Models
 
 		public ICollection<Note> Notes { get; private set; }
 
+		public string Highlight { get; set; } //json string
+
+
+
 		[NotMapped]
 		public ICollection<Term> SubItems { get; private set; }
 		

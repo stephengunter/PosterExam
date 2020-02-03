@@ -25,4 +25,12 @@ namespace ApplicationCore.Specifications
 			AddInclude(item => item.Subject);
 		}
 	}
+
+	public class TermFilterBySubjectsSpecification : BaseSpecification<Term>
+	{
+		public TermFilterBySubjectsSpecification(IList<int> subjectIds) : base(item => !item.Removed && subjectIds.Contains(item.SubjectId))
+		{
+			AddInclude(item => item.Subject);
+		}
+	}
 }

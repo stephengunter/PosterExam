@@ -11,6 +11,7 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Web.Models;
+using ApplicationCore.Specifications;
 
 namespace Web.Controllers.Admin
 {
@@ -34,11 +35,29 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int term = 0)
+		public async Task<ActionResult> Index(int term = 0, int subject = 0, string keyword = "")
 		{
-			var model = new NoteAdminViewModel();
+			
+			if (!String.IsNullOrEmpty(keyword))
+			{
+
+				var notes = await GetNotesByKeywordsAsync(subject, keyword);
+				var postIds = notes.Select(x => x.Id).ToList();
+				var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
+
+				var termIds = notes.Select(x => x.TermId).Distinct();
+				var termViewModels = new List<TermViewModel>();
+				foreach (var itemId in termIds)
+				{
+					termViewModels.Add(LoadTermViewModel(itemId, notes, attachments));
+				}
+				return Ok(termViewModels);
+			}
+
 			if (term < 1) //初次載入頁面
 			{
+				var model = new NoteAdminViewModel();
+
 				int parentSubjectId = 0;
 				var rootSubjects = await _subjectsService.FetchAsync(parentSubjectId);
 				rootSubjects = rootSubjects.GetOrdered();
@@ -46,7 +65,7 @@ namespace Web.Controllers.Admin
 				_subjectsService.LoadSubItems(rootSubjects);
 
 				model.RootSubjects = rootSubjects.MapViewModelList(_mapper);
-			
+
 				var subjectSubitems = rootSubjects.SelectMany(p => p.SubItems);
 				model.Subjects = subjectSubitems.MapViewModelList(_mapper);
 
@@ -68,23 +87,31 @@ namespace Web.Controllers.Admin
 				return Ok(model);
 
 			}
+			else
+			{
+				var selectedTerm = _termsService.GetById(term);
+				var termIds = new List<int> { selectedTerm.Id };
+				if (selectedTerm.SubItems.HasItems()) termIds.AddRange(selectedTerm.GetSubIds());
 
-			var selectedTerm = _termsService.GetById(term);
-			var termIds = new List<int> { selectedTerm.Id };
-			if (selectedTerm.SubItems.HasItems()) termIds.AddRange(selectedTerm.GetSubIds());
+				var notes = await _notesService.FetchAsync(termIds);
 
-			var notes = await _notesService.FetchAsync(termIds);
+				var postIds = notes.Select(x => x.Id).ToList();
+				var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
 
-			var postIds = notes.Select(x => x.Id).ToList();
-			var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
+				var noteViewList = notes.MapViewModelList(_mapper, attachments.ToList());
 
-			var noteViewList = notes.MapViewModelList(_mapper, attachments.ToList());
-		
-			var termViewModel = selectedTerm.MapViewModel(_mapper);
-			termViewModel.LoadNotes(noteViewList);
+				var termViewModel = selectedTerm.MapViewModel(_mapper);
+				termViewModel.LoadNotes(noteViewList);
 
-			return Ok(termViewModel);
+				
+
+				if(termViewModel.SubItems.HasItems()) return Ok(termViewModel.SubItems);
+				else return Ok(new List<TermViewModel> { termViewModel });
+
+			}
+			
 		}
+
 
 		[HttpPost("")]
 		public async Task<ActionResult> Store([FromBody] NoteViewModel model)
@@ -158,6 +185,41 @@ namespace Web.Controllers.Admin
 			await _notesService.RemoveAsync(note);
 
 			return Ok();
+		}
+
+		async Task<List<Note>> GetNotesByKeywordsAsync(int subject, string keyword)
+		{
+			var selectedSubject = _subjectsService.GetById(subject);
+			var subjectIds = new List<int> { subject };
+			if (selectedSubject.SubItems.HasItems()) subjectIds.AddRange(selectedSubject.GetSubIds());
+
+			var terms = await _termsService.FetchAsync(new TermFilterBySubjectsSpecification(subjectIds));
+			var termIds = terms.Select(x => x.Id).ToList();
+
+			var notes = await _notesService.FetchAsync(new NoteTermFilterSpecification(termIds));
+
+
+			var keywords = keyword.GetKeywords();
+			if (keywords.HasItems()) notes = notes.FilterByKeyword(keywords);
+
+
+			return notes.ToList();
+		}
+
+		TermViewModel LoadTermViewModel(int term, List<Note> noteList, List<UploadFile> attachments)
+		{
+			var selectedTerm = _termsService.GetById(term);
+			var termIds = new List<int> { selectedTerm.Id };
+			if (selectedTerm.SubItems.HasItems()) termIds.AddRange(selectedTerm.GetSubIds());
+
+			var notes = noteList.Where(x => termIds.Contains(x.TermId));
+
+			var noteViewList = notes.MapViewModelList(_mapper, attachments);
+
+			var termViewModel = selectedTerm.MapViewModel(_mapper);
+			termViewModel.LoadNotes(noteViewList);
+
+			return termViewModel;
 		}
 
 		void ValidateRequest(NoteViewModel model)

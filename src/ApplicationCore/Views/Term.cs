@@ -16,6 +16,10 @@ namespace ApplicationCore.Views
 
 		public string Text { get; set; }
 
+		public string Highlight { get; set; } //json string
+
+		public ICollection<string> Highlights { get; set; } = new List<string>();
+
 		public string FullText => $"{Title} {Text}";
 
 		public ICollection<TermViewModel> SubItems { get; set; }
