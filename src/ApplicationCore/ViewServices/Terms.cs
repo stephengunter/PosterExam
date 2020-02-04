@@ -19,10 +19,10 @@ namespace ApplicationCore.ViewServices
 		{
 			var model = mapper.Map<TermViewModel>(term);
 			if (!String.IsNullOrEmpty(model.Highlight)) model.Highlights = JsonConvert.DeserializeObject<ICollection<string>>(model.Highlight);
+			if (!String.IsNullOrEmpty(model.Reference)) model.References = JsonConvert.DeserializeObject<ICollection<ReferenceViewModel>>(model.Reference);
 
-			if(term.SubItems.HasItems()) model.SubItems = term.SubItems.Select(item => item.MapViewModel(mapper)).ToList();
-
-
+			if (term.SubItems.HasItems()) model.SubItems = term.SubItems.Select(item => item.MapViewModel(mapper)).ToList();
+			
 			return model;
 		}
 
@@ -35,6 +35,8 @@ namespace ApplicationCore.ViewServices
 			entity.Text = entity.Text.ReplaceNewLine();
 
 			entity.Highlight = model.Highlights.HasItems() ? JsonConvert.SerializeObject(model.Highlights) : "";
+			entity.Reference = model.References.HasItems() ? JsonConvert.SerializeObject(model.References) : "";
+
 
 			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);

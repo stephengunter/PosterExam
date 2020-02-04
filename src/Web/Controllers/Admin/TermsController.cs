@@ -10,6 +10,7 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
+using Web.Models;
 
 namespace Web.Controllers.Admin
 {
@@ -94,6 +95,16 @@ namespace Web.Controllers.Admin
 			return Ok(term.Id);
 		}
 
+		[HttpGet("{id}")]
+		public ActionResult Details(int id)
+		{
+			var term = _termsService.GetById(id);
+			if (term == null) return NotFound();
+
+			
+			return Ok(term.MapViewModel(_mapper));
+		}
+
 		[HttpGet("edit/{id}")]
 		public async Task<ActionResult> Edit(int id)
 		{
@@ -102,7 +113,7 @@ namespace Web.Controllers.Admin
 
 			var model = term.MapViewModel(_mapper);
 			model.Text = model.Text.ReplaceBrToNewLine();
-			
+
 			var terms = await _termsService.FetchAllAsync();
 			terms = terms.GetOrdered();
 

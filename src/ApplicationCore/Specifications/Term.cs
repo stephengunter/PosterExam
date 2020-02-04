@@ -14,6 +14,11 @@ namespace ApplicationCore.Specifications
 			AddInclude(item => item.Subject);
 		}
 
+		public TermFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)
+		{
+			AddInclude(item => item.Subject);
+		}
+
 		public TermFilterSpecification(Subject subject) : base(item => !item.Removed && item.SubjectId == subject.Id)
 		{
 			AddInclude(item => item.Subject);

@@ -18,7 +18,11 @@ namespace ApplicationCore.Views
 
 		public string Highlight { get; set; } //json string
 
+		public string Reference { get; set; } //json string
+
 		public ICollection<string> Highlights { get; set; } = new List<string>();
+
+		public ICollection<ReferenceViewModel> References { get; set; } = new List<ReferenceViewModel>();
 
 		public string FullText => $"{Title} {Text}";
 
@@ -39,10 +43,9 @@ namespace ApplicationCore.Views
 		}
 	}
 
-	public class TermEditForm
+	public class ReferenceViewModel
 	{
-		public TermViewModel Term { get; set; } = new TermViewModel();
-
-		public ICollection<TermViewModel> Parents { get; set; }
+		public string Id { get; set; }
+		public string Text { get; set; }
 	}
 }

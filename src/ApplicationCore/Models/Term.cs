@@ -20,7 +20,7 @@ namespace ApplicationCore.Models
 
 		public string Highlight { get; set; } //json string
 
-
+		public string Reference { get; set; } //json string
 
 		[NotMapped]
 		public ICollection<Term> SubItems { get; private set; }

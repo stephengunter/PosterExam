@@ -71,7 +71,7 @@ namespace ApplicationCore.Services
 
 		public Term GetById(int id)
 		{
-			var term = _termRepository.GetById(id);
+			var term = _termRepository.GetSingleBySpec(new TermFilterSpecification(id));
 			if (term == null) return null;
 
 			LoadSubItems(term);
