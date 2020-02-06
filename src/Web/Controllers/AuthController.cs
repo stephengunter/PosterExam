@@ -18,7 +18,6 @@ namespace Web.Controllers
 		private readonly UserManager<User> _userManager;
 		private readonly IAuthService _authService;
 
-		//private static readonly HttpClient Client = new HttpClient();
 
 		public AuthController(UserManager<User> userManager, IAuthService authService)
 		{
@@ -30,7 +29,7 @@ namespace Web.Controllers
 		[HttpPost("refreshtoken")]
 		public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenRequest model)
 		{
-			var cp = _authService.ResolveClaimsFromToken(model.accessToken);
+			var cp = _authService.ResolveClaimsFromToken(model.AccessToken);
 			string userId = cp.GetUserId();
 			OAuthProvider oauthProvider = cp.GetOAuthProvider();
 
@@ -49,7 +48,7 @@ namespace Web.Controllers
 
 		void ValidateRequest(RefreshTokenRequest model, string userId)
 		{
-			bool isValid = _authService.IsValidRefreshToken(model.refreshToken, userId);
+			bool isValid = _authService.IsValidRefreshToken(model.RefreshToken, userId);
 			if(!isValid) ModelState.AddModelError("token", "身分驗證失敗. 請重新登入");
 
 		}

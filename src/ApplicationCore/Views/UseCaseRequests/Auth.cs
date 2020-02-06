@@ -6,14 +6,14 @@ namespace ApplicationCore.Views
 {
 	public class RefreshTokenRequest
 	{
-		public string accessToken { get; set; }
-		public string refreshToken { get; set; }
+		public string AccessToken { get; set; }
+		public string RefreshToken { get; set; }
 
 	}
 
 	public class OAuthLoginRequest
 	{
-		public string token { get; set; }
-		
+		public string Token { get; set; }
+
 	}
 }

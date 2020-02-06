@@ -36,7 +36,7 @@ namespace Web.Controllers
 		[HttpPost("google")]
 		public async Task<ActionResult> Google([FromBody] OAuthLoginRequest model)
 		{
-			var payload = await GoogleJsonWebSignature.ValidateAsync(model.token, new GoogleJsonWebSignature.ValidationSettings());
+			var payload = await GoogleJsonWebSignature.ValidateAsync(model.Token, new GoogleJsonWebSignature.ValidationSettings());
 
 			var user = await _userManager.FindByEmailAsync(payload.Email);
 
