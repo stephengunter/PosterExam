@@ -20,6 +20,9 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Text;
 using System.Data.SqlClient;
+using Infrastructure.Entities;
+using System.Data;
+using Microsoft.AspNetCore.Http;
 
 namespace Web.Controllers.Admin
 {
@@ -27,12 +30,27 @@ namespace Web.Controllers.Admin
 	{
 		private readonly AdminSettings _adminSettings;
 		private readonly DefaultContext _context;
+		private readonly IDBImportService _dBImportService;
 
-		public DBController(IOptions<AdminSettings> adminSettings, DefaultContext context)
+		public DBController(IOptions<AdminSettings> adminSettings, DefaultContext context, IDBImportService dBImportService)
 		{
 			_adminSettings = adminSettings.Value;
 			_context = context;
+			_dBImportService = dBImportService;
 		}
+
+		async Task<string> ReadFileTextAsync(IFormFile file)
+		{
+			var result = new StringBuilder();
+			using (var reader = new StreamReader(file.OpenReadStream()))
+			{
+				while (reader.Peek() >= 0) result.AppendLine(await reader.ReadLineAsync());
+			}
+			return result.ToString();
+
+		}
+
+
 
 		string GetDbName(string connectionString)
 		{
@@ -55,6 +73,9 @@ namespace Web.Controllers.Admin
 		[HttpPost("backup")]
 		public ActionResult Backup(AdminRequest model)
 		{
+			ValidateRequest(model);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
 			var connectionString = _context.Database.GetDbConnection().ConnectionString;
 			string dbName = GetDbName(connectionString);
 
@@ -81,11 +102,44 @@ namespace Web.Controllers.Admin
 		{
 			ValidateRequest(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
+			
+			var folderPath = BackupFolder();
+		
+			_context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
+			
+			var subjects = _context.Subjects.ToList();
+			SaveJson(folderPath, new Subject().GetType().Name, JsonConvert.SerializeObject(subjects));
+			
+			var terms = _context.Terms.ToList();
+			SaveJson(folderPath, new Term().GetType().Name, JsonConvert.SerializeObject(terms));
 
 			var questions = _context.Questions.ToList();
-			var folderPath = BackupFolder();
+			SaveJson(folderPath, new Question().GetType().Name, JsonConvert.SerializeObject(questions));
 
-			SaveJson(folderPath, "questions", JsonConvert.SerializeObject(questions));
+			var options = _context.Options.ToList();
+			SaveJson(folderPath, new Option().GetType().Name, JsonConvert.SerializeObject(options));
+
+			var termQuestions = _context.TermQuestions.ToList();
+			SaveJson(folderPath, new TermQuestion().GetType().Name, JsonConvert.SerializeObject(termQuestions));
+
+
+			var resolves = _context.Resolves.ToList();
+			SaveJson(folderPath, new Resolve().GetType().Name, JsonConvert.SerializeObject(resolves));
+
+			var recruits = _context.RecruitQuestions.ToList();
+			SaveJson(folderPath, new Recruit().GetType().Name, JsonConvert.SerializeObject(recruits));
+
+			var recruitQuestions = _context.RecruitQuestions.ToList();
+			SaveJson(folderPath, new RecruitQuestion().GetType().Name, JsonConvert.SerializeObject(recruitQuestions));
+
+			var notes = _context.Notes.ToList();
+			SaveJson(folderPath, new Note().GetType().Name, JsonConvert.SerializeObject(notes));
+
+			var uploads = _context.UploadFiles.ToList();
+			SaveJson(folderPath, new UploadFile().GetType().Name, JsonConvert.SerializeObject(uploads));
+
+			var reviewRecords = _context.ReviewRecords.ToList();
+			SaveJson(folderPath, new ReviewRecord().GetType().Name, JsonConvert.SerializeObject(reviewRecords));
 
 			return Ok();
 		}
@@ -93,40 +147,108 @@ namespace Web.Controllers.Admin
 		[HttpPost("import")]
 		public async Task<IActionResult> Import([FromForm] AdminRequest model)
 		{
-			var file = model.Files.FirstOrDefault();
-			
-			var result = new StringBuilder();
-			using (var reader = new StreamReader(file.OpenReadStream()))
+			ValidateRequest(model);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			if (model.Files.Count < 1)
 			{
-				while (reader.Peek() >= 0)
-					result.AppendLine(await reader.ReadLineAsync());
+				ModelState.AddModelError("files", "必須上傳檔案");
+				return BadRequest(ModelState);
 			}
 
-			var questions = JsonConvert.DeserializeObject<List<Question>>(result.ToString());
+			var extensions = model.Files.Select(item => Path.GetExtension(item.FileName).ToLower());
+			if (extensions.Any(x => x != ".json"))
+			{
+				ModelState.AddModelError("files", "檔案格式錯誤");
+				return BadRequest(ModelState);
+			}
 
-			var questionModel = questions.FirstOrDefault(x => x.Id == 24);
-			var existingEntity = _context.Questions.Find(questionModel.Id);
+			string content = "";
+		
+			var file = model.GetFile(new Subject().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var subjectModels = JsonConvert.DeserializeObject<List<Subject>>(content);
+				_dBImportService.ImportSubjects(_context, subjectModels);
+			}
 
-			Update(existingEntity, questionModel);
-			_context.SaveChanges();
+			file = model.GetFile(new Term().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var termModels = JsonConvert.DeserializeObject<List<Term>>(content);
+				_dBImportService.ImportTerms(_context, termModels);
+			}
 
+			
 
+			file = model.GetFile(new Question().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var questionModels = JsonConvert.DeserializeObject<List<Question>>(content);
+				_dBImportService.ImportQuestions(_context, questionModels);
+			}
 
-			//string cmd = canSetId ? "" : $"SET IDENTITY_INSERT {table} ON; ";
+			file = model.GetFile(new Option().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var optionModels = JsonConvert.DeserializeObject<List<Option>>(content);
+				_dBImportService.ImportOptions(_context, optionModels);
+			}
 
+			file = model.GetFile(new TermQuestion().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var termQuestionModels = JsonConvert.DeserializeObject<List<TermQuestion>>(content);
+				_dBImportService.ImportTermQuestions(_context, termQuestionModels);
+			}
+
+			file = model.GetFile(new Resolve().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var resolveModels = JsonConvert.DeserializeObject<List<Resolve>>(content);
+				_dBImportService.ImportResolves(_context, resolveModels);
+			}
+
+			file = model.GetFile(new RecruitQuestion().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var recruitQuestionModels = JsonConvert.DeserializeObject<List<RecruitQuestion>>(content);
+				_dBImportService.ImportRecruitQuestions(_context, recruitQuestionModels);
+			}
+
+			file = model.GetFile(new Note().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var noteModels = JsonConvert.DeserializeObject<List<Note>>(content);
+				_dBImportService.ImportNotes(_context, noteModels);
+			}
+
+			file = model.GetFile(new UploadFile().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var uploadFileModels = JsonConvert.DeserializeObject<List<UploadFile>>(content);
+				_dBImportService.ImportUploadFiles(_context, uploadFileModels);
+			}
+
+			file = model.GetFile(new ReviewRecord().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var reviewRecordModels = JsonConvert.DeserializeObject<List<ReviewRecord>>(content);
+				_dBImportService.ImportReviewRecords(_context, reviewRecordModels);
+			}
 
 			return Ok();
 		}
-
-
-		void Update(Question existingEntity, Question model)
-		{
-			var entry = _context.Entry(existingEntity);
-			entry.CurrentValues.SetValues(model);
-			entry.State = EntityState.Modified;
-		}
-
-
 
 		void ValidateRequest(AdminRequest model)
 		{

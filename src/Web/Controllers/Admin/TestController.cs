@@ -17,6 +17,7 @@ using Web.Models;
 using ApplicationCore.Specifications;
 using Microsoft.EntityFrameworkCore;
 using System.Data.SqlClient;
+using Infrastructure.Entities;
 
 namespace Web.Controllers.Admin
 {
@@ -33,9 +34,11 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-			var connectionString = _context.Database.GetDbConnection().ConnectionString;
-			var builder = new SqlConnectionStringBuilder(connectionString);
-			return Ok(builder.InitialCatalog);
+			var mapping = _context.Model.FindEntityType(typeof(Question)).Relational();
+			var schema = mapping.Schema;
+			var tableName = mapping.TableName;
+
+			return Ok(tableName);
 		}
 
 	}

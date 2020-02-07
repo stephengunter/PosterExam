@@ -11,6 +11,12 @@ namespace ApplicationCore.DataAccess
 		public DefaultContext(DbContextOptions<DefaultContext> options) : base(options)
 		{
 		}
+
+		public DefaultContext(string connectionString) : base(new DbContextOptionsBuilder<DefaultContext>().UseSqlServer(connectionString).Options)
+		{
+			
+		}
+
 		public DbSet<UploadFile> UploadFiles { get; set; }
 		public DbSet<RefreshToken> RefreshTokens { get; set; }
 		public DbSet<OAuth> OAuth { get; set; }
