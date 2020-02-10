@@ -10,6 +10,8 @@ namespace ApplicationCore.Models
 {
 	public class Term : BaseCategory
 	{
+		public bool ChapterTitle { get; set; }
+
 		public int SubjectId { get; set; }
 
 		public string Text { get; set; }

@@ -10,6 +10,8 @@ namespace ApplicationCore.Views
 	{
 		public int Id { get; set; }
 
+		public bool ChapterTitle { get; set; }
+
 		public int SubjectId { get; set; }
 
 		public SubjectViewModel Subject { get; set; }

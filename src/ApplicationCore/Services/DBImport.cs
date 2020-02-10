@@ -17,14 +17,15 @@ namespace ApplicationCore.Services
 		void ImportOptions(DefaultContext _context, List<Option> models);
 		void ImportTermQuestions(DefaultContext _context, List<TermQuestion> models);
 		void ImportResolves(DefaultContext _context, List<Resolve> models);
+		void ImportRecruits(DefaultContext _context, List<Recruit> models);
 		void ImportRecruitQuestions(DefaultContext _context, List<RecruitQuestion> models);
 		void ImportNotes(DefaultContext _context, List<Note> models);
 		void ImportUploadFiles(DefaultContext _context, List<UploadFile> models);
 		void ImportReviewRecords(DefaultContext _context, List<ReviewRecord> models);
 	}
 
-    public class DBImportService : IDBImportService
-    {
+	public class DBImportService : IDBImportService
+	{
 		public void ImportTerms(DefaultContext _context, List<Term> models)
 		{
 			var connectionString = _context.Database.GetDbConnection().ConnectionString;
@@ -91,7 +92,7 @@ namespace ApplicationCore.Services
 		}
 
 		public void ImportQuestions(DefaultContext _context, List<Question> models)
-        {
+		{
 			var connectionString = _context.Database.GetDbConnection().ConnectionString;
 
 			var newQuestions = new List<Question>();
@@ -208,6 +209,38 @@ namespace ApplicationCore.Services
 				}
 			}
 
+		}
+
+		public void ImportRecruits(DefaultContext _context, List<Recruit> models)
+		{
+			var connectionString = _context.Database.GetDbConnection().ConnectionString;
+
+			var newRecruits = new List<Recruit>();
+			foreach (var recruitModel in models)
+			{
+				var existingEntity = _context.Recruits.Find(recruitModel.Id);
+				if (existingEntity == null) newRecruits.Add(recruitModel);
+				else Update(_context, existingEntity, recruitModel);
+			}
+
+			_context.SaveChanges();
+
+			using (var context = new DefaultContext(connectionString))
+			{
+				context.Recruits.AddRange(newRecruits);
+
+				context.Database.OpenConnection();
+				try
+				{
+					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Recruits ON");
+					context.SaveChanges();
+					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Recruits OFF");
+				}
+				finally
+				{
+					context.Database.CloseConnection();
+				}
+			}
 		}
 
 		public void ImportRecruitQuestions(DefaultContext _context, List<RecruitQuestion> models)

@@ -34,11 +34,8 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-			var mapping = _context.Model.FindEntityType(typeof(Question)).Relational();
-			var schema = mapping.Schema;
-			var tableName = mapping.TableName;
-
-			return Ok(tableName);
+			
+			return Ok();
 		}
 
 	}

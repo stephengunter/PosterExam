@@ -126,7 +126,7 @@ namespace Web.Controllers.Admin
 			var resolves = _context.Resolves.ToList();
 			SaveJson(folderPath, new Resolve().GetType().Name, JsonConvert.SerializeObject(resolves));
 
-			var recruits = _context.RecruitQuestions.ToList();
+			var recruits = _context.Recruits.ToList();
 			SaveJson(folderPath, new Recruit().GetType().Name, JsonConvert.SerializeObject(recruits));
 
 			var recruitQuestions = _context.RecruitQuestions.ToList();
@@ -213,6 +213,14 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var resolveModels = JsonConvert.DeserializeObject<List<Resolve>>(content);
 				_dBImportService.ImportResolves(_context, resolveModels);
+			}
+
+			file = model.GetFile(new Recruit().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var recruitModels = JsonConvert.DeserializeObject<List<Recruit>>(content);
+				_dBImportService.ImportRecruits(_context, recruitModels);
 			}
 
 			file = model.GetFile(new RecruitQuestion().GetType().Name);

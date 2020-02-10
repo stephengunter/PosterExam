@@ -10,13 +10,17 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
+using Microsoft.AspNetCore.Authorization;
+using ApplicationCore.Exceptions;
 using Web.Models;
-using ApplicationCore.Specifications;
 using Web.Helpers;
+using Web.Helpers.ViewServices;
+using ApplicationCore.Specifications;
 
-namespace Web.Controllers.Admin
+namespace Web.Controllers
 {
-	public class NotesController : BaseAdminController
+	[Authorize]
+	public class NotesController : BaseController
 	{
 		private readonly INotesService _notesService;
 		private readonly IAttachmentsService _attachmentsService;
@@ -72,11 +76,11 @@ namespace Web.Controllers.Admin
 				var selectedTerm = _termsService.GetById(term);
 				var termViewModel = await LoadTermViewModelAsync(selectedTerm);
 
-				
+
 				if (termViewModel.SubItems.HasItems()) return Ok(termViewModel.SubItems);
 				else return Ok(new List<TermViewModel> { termViewModel });
 			}
-			else if(subject > 0)
+			else if (subject > 0)
 			{
 				Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
 				int parent = -1;
@@ -105,81 +109,6 @@ namespace Web.Controllers.Admin
 			return BadRequest(ModelState);
 		}
 
-
-		[HttpPost("")]
-		public async Task<ActionResult> Store([FromBody] NoteViewModel model)
-		{
-			ValidateRequest(model);
-			if (!ModelState.IsValid) return BadRequest(ModelState);
-
-			var note = model.MapEntity(_mapper, CurrentUserId);
-			note = await _notesService.CreateAsync(note);
-
-			if (model.Attachments.HasItems())
-			{
-				var attachments = model.Attachments.Select(item => item.MapEntity(_mapper, CurrentUserId)).ToList();
-				foreach (var attachment in attachments)
-				{
-					attachment.PostType = PostType.Note;
-					attachment.PostId = note.Id;
-				}
-
-				_attachmentsService.CreateMany(attachments);
-
-				note.Attachments = attachments;
-			}
-
-
-			return Ok(note.MapViewModel(_mapper));
-		}
-
-		[HttpPut("{id}")]
-		public async Task<ActionResult> Update(int id, [FromBody] NoteViewModel model)
-		{
-			var existingEntity = await _notesService.GetByIdAsync(id);
-			if (existingEntity == null) return NotFound();
-
-			ValidateRequest(model);
-			if (!ModelState.IsValid) return BadRequest(ModelState);
-
-			var note = model.MapEntity(_mapper, CurrentUserId);
-
-			await _notesService.UpdateAsync(existingEntity, note);
-
-
-			if (model.Attachments.HasItems())
-			{
-				var attachments = model.Attachments.Select(item => item.MapEntity(_mapper, CurrentUserId)).ToList();
-				foreach (var attachment in attachments)
-				{
-					attachment.PostType = PostType.Note;
-					attachment.PostId = note.Id;
-				}
-
-				await _attachmentsService.SyncAttachmentsAsync(note, attachments);
-
-				note.Attachments = attachments;
-			}
-			else
-			{
-				await _attachmentsService.SyncAttachmentsAsync(note, null);
-			}
-
-			return Ok();
-		}
-
-		[HttpDelete("{id}")]
-		public async Task<ActionResult> Delete(int id)
-		{
-			var note = await _notesService.GetByIdAsync(id);
-			if (note == null) return NotFound();
-
-			note.SetUpdated(CurrentUserId);
-			await _notesService.RemoveAsync(note);
-
-			return Ok();
-		}
-
 		async Task<TermViewModel> LoadTermViewModelAsync(Term term)
 		{
 			var termIds = new List<int>() { term.Id };
@@ -196,16 +125,6 @@ namespace Web.Controllers.Admin
 			termViewModel.LoadNotes(noteViewList);
 
 			return termViewModel;
-		}
-
-
-		void ValidateRequest(NoteViewModel model)
-		{
-			if (String.IsNullOrEmpty(model.Text) && model.Attachments.IsNullOrEmpty())
-			{
-				ModelState.AddModelError("text", "必須填寫內容");
-				return;
-			}
 		}
 
 	}

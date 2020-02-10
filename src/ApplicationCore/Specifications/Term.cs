@@ -37,5 +37,10 @@ namespace ApplicationCore.Specifications
 		{
 			AddInclude(item => item.Subject);
 		}
+
+		public TermFilterBySubjectsSpecification(IList<int> subjectIds, int parentId) : base(item => !item.Removed && subjectIds.Contains(item.SubjectId) && item.ParentId == parentId )
+		{
+			AddInclude(item => item.Subject);
+		}
 	}
 }
