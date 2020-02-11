@@ -54,5 +54,11 @@ namespace ApplicationCore.Helpers
 
 			return RemoveHtmlTags(htmlString).Trim();
 		}
+
+		public static bool HasHtmlTag(this string text)
+		{
+			var htmlRegex = new Regex(@"<(\s*[(\/?)\w+]*)");
+			return htmlRegex.IsMatch(text);
+		}
 	}
 }

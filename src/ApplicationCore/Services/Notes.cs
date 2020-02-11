@@ -14,7 +14,6 @@ namespace ApplicationCore.Services
 	public interface INotesService
 	{
 		Task<IEnumerable<Note>> FetchAsync(IList<int> termIds);
-		//Task<IEnumerable<Note>> FetchAsync(ICollection<string> keywords);
 		Task<Note> GetByIdAsync(int id);
 		Task<Note> CreateAsync(Note note);
 		Task UpdateAsync(Note note);

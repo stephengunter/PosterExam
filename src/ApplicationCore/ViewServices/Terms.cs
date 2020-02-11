@@ -32,7 +32,7 @@ namespace ApplicationCore.ViewServices
 		public static Term MapEntity(this TermViewModel model, IMapper mapper, string currentUserId)
 		{
 			var entity = mapper.Map<TermViewModel, Term>(model);
-			entity.Text = entity.Text.ReplaceNewLine();
+			if (!entity.Text.HasHtmlTag())  entity.Text = entity.Text.ReplaceNewLine();
 
 			entity.Highlight = model.Highlights.HasItems() ? JsonConvert.SerializeObject(model.Highlights) : "";
 			entity.Reference = model.References.HasItems() ? JsonConvert.SerializeObject(model.References) : "";

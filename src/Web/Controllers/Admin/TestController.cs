@@ -34,8 +34,9 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-			
-			return Ok();
+			var a = new List<int> { 1, 2, 3 };
+			var b = new List<int> { 1,2,3,4, 5 };
+			return Ok(a.Except(b));
 		}
 
 	}

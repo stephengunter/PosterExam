@@ -36,7 +36,7 @@ namespace ApplicationCore.ViewServices
 			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);
 
-			entity.Text = entity.Text.ReplaceNewLine();
+			if (!entity.Text.HasHtmlTag()) entity.Text = entity.Text.ReplaceNewLine();
 
 			entity.Highlight = model.Highlights.HasItems() ? JsonConvert.SerializeObject(model.Highlights) : "";
 			entity.Source = model.Sources.HasItems() ? JsonConvert.SerializeObject(model.Sources) : "";
@@ -55,6 +55,9 @@ namespace ApplicationCore.ViewServices
 
 			return pageList;
 		}
+
+		public static IEnumerable<Note> GetOrdered(this IEnumerable<Note> notes)
+			=> notes.OrderBy(item => item.Order);
 
 		public static IEnumerable<Note> FilterByKeyword(this IEnumerable<Note> notes, ICollection<string> keywords)
 			=> notes.Where(item => keywords.Any(item.HasKeyword)).ToList();

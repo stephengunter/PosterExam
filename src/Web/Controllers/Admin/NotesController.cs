@@ -72,22 +72,24 @@ namespace Web.Controllers.Admin
 				var selectedTerm = _termsService.GetById(term);
 				var termViewModel = await LoadTermViewModelAsync(selectedTerm);
 
-				
+
 				if (termViewModel.SubItems.HasItems()) return Ok(termViewModel.SubItems);
 				else return Ok(new List<TermViewModel> { termViewModel });
 			}
-			else if(subject > 0)
+			else if (subject > 0)
 			{
+				var keywords = keyword.GetKeywords();
 				Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
 				int parent = -1;
-				var terms = await _termsService.FetchAsync(selectedSubject, parent);
+				//科目底下所有條文
+				var terms = (await _termsService.FetchAsync(selectedSubject, parent)).Where(x => !x.ChapterTitle);
+				var termIds = terms.Select(x => x.Id).ToList();
+
 				if (terms.HasItems())
 				{
 					_termsService.LoadSubItems(terms);
 
-					var keywords = keyword.GetKeywords();
 					if (keywords.HasItems()) terms = terms.FilterByKeyword(keywords);
-
 					terms = terms.GetOrdered();
 				}
 
@@ -97,6 +99,35 @@ namespace Web.Controllers.Admin
 					var termViewModel = await LoadTermViewModelAsync(item);
 					termViewModelList.Add(termViewModel);
 				}
+
+
+				if (keywords.HasItems())
+				{
+					var notes = await _notesService.FetchAsync(termIds);
+					notes = notes.FilterByKeyword(keywords);
+
+					if (notes.HasItems())
+					{
+						foreach (int termId in notes.Select(x => x.TermId).Distinct())
+						{
+							var exist = termViewModelList.FirstOrDefault(x => x.Id == termId);
+							if (exist == null)
+							{
+								var selectedTerm = _termsService.GetById(termId);
+								var noteInTerms = notes.Where(x => x.TermId == termId);
+
+								var termViewModel = await LoadTermViewModelAsync(selectedTerm);
+								termViewModelList.Add(termViewModel);
+							}
+						}
+
+						termViewModelList = termViewModelList.OrderBy(item => item.Order).ToList();
+
+					}
+
+
+				}
+
 
 				return Ok(termViewModelList);
 			}
@@ -180,12 +211,14 @@ namespace Web.Controllers.Admin
 			return Ok();
 		}
 
-		async Task<TermViewModel> LoadTermViewModelAsync(Term term)
+		async Task<TermViewModel> LoadTermViewModelAsync(Term term, IEnumerable<Note> notes = null)
 		{
-			var termIds = new List<int>() { term.Id };
-			if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
-
-			var notes = await _notesService.FetchAsync(termIds);
+			if (notes == null)
+			{
+				var termIds = new List<int>() { term.Id };
+				if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
+				notes = await _notesService.FetchAsync(termIds);
+			}
 
 			var postIds = notes.Select(x => x.Id).ToList();
 			var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
@@ -197,7 +230,6 @@ namespace Web.Controllers.Admin
 
 			return termViewModel;
 		}
-
 
 		void ValidateRequest(NoteViewModel model)
 		{

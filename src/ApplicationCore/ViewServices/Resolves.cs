@@ -36,7 +36,7 @@ namespace ApplicationCore.ViewServices
 			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);
 
-			entity.Text = entity.Text.ReplaceNewLine();
+			if(!entity.Text.HasHtmlTag()) entity.Text = entity.Text.ReplaceNewLine();
 
 			entity.Highlight = model.Highlights.HasItems() ? JsonConvert.SerializeObject(model.Highlights) : "";
 			entity.Source = model.Sources.HasItems() ? JsonConvert.SerializeObject(model.Sources) : "";
