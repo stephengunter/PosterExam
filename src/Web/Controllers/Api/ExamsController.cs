@@ -78,7 +78,6 @@ namespace Web.Controllers
 
 			if (exams.HasItems())
 			{
-				var ToExamStaus = status.ToExamStaus();
 				exams = exams.FilterByStatus(status.ToExamStaus());
 
 				var subjects = await _subjectsService.FetchAsync();

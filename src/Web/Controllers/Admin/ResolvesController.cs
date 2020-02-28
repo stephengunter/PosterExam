@@ -17,15 +17,20 @@ namespace Web.Controllers.Admin
 	public class ResolvesController : BaseAdminController
 	{
 		private readonly IResolvesService _resolvesService;
+		private readonly INotesService _notesService;
+		private readonly ITermsService _termsService;
 		private readonly IReviewRecordsService _reviewRecordsService;
 		private readonly IAttachmentsService _attachmentsService;
 		private readonly IMapper _mapper;
 
 		public ResolvesController(IResolvesService resolvesService, IReviewRecordsService reviewRecordsService,
+			INotesService notesService, ITermsService termsService,
 			IAttachmentsService attachmentsService,IMapper mapper)
 		{
 			_resolvesService = resolvesService;
 			_reviewRecordsService = reviewRecordsService;
+			_notesService = notesService;
+			_termsService = termsService;
 			_attachmentsService = attachmentsService;
 			_mapper = mapper;
 		}
@@ -37,15 +42,33 @@ namespace Web.Controllers.Admin
 
 			List<UploadFile> attachments = null;
 
-			if (resolves.IsNullOrEmpty()) return Ok(resolves.GetPagedList(_mapper, attachments, page, pageSize));
+			if (resolves.IsNullOrEmpty())
+			{
+				if (question > 0) return Ok(new List<ResolveViewModel>());
+				else return Ok(resolves.GetPagedList(_mapper, attachments, page, pageSize));
+			}
 
 			var postIds = resolves.Select(x => x.Id).ToList();
 
 			attachments = (await _attachmentsService.FetchAsync(PostType.Resolve, postIds)).ToList();
 
-
-			var pageList = resolves.GetPagedList(_mapper, attachments.ToList(), page, pageSize);
-			return Ok(pageList);
+			if (question > 0)
+			{
+				var viewList = resolves.MapViewModelList(_mapper, attachments.ToList());
+				foreach (var view in viewList)
+				{
+					foreach (var item in view.Sources)
+					{
+						item.MapContent(_notesService, _termsService);
+					}
+				}
+				return Ok(viewList);
+			}
+			else
+			{
+				var pageList = resolves.GetPagedList(_mapper, attachments.ToList(), page, pageSize);
+				return Ok(pageList);
+			}
 		}
 
 		[HttpPost("")]
@@ -135,10 +158,39 @@ namespace Web.Controllers.Admin
 
 		void ValidateRequest(ResolveViewModel model)
 		{
-			if (String.IsNullOrEmpty(model.Text) && model.Attachments.IsNullOrEmpty())
+			
+
+			if (model.Sources.HasItems())
 			{
-				ModelState.AddModelError("text", "必須填寫內容");
-				return;
+				foreach (var item in model.Sources)
+				{
+					if (item.NoteId > 0)
+					{
+						var note = _notesService.GetById(item.NoteId);
+						if (note == null)
+						{
+							ModelState.AddModelError("sources", $"錯誤的參考. Note Id: ${item.NoteId}");
+							return;
+						}
+					}
+					else
+					{
+						var term = _termsService.GetById(item.TermId);
+						if (term == null)
+						{
+							ModelState.AddModelError("sources", $"錯誤的參考. Term Id: ${item.TermId}");
+							return;
+						}
+					}
+				}
+			}
+			else
+			{
+				if (String.IsNullOrEmpty(model.Text) && model.Attachments.IsNullOrEmpty())
+				{
+					ModelState.AddModelError("text", "必須填寫內容");
+					return;
+				}
 			}
 		}
 

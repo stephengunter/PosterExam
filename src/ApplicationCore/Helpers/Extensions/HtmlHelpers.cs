@@ -57,6 +57,8 @@ namespace ApplicationCore.Helpers
 
 		public static bool HasHtmlTag(this string text)
 		{
+			if (String.IsNullOrEmpty(text)) return false;
+
 			var htmlRegex = new Regex(@"<(\s*[(\/?)\w+]*)");
 			return htmlRegex.IsMatch(text);
 		}

@@ -34,36 +34,7 @@ namespace Web.Controllers.Admin
 
 			_mapper = mapper;
 		}
-
-		[HttpGet("categories")]
-		public async Task<ActionResult> Categories()
-		{
-			var allSubjects = await _subjectsService.FetchAsync();
-
-			var rootSubjects = allSubjects.Where(x => x.ParentId < 1).GetOrdered();
-
-			var categories = rootSubjects.Select(item => item.MapNoteCategoryViewModel()).ToList();
-			foreach (var root in categories)
-			{
-				int parentId = root.Id;
-				var subjects = allSubjects.Where(x => x.ParentId == parentId);
-				root.SubItems = subjects.Select(item => item.MapNoteCategoryViewModel(parentId)).ToList();
-			}
-
-			var subjectCategories = categories.SelectMany(x => x.SubItems);
-
-			var spec = new TermFilterBySubjectsSpecification(subjectCategories.Select(item => item.Id).ToList(), 0);
-			var termList = (await _termsService.FetchAsync(spec));
-
-			foreach (var subjectCategory in subjectCategories)
-			{
-				var terms = termList.Where(item => item.SubjectId == subjectCategory.Id && item.ChapterTitle == true);
-				subjectCategory.SubItems = terms.Select(item => item.MapNoteCategoryViewModel()).ToList();
-			}
-
-			return Ok(categories);
-		}
-
+		
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int term = 0, int subject = 0, string keyword = "")
 		{
@@ -136,6 +107,29 @@ namespace Web.Controllers.Admin
 			return BadRequest(ModelState);
 		}
 
+		[HttpGet("create")]
+		public async Task<ActionResult> Create(int term)
+		{
+			Term selectedTerm = await _termsService.GetByIdAsync(term);
+			if (selectedTerm == null)
+			{
+				ModelState.AddModelError("term", "條文課綱不存在");
+				return BadRequest(ModelState);
+			}
+			int parent = 0;
+			int maxOrder = await _notesService.GetMaxOrderAsync(selectedTerm, parent);
+			var model = new NoteViewModel()
+			{
+				Highlight = "",
+				Source = "",
+				Order = maxOrder + 1,
+				TermId = term,
+				ParentId = parent
+			};
+			return Ok(model);
+		}
+
+
 
 		[HttpPost("")]
 		public async Task<ActionResult> Store([FromBody] NoteViewModel model)
@@ -196,6 +190,13 @@ namespace Web.Controllers.Admin
 				await _attachmentsService.SyncAttachmentsAsync(note, null);
 			}
 
+			return Ok();
+		}
+
+		[HttpPost("order")]
+		public async Task<ActionResult> Order([FromBody] OrderRequest model)
+		{
+			await _notesService.UpdateOrderAsync(model.TargetId, model.ReplaceId, model.Up);
 			return Ok();
 		}
 

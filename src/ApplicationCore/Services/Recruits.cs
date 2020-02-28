@@ -28,6 +28,8 @@ namespace ApplicationCore.Services
 
 		ICollection<int> GetSubIds(int id);
 
+		Task<IEnumerable<Recruit>> FetchBySubjectAsync(int subjectId);
+
 		Task<IEnumerable<Recruit>> FetchByTypeAsync(RecruitEntityType type);
 
 		Task<Recruit> FindByYearSubjectAsync(int year, Subject subject);
@@ -144,6 +146,9 @@ namespace ApplicationCore.Services
 
 			return recruit.GetSubIds();
 		}
+
+		
+		public async Task<IEnumerable<Recruit>> FetchBySubjectAsync(int subjectId) => await _recruitRepository.ListAsync(new RecruitFilterBySubjectSpecification(subjectId));
 
 		public async Task<IEnumerable<Recruit>> FetchByTypeAsync(RecruitEntityType type)
 		{

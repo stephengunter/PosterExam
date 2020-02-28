@@ -30,8 +30,11 @@ namespace ApplicationCore.Views
 
     public class SourceViewModel
     { 
-        public string Link { get; set; }
+        public int TermId { get; set; }
+        public int NoteId { get; set; }
+        public string Title { get; set; }
         public string Text { get; set; }
+        public ICollection<string> Highlights { get; set; } = new List<string>();
     }
 
 }

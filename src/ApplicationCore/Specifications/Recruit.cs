@@ -26,4 +26,12 @@ namespace ApplicationCore.Specifications
 
 
 	}
+
+	public class RecruitFilterBySubjectSpecification : BaseSpecification<Recruit>
+	{
+		public RecruitFilterBySubjectSpecification(int subjectId) : base(item => !item.Removed && item.SubjectId == subjectId)
+		{
+
+		}
+	}
 }

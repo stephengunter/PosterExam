@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Web.Models;
 using ApplicationCore.Models;
+using ApplicationCore.Helpers;
 
 namespace Web.Helpers
 {
@@ -23,7 +24,7 @@ namespace Web.Helpers
 
 		public static NoteCategoryViewModel MapNoteCategoryViewModel(this Term term)
 		{
-			return new NoteCategoryViewModel
+			var model = new NoteCategoryViewModel
 			{
 				Id = term.Id,
 				ParentId = term.SubjectId,
@@ -31,6 +32,10 @@ namespace Web.Helpers
 				Type = NoteCategoryType.ChapterTitle.ToString()
 
 			};
+			
+			if (term.SubItems.HasItems()) model.SubItems = term.SubItems.Select(item => item.MapNoteCategoryViewModel()).ToList();
+
+			return model;
 		}
 	}
 }

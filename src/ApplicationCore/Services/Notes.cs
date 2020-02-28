@@ -16,6 +16,7 @@ namespace ApplicationCore.Services
 		Task<IEnumerable<Note>> FetchAsync(IList<int> termIds);
 		Task<Note> GetByIdAsync(int id);
 		Task<Note> CreateAsync(Note note);
+		Task UpdateOrderAsync(int target, int replace, bool up);
 		Task UpdateAsync(Note note);
 		Task UpdateAsync(Note existingEntity, Note model);
 		Task RemoveAsync(Note note);
@@ -43,8 +44,7 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Note>> FetchAsync(IList<int> termIds) => await _noteRepository.ListAsync(new NoteTermFilterSpecification(termIds));
 
-		//public async Task<IEnumerable<Note>> FetchAsync(ICollection<string> keywords) => await _noteRepository.ListAsync(new NoteFilterSpecification(keywords));
-
+		
 		public async Task<Note> GetByIdAsync(int id) => await _noteRepository.GetByIdAsync(id);
 
 		public async Task<Note> CreateAsync(Note note) => await _noteRepository.AddAsync(note);
@@ -52,6 +52,26 @@ namespace ApplicationCore.Services
 		public async Task UpdateAsync(Note note) => await _noteRepository.UpdateAsync(note);
 
 		public async Task UpdateAsync(Note existingEntity, Note model) => await _noteRepository.UpdateAsync(existingEntity, model);
+
+		public async Task UpdateOrderAsync(int target, int replace, bool up)
+		{
+			var targetEntity = await _noteRepository.GetByIdAsync(target);
+			int targetOrder = targetEntity.Order;
+
+			var replaceEntity = await _noteRepository.GetByIdAsync(replace);
+			int replaceOrder = replaceEntity.Order;
+
+			targetEntity.Order = replaceOrder;
+			replaceEntity.Order = targetOrder;
+
+			if (targetEntity.Order == replaceEntity.Order)
+			{
+				if (up) replaceEntity.Order += 1;
+				else targetEntity.Order += 1;
+			}
+
+			_noteRepository.UpdateRange(new List<Note> { targetEntity, replaceEntity });
+		}
 
 		public async Task RemoveAsync(Note note)
 		{
