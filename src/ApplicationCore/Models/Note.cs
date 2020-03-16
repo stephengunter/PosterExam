@@ -17,7 +17,7 @@ namespace ApplicationCore.Models
 
         public string Highlight { get; set; } //json string
 
-        public string Source { get; set; } //json string
+        public string Reference { get; set; } //json string
 
         public Term Term { get; set; }
 

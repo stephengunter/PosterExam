@@ -19,7 +19,7 @@ using ApplicationCore.Specifications;
 
 namespace Web.Controllers
 {
-	[Authorize]
+	//[Authorize]
 	public class NotesController : BaseController
 	{
 		private readonly INotesService _notesService;

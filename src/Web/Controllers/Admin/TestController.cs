@@ -19,9 +19,7 @@ namespace Web.Controllers.Admin
 {
 	public class ATestController : BaseController
 	{
-
-		private DefaultContext _defaultContext;
-
+		private readonly DefaultContext _defaultContext;
 		public ATestController(DefaultContext defaultContext)
 		{
 			_defaultContext = defaultContext;
@@ -29,9 +27,16 @@ namespace Web.Controllers.Admin
 
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index()
+		public async Task<ActionResult> Index(int term)
 		{
-			
+			var terms = _defaultContext.Terms.Where(x => x.SubjectId == 6 && x.ParentId > 0).ToList();
+			foreach (var item in terms)
+			{
+				item.Hide = true;
+			}
+
+			_defaultContext.SaveChanges();
+
 			return Ok();
 		}
 

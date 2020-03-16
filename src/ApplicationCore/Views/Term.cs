@@ -18,6 +18,8 @@ namespace ApplicationCore.Views
 
 		public string Text { get; set; }
 
+		public bool Hide { get; set; }
+
 		public string Highlight { get; set; } //json string
 
 		public string Reference { get; set; } //json string
@@ -47,6 +49,7 @@ namespace ApplicationCore.Views
 
 	public class ReferenceViewModel
 	{
+		public string Type { get; set; }
 		public string Id { get; set; }
 		public string Text { get; set; }
 	}

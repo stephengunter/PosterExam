@@ -27,7 +27,7 @@ namespace ApplicationCore.ViewServices
 			else if (model.TermId > 0)
 			{
 				var term = termsService.GetById(model.TermId);
-				model.Title = term.Title;
+				model.Title = $"{term.Subject.Title} {term.Title}" ;
 				model.Text = term.Text;
 			}
 		}

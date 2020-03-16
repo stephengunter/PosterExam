@@ -158,8 +158,6 @@ namespace Web.Controllers.Admin
 
 		void ValidateRequest(ResolveViewModel model)
 		{
-			
-
 			if (model.Sources.HasItems())
 			{
 				foreach (var item in model.Sources)

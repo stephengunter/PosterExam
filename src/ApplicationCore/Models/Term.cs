@@ -20,9 +20,13 @@ namespace ApplicationCore.Models
 
 		public ICollection<Note> Notes { get; private set; }
 
+		public bool Hide { get; set; }
+
 		public string Highlight { get; set; } //json string
 
 		public string Reference { get; set; } //json string
+
+		
 
 		[NotMapped]
 		public ICollection<Term> SubItems { get; private set; }

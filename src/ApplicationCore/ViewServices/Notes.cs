@@ -22,7 +22,7 @@ namespace ApplicationCore.ViewServices
 			var model = mapper.Map<NoteViewModel>(note);
 
 			if (!String.IsNullOrEmpty(model.Highlight)) model.Highlights =  JsonConvert.DeserializeObject<ICollection<string>>(model.Highlight);
-			if (!String.IsNullOrEmpty(model.Source)) model.Sources = JsonConvert.DeserializeObject<ICollection<SourceViewModel>>(model.Source);
+			if (!String.IsNullOrEmpty(model.Reference)) model.References = JsonConvert.DeserializeObject<ICollection<ReferenceViewModel>>(model.Reference);
 
 			return model;
 		}
@@ -39,7 +39,7 @@ namespace ApplicationCore.ViewServices
 			if (!entity.Text.HasHtmlTag()) entity.Text = entity.Text.ReplaceNewLine();
 
 			entity.Highlight = model.Highlights.HasItems() ? JsonConvert.SerializeObject(model.Highlights) : "";
-			entity.Source = model.Sources.HasItems() ? JsonConvert.SerializeObject(model.Sources) : "";
+			entity.Reference = model.References.HasItems() ? JsonConvert.SerializeObject(model.References) : "";
 
 			return entity;
 		}

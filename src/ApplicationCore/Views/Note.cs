@@ -16,11 +16,11 @@ namespace ApplicationCore.Views
 
         public string Highlight { get; set; } //json string
 
-        public string Source { get; set; } //json string
+        public string Reference { get; set; } //json string
 
         public ICollection<AttachmentViewModel> Attachments { get; set; } = new List<AttachmentViewModel>();
 
-        public ICollection<SourceViewModel> Sources { get; set; } = new List<SourceViewModel>();
+        public ICollection<ReferenceViewModel> References { get; set; } = new List<ReferenceViewModel>();
 
         public ICollection<string> Highlights { get; set; } = new List<string>();
     }

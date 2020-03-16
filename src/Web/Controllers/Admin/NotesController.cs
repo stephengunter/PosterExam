@@ -120,8 +120,7 @@ namespace Web.Controllers.Admin
 			int maxOrder = await _notesService.GetMaxOrderAsync(selectedTerm, parent);
 			var model = new NoteViewModel()
 			{
-				Highlight = "",
-				Source = "",
+			
 				Order = maxOrder + 1,
 				TermId = term,
 				ParentId = parent
@@ -154,6 +153,15 @@ namespace Web.Controllers.Admin
 				note.Attachments = attachments;
 			}
 
+
+			return Ok(note.MapViewModel(_mapper));
+		}
+
+		[HttpGet("{id}")]
+		public ActionResult Details(int id)
+		{
+			var note = _notesService.GetById(id);
+			if (note == null) return NotFound();
 
 			return Ok(note.MapViewModel(_mapper));
 		}
