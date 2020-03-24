@@ -59,9 +59,20 @@ namespace Web.Controllers.Admin
 			return builder.InitialCatalog;
 		}
 
+		[HttpGet("dbname")]
+		public ActionResult DBName()
+		{
+			var connectionString = _context.Database.GetDbConnection().ConnectionString;
+			string dbName = GetDbName(connectionString);
+
+
+			return Ok(dbName);
+		}
+
 		[HttpPost("migrate")]
 		public ActionResult Migrate(AdminRequest model)
 		{
+			
 			ValidateRequest(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using ApplicationCore.Helpers;
 using Infrastructure.Entities;
 using Infrastructure.Interfaces;
 
@@ -21,6 +22,8 @@ namespace ApplicationCore.Models
 		public ICollection<Note> Notes { get; private set; }
 
 		public bool Hide { get; set; }
+
+		public string QIds { get; set; } //精選試題
 
 		public string Highlight { get; set; } //json string
 
@@ -46,6 +49,17 @@ namespace ApplicationCore.Models
 				subIds.AddRange(item.GetSubIds());
 			}
 			return subIds;
+		}
+
+		public ICollection<int> GetQIds()
+		{
+			var qids = new List<int>();
+			foreach (var item in SubItems)
+			{
+				qids.AddRange(item.QIds.SplitToIds());
+				qids.AddRange(item.GetQIds());
+			}
+			return qids;
 		}
 
 

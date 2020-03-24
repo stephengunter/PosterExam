@@ -22,19 +22,50 @@ namespace Web.Controllers.Admin
 		private readonly IAttachmentsService _attachmentsService;
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
+		private readonly IQuestionsService _questionsService;
 		private readonly IMapper _mapper;
 
 		public NotesController(INotesService notesService, ISubjectsService subjectsService, ITermsService termsService,
-			 IAttachmentsService attachmentsService, IMapper mapper)
+			 IAttachmentsService attachmentsService, IQuestionsService questionsService, IMapper mapper)
 		{
 			_notesService = notesService;
 			_subjectsService = subjectsService;
 			_termsService = termsService;
 			_attachmentsService = attachmentsService;
-
+			_questionsService = questionsService;
 			_mapper = mapper;
 		}
-		
+
+		[HttpGet("categories")]
+		public async Task<ActionResult> Categories(int type = 0)
+		{
+			var allSubjects = await _subjectsService.FetchAsync();
+			var allTerms = await _termsService.FetchAllAsync();
+
+			var rootSubjects = allSubjects.Where(x => x.ParentId == 0).GetOrdered();
+
+			var categories = rootSubjects.Select(item => item.MapNoteCategoryViewModel()).ToList();
+			foreach (var root in categories)
+			{
+				int parentId = root.Id;
+				var subjects = allSubjects.Where(x => x.ParentId == parentId).GetOrdered();
+				root.SubItems = subjects.Select(item => item.MapNoteCategoryViewModel(parentId)).ToList();
+			}
+
+			var subjectCategories = categories.SelectMany(x => x.SubItems);
+
+			foreach (var subjectCategory in subjectCategories)
+			{
+				var terms = allTerms.Where(item => item.SubjectId == subjectCategory.Id && item.ParentId == 0 && item.ChapterTitle && !item.Hide).GetOrdered();
+				if (type > 0) foreach (var item in terms) item.LoadSubItems(allTerms);
+
+				subjectCategory.SubItems = terms.Select(item => item.MapNoteCategoryViewModel()).ToList();
+			}
+
+			return Ok(categories);
+		}
+
+
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int term = 0, int subject = 0, string keyword = "")
 		{
@@ -53,7 +84,7 @@ namespace Web.Controllers.Admin
 				Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
 				int parent = -1;
 				//科目底下所有條文
-				var terms = (await _termsService.FetchAsync(selectedSubject, parent)).Where(x => !x.ChapterTitle);
+				var terms = (await _termsService.FetchAsync(selectedSubject, parent));
 				var termIds = terms.Select(x => x.Id).ToList();
 
 				if (terms.HasItems())
@@ -120,7 +151,7 @@ namespace Web.Controllers.Admin
 			int maxOrder = await _notesService.GetMaxOrderAsync(selectedTerm, parent);
 			var model = new NoteViewModel()
 			{
-			
+				Active = true,
 				Order = maxOrder + 1,
 				TermId = term,
 				ParentId = parent
@@ -222,7 +253,7 @@ namespace Web.Controllers.Admin
 
 		async Task<TermViewModel> LoadTermViewModelAsync(Term term, IEnumerable<Note> notes = null)
 		{
-			if (notes == null)
+			if (notes.IsNullOrEmpty())
 			{
 				var termIds = new List<int>() { term.Id };
 				if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
@@ -234,10 +265,38 @@ namespace Web.Controllers.Admin
 
 			var noteViewList = notes.MapViewModelList(_mapper, attachments.ToList());
 
+			var questionViewList = await FetchQuestionsByTermAsync(term);
+
 			var termViewModel = term.MapViewModel(_mapper);
 			termViewModel.LoadNotes(noteViewList);
+			termViewModel.LoadQuestions(questionViewList);
 
 			return termViewModel;
+		}
+
+		async Task<List<QuestionViewModel>> FetchQuestionsByTermAsync(Term selectedTerm)
+		{
+			var qIds = selectedTerm.GetQIds();
+
+			if (qIds.HasItems()) qIds = qIds.Distinct().ToList();
+
+			var questions = (await _questionsService.FetchByIdsAsync(qIds)).ToList();
+
+			return await LoadQuestionViewsAsync(questions);
+		}
+
+		async Task<List<QuestionViewModel>> LoadQuestionViewsAsync(IEnumerable<Question> questions)
+		{
+			List<Recruit> recruits = null;
+			List<Term> allTerms = null;
+
+			var types = new List<PostType> { PostType.Option };
+			var attachments = await _attachmentsService.FetchByTypesAsync(types);
+
+
+			var models = questions.MapViewModelList(_mapper, recruits, attachments.ToList(), allTerms);
+
+			return models;
 		}
 
 		void ValidateRequest(NoteViewModel model)

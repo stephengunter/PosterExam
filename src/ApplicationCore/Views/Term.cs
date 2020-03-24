@@ -1,4 +1,5 @@
-﻿using Infrastructure.Views;
+﻿using ApplicationCore.Helpers;
+using Infrastructure.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace ApplicationCore.Views
 
 		public bool Hide { get; set; }
 
+		public string QIds { get; set; } //精選試題
+
 		public string Highlight { get; set; } //json string
 
 		public string Reference { get; set; } //json string
@@ -36,6 +39,8 @@ namespace ApplicationCore.Views
 
 		public ICollection<NoteViewModel> Notes { get; set; }
 
+		public ICollection<QuestionViewModel> Questions { get; set; }
+
 		public void LoadNotes(IEnumerable<NoteViewModel> notes)
 		{
 			Notes = notes.Where(item => item.TermId == this.Id).OrderBy(item => item.Order).ToList();
@@ -43,6 +48,21 @@ namespace ApplicationCore.Views
 			foreach (var item in SubItems)
 			{
 				item.LoadNotes(notes);
+			}
+		}
+
+		public void LoadQuestions(IEnumerable<QuestionViewModel> questions)
+		{
+			if (!String.IsNullOrEmpty(QIds))
+			{
+				var qids = QIds.SplitToIds();
+
+				Questions = questions.Where(item => qids.Contains(item.Id)).ToList();
+			}
+
+			foreach (var item in SubItems)
+			{
+				item.LoadQuestions(questions);
 			}
 		}
 	}

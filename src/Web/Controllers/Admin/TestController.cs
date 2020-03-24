@@ -27,17 +27,14 @@ namespace Web.Controllers.Admin
 
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int term)
+		public async Task<ActionResult> Index()
 		{
-			var terms = _defaultContext.Terms.Where(x => x.SubjectId == 6 && x.ParentId > 0).ToList();
-			foreach (var item in terms)
-			{
-				item.Hide = true;
-			}
 
-			_defaultContext.SaveChanges();
+			var term = _defaultContext.Terms.Find(1523);
+			term.LoadSubItems(_defaultContext.Terms.ToList());
 
-			return Ok();
+			var ids = new List<int>() { 1, 2, 3, 1 };
+			return Ok(ids.Distinct());
 		}
 
 	}

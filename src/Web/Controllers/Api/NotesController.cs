@@ -43,6 +43,9 @@ namespace Web.Controllers
 		public async Task<ActionResult> Categories()
 		{
 			var allSubjects = await _subjectsService.FetchAsync();
+			allSubjects = allSubjects.Where(x => x.Active);
+
+			var allTerms = await _termsService.FetchAllAsync();
 
 			var rootSubjects = allSubjects.Where(x => x.ParentId < 1).GetOrdered();
 
@@ -50,18 +53,16 @@ namespace Web.Controllers
 			foreach (var root in categories)
 			{
 				int parentId = root.Id;
-				var subjects = allSubjects.Where(x => x.ParentId == parentId);
+				var subjects = allSubjects.Where(x => x.ParentId == parentId).GetOrdered();
 				root.SubItems = subjects.Select(item => item.MapNoteCategoryViewModel(parentId)).ToList();
 			}
 
 			var subjectCategories = categories.SelectMany(x => x.SubItems);
 
-			var spec = new TermFilterBySubjectsSpecification(subjectCategories.Select(item => item.Id).ToList(), 0);
-			var termList = (await _termsService.FetchAsync(spec));
-
+			//只到ChapterTitle, 捨棄Hide項目
 			foreach (var subjectCategory in subjectCategories)
 			{
-				var terms = termList.Where(item => item.SubjectId == subjectCategory.Id && item.ChapterTitle == true);
+				var terms = allTerms.Where(item => item.SubjectId == subjectCategory.Id && item.ParentId == 0 && item.ChapterTitle && !item.Hide).GetOrdered();
 				subjectCategory.SubItems = terms.Select(item => item.MapNoteCategoryViewModel()).ToList();
 			}
 

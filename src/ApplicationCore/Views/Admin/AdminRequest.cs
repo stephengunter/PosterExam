@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ApplicationCore.Helpers;
 
 namespace ApplicationCore.Views
 {
@@ -11,10 +12,15 @@ namespace ApplicationCore.Views
 	{
 		public string Key { get; set; }
 		public string Cmd { get; set; }
-		public List<IFormFile> Files { get; set; }
+		public List<IFormFile> Files { get; set; } = new List<IFormFile>();
 
 
-		public IFormFile GetFile(string name) => Files.FirstOrDefault(item => Path.GetFileNameWithoutExtension(item.FileName) == name);
+		public IFormFile GetFile(string name)
+		{
+			if (Files.IsNullOrEmpty()) return null;
+			return Files.FirstOrDefault(item => Path.GetFileNameWithoutExtension(item.FileName) == name);
+
+		}
 	}
 
 }

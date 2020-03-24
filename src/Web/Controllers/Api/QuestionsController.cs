@@ -44,18 +44,45 @@ namespace Web.Controllers
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int term)
+		public async Task<ActionResult> Index(int term = 0, int subject = 0)
 		{
-			var selectedTerm = _termsService.GetById(term);
-			if (selectedTerm == null) return NotFound();
+			if (term > 0)
+			{
+				var selectedTerm = _termsService.GetById(term);
+				if (selectedTerm == null) return NotFound();
 
-			var subject = _subjectsService.GetById(selectedTerm.SubjectId);
+				var questionViews = await FetchByTermAsync(selectedTerm);
+				return Ok(questionViews);
+			}
+			else if (subject > 0)
+			{
+				Subject selectedSubject = _subjectsService.GetById(subject);
+				if (selectedSubject == null) return NotFound();
 
-			var termIds = selectedTerm.GetSubIds();
-			termIds.Add(selectedTerm.Id);
+				var questions = (await _questionsService.FetchAsync(selectedSubject)).ToList();
+				var questionViews = await LoadQuestionViewsAsync(questions);
+				return Ok(questionViews);
+			}
 
-			var questions = (await _questionsService.FetchAsync(subject, termIds)).ToList();
 
+			ModelState.AddModelError("params", "錯誤的查詢參數");
+			return BadRequest(ModelState);
+		}
+
+		async Task<List<QuestionViewModel>> FetchByTermAsync(Term selectedTerm)
+		{
+			var qIds = selectedTerm.GetQIds();
+
+			if (qIds.HasItems()) qIds = qIds.Distinct().ToList();
+
+			var questions = (await _questionsService.FetchByIdsAsync(qIds)).ToList();
+
+			return await LoadQuestionViewsAsync(questions);
+		}
+
+
+		async Task<List<QuestionViewModel>> LoadQuestionViewsAsync(IEnumerable<Question> questions)
+		{
 			var allRecruits = await _recruitsService.GetAllAsync();
 			List<Term> allTerms = null;
 
@@ -72,7 +99,7 @@ namespace Web.Controllers
 			}
 
 
-			return Ok(models);
+			return models;
 		}
 	}
 }

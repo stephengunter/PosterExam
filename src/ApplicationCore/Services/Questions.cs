@@ -15,6 +15,7 @@ namespace ApplicationCore.Services
 	{
 		Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null, ICollection<int> recruitIds = null);
 		Task<IEnumerable<Question>> FetchByRecruitAsync(Recruit recruit, Subject subject);
+		Task<IEnumerable<Question>> FetchByIdsAsync(IEnumerable<int> ids);
 
 		Task<Question> GetByIdAsync(int id);
 		Task<Question> CreateAsync(Question question);
@@ -81,6 +82,12 @@ namespace ApplicationCore.Services
 			var questionIds = FetchQuestionIdsByRecruits(recruitIds);
 
 			return list.Where(item => questionIds.Contains(item.Id)).ToList();
+		}
+
+		public async Task<IEnumerable<Question>> FetchByIdsAsync(IEnumerable<int> ids)
+		{
+			var spec = new QuestionFilterSpecification(ids);
+			return await _questionRepository.ListAsync(spec);
 		}
 
 		public async Task<Question> GetByIdAsync(int id) => await _questionRepository.GetByIdAsync(id);

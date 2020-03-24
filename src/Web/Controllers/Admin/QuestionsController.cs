@@ -105,9 +105,11 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("create")]
-		public ActionResult Create()
+		public ActionResult Create(int subject, int term = 0)
 		{
-			return Ok(new QuestionViewModel());
+			var model = new QuestionViewModel() { SubjectId = subject };
+			if (term > 0) model.TermIds = term.ToString();
+			return Ok(model);
 		}
 
 		[HttpPost("")]
