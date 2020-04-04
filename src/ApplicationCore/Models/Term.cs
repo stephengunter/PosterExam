@@ -54,6 +54,8 @@ namespace ApplicationCore.Models
 		public ICollection<int> GetQIds()
 		{
 			var qids = new List<int>();
+			if(!String.IsNullOrEmpty(QIds)) qids.AddRange(QIds.SplitToIds());
+
 			foreach (var item in SubItems)
 			{
 				qids.AddRange(item.QIds.SplitToIds());

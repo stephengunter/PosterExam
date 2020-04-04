@@ -21,6 +21,8 @@ namespace ApplicationCore.Models
 
         public Term Term { get; set; }
 
+        public bool Important { get; set; }
+
         [NotMapped]
         public ICollection<Note> SubItems { get; private set; }
 

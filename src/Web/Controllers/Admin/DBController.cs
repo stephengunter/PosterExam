@@ -73,7 +73,7 @@ namespace Web.Controllers.Admin
 		public ActionResult Migrate(AdminRequest model)
 		{
 			
-			ValidateRequest(model);
+			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			_context.Database.Migrate();
@@ -84,7 +84,7 @@ namespace Web.Controllers.Admin
 		[HttpPost("backup")]
 		public ActionResult Backup(AdminRequest model)
 		{
-			ValidateRequest(model);
+			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			var connectionString = _context.Database.GetDbConnection().ConnectionString;
@@ -111,7 +111,7 @@ namespace Web.Controllers.Admin
 		[HttpPost("export")]
 		public ActionResult Export(AdminRequest model)
 		{
-			ValidateRequest(model);
+			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 			
 			var folderPath = BackupFolder();
@@ -158,7 +158,7 @@ namespace Web.Controllers.Admin
 		[HttpPost("import")]
 		public async Task<IActionResult> Import([FromForm] AdminRequest model)
 		{
-			ValidateRequest(model);
+			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			if (model.Files.Count < 1)
@@ -267,12 +267,6 @@ namespace Web.Controllers.Admin
 			}
 
 			return Ok();
-		}
-
-		void ValidateRequest(AdminRequest model)
-		{
-			if(model.Key != _adminSettings.Key) ModelState.AddModelError("key", "認證錯誤");
-
 		}
 
 		void SaveJson(string folderPath, string name, string content)

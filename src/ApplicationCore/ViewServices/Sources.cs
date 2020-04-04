@@ -21,6 +21,7 @@ namespace ApplicationCore.ViewServices
 			if (model.NoteId > 0)
 			{
 				var note = notesService.GetById(model.NoteId);
+				model.TermId = note.TermId;
 				model.Title = note.Title;
 				model.Text = note.Text;
 			}
@@ -29,6 +30,7 @@ namespace ApplicationCore.ViewServices
 				var term = termsService.GetById(model.TermId);
 				model.Title = $"{term.Subject.Title} {term.Title}" ;
 				model.Text = term.Text;
+				model.NoteId = 0;
 			}
 		}
 		

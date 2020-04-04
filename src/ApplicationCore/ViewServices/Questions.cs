@@ -130,5 +130,10 @@ namespace ApplicationCore.ViewServices
 
 		#endregion
 
+
+		public static IEnumerable<Question> FilterByKeyword(this IEnumerable<Question> questions, ICollection<string> keywords)
+			=> questions.Where(item => keywords.Any(item.Title.CaseInsensitiveContains)).ToList();
+		
+
 	}
 }

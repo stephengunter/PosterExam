@@ -35,7 +35,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject, int term = 0, int recruit = 0, int page = 1, int pageSize = 10)
+		public async Task<ActionResult> Index(int subject, int term = 0, int recruit = 0, string keyword = "", int page = 1, int pageSize = 10)
 		{
 			Subject selectedSubject = _subjectsService.GetById(subject);
 			if (selectedSubject == null)
@@ -84,17 +84,20 @@ namespace Web.Controllers.Admin
 
 			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
 
-
-			List<Term> allTerms = null;
-			List<UploadFile> attachments = null;
-			if (questions.HasItems())
+			if (questions.IsNullOrEmpty())
 			{
-				attachments = (await _attachmentsService.FetchAsync(PostType.Option)).ToList();
-				allTerms = (await _termsService.FetchAllAsync()).ToList();
+				return Ok(questions.GetPagedList(_mapper, page, pageSize));
 			}
 
-			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments, allTerms, page, pageSize);
 
+			var keywords = keyword.GetKeywords();
+			if (keywords.HasItems()) questions = questions.FilterByKeyword(keywords);
+
+
+			List<Term> allTerms = (await _termsService.FetchAllAsync()).ToList();
+			List<UploadFile> attachments = (await _attachmentsService.FetchAsync(PostType.Option)).ToList();
+
+			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments, allTerms, page, pageSize);
 			
 			foreach (var item in pageList.ViewList)
 			{
@@ -113,8 +116,9 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpPost("")]
-		public async Task<ActionResult> Store([FromBody] QuestionViewModel model)
+		public async Task<ActionResult> Store([FromBody] QuestionEditForm form)
 		{
+			var model = form.Question;
 			await ValidateRequestAsync(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -131,6 +135,19 @@ namespace Web.Controllers.Admin
 					attachment.SetCreated(CurrentUserId);
 					await _attachmentsService.CreateAsync(attachment);
 				}
+			}
+
+			if (form.Choice && model.TermIds.SplitToIds().HasItems())
+			{
+				int termId = model.TermIds.SplitToIds().FirstOrDefault();
+				var term = await _termsService.GetByIdAsync(termId);
+
+				var qids = term.QIds.SplitToIds();
+				qids.Add(question.Id);
+
+				term.QIds = qids.JoinToStringIntegers();
+
+				await _termsService.UpdateAsync(term);
 			}
 			
 

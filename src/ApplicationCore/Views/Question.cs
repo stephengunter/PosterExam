@@ -29,11 +29,15 @@ namespace ApplicationCore.Views
 		public ICollection<TermViewModel> Terms { get; set; }
 
 		public int Index { get; set; }
+
+		
 	}
 
 	public class QuestionEditForm
 	{
 		public QuestionViewModel Question { get; set; } = new QuestionViewModel();
+
+		public bool Choice { get; set; } //精選
 
 		public ICollection<TermViewModel> Terms { get; set; }
 	}

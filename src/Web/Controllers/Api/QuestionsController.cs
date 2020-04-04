@@ -16,6 +16,7 @@ using Web.Models;
 using Web.Helpers;
 using Web.Helpers.ViewServices;
 using ApplicationCore.Specifications;
+using ApplicationCore.Paging;
 
 namespace Web.Controllers
 {
@@ -51,8 +52,15 @@ namespace Web.Controllers
 				var selectedTerm = _termsService.GetById(term);
 				if (selectedTerm == null) return NotFound();
 
-				var questionViews = await FetchByTermAsync(selectedTerm);
-				return Ok(questionViews);
+				var qIds = selectedTerm.GetQIds();
+
+				if (qIds.HasItems()) qIds = qIds.Distinct().ToList();
+
+				var questions = await _questionsService.FetchByIdsAsync(qIds);
+
+				var viewList = await LoadQuestionViewsAsync(questions);
+
+				return Ok(viewList);
 			}
 			else if (subject > 0)
 			{
@@ -64,20 +72,8 @@ namespace Web.Controllers
 				return Ok(questionViews);
 			}
 
-
 			ModelState.AddModelError("params", "錯誤的查詢參數");
 			return BadRequest(ModelState);
-		}
-
-		async Task<List<QuestionViewModel>> FetchByTermAsync(Term selectedTerm)
-		{
-			var qIds = selectedTerm.GetQIds();
-
-			if (qIds.HasItems()) qIds = qIds.Distinct().ToList();
-
-			var questions = (await _questionsService.FetchByIdsAsync(qIds)).ToList();
-
-			return await LoadQuestionViewsAsync(questions);
 		}
 
 
@@ -89,17 +85,16 @@ namespace Web.Controllers
 			var types = new List<PostType> { PostType.Option };
 			var attachments = await _attachmentsService.FetchByTypesAsync(types);
 
+			var viewList = questions.MapViewModelList(_mapper, allRecruits.ToList(), attachments.ToList(), allTerms);
 
-			var models = questions.MapViewModelList(_mapper, allRecruits.ToList(), attachments.ToList(), allTerms);
-
-			var sources = models.SelectMany(q => q.Resolves).SelectMany(r => r.Sources);
+			var sources = viewList.SelectMany(q => q.Resolves).SelectMany(r => r.Sources);
 			foreach (var item in sources)
 			{
 				item.MapContent(_notesService, _termsService);
 			}
 
 
-			return models;
+			return viewList;
 		}
 	}
 }

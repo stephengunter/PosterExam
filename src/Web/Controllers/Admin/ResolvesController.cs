@@ -11,6 +11,8 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Newtonsoft.Json;
+using ApplicationCore.Settings;
+using Microsoft.Extensions.Options;
 
 namespace Web.Controllers.Admin
 {
@@ -21,17 +23,19 @@ namespace Web.Controllers.Admin
 		private readonly ITermsService _termsService;
 		private readonly IReviewRecordsService _reviewRecordsService;
 		private readonly IAttachmentsService _attachmentsService;
+		private readonly AdminSettings _adminSettings;
 		private readonly IMapper _mapper;
 
 		public ResolvesController(IResolvesService resolvesService, IReviewRecordsService reviewRecordsService,
 			INotesService notesService, ITermsService termsService,
-			IAttachmentsService attachmentsService,IMapper mapper)
+			IAttachmentsService attachmentsService, IOptions<AdminSettings> adminSettings, IMapper mapper)
 		{
 			_resolvesService = resolvesService;
 			_reviewRecordsService = reviewRecordsService;
 			_notesService = notesService;
 			_termsService = termsService;
 			_attachmentsService = attachmentsService;
+			_adminSettings = adminSettings.Value;
 			_mapper = mapper;
 		}
 
@@ -155,6 +159,35 @@ namespace Web.Controllers.Admin
 
 			return Ok();
 		}
+
+		[HttpPost("admin")]
+		public async Task<ActionResult> Admin(AdminRequest model)
+		{
+			ValidateRequest(model, _adminSettings);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			//同步更新解析中的參考(因Note TermId可能變動)
+			var resolves = await _resolvesService.FetchAsync();
+
+			resolves = resolves.Where(x => !String.IsNullOrEmpty(x.Source)).ToList();
+
+			var viewList = resolves.MapViewModelList(_mapper, new List<UploadFile>());
+			foreach (var view in viewList)
+			{
+				foreach (var item in view.Sources)
+				{
+					item.MapContent(_notesService, _termsService);
+				}
+
+				var entity = resolves.Where(x => x.Id == view.Id).FirstOrDefault();
+				entity.Source = view.Sources.HasItems() ? JsonConvert.SerializeObject(view.Sources) : "";
+
+				await _resolvesService.UpdateAsync(entity);
+			}
+
+			return Ok();
+		}
+
 
 		void ValidateRequest(ResolveViewModel model)
 		{

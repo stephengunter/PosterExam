@@ -70,12 +70,12 @@ namespace Web.Controllers
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int term = 0, int subject = 0, string keyword = "")
+		public async Task<ActionResult> Index(int mode, int term = 0, int subject = 0, string keyword = "")
 		{
 			if (term > 0)
 			{
 				var selectedTerm = _termsService.GetById(term);
-				var termViewModel = await LoadTermViewModelAsync(selectedTerm);
+				var termViewModel = await LoadTermViewModelAsync(mode, selectedTerm);
 
 
 				if (termViewModel.SubItems.HasItems()) return Ok(termViewModel.SubItems);
@@ -101,7 +101,7 @@ namespace Web.Controllers
 				var termViewModelList = new List<TermViewModel>();
 				foreach (var item in terms)
 				{
-					var termViewModel = await LoadTermViewModelAsync(item);
+					var termViewModel = await LoadTermViewModelAsync(mode, item);
 					termViewModelList.Add(termViewModel);
 				}
 
@@ -121,7 +121,7 @@ namespace Web.Controllers
 								var selectedTerm = _termsService.GetById(termId);
 								var noteInTerms = notes.Where(x => x.TermId == termId);
 
-								var termViewModel = await LoadTermViewModelAsync(selectedTerm);
+								var termViewModel = await LoadTermViewModelAsync(mode, selectedTerm);
 								termViewModelList.Add(termViewModel);
 							}
 						}
@@ -141,14 +141,14 @@ namespace Web.Controllers
 			return BadRequest(ModelState);
 		}
 
-		async Task<TermViewModel> LoadTermViewModelAsync(Term term, IEnumerable<Note> notes = null)
+		async Task<TermViewModel> LoadTermViewModelAsync(int mode, Term term)
 		{
-			if (notes == null)
-			{
-				var termIds = new List<int>() { term.Id };
-				if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
-				notes = await _notesService.FetchAsync(termIds);
-			}
+			var termIds = new List<int>() { term.Id };
+			if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
+			var notes = await _notesService.FetchAsync(termIds);
+
+			if (mode > 0) notes = notes.Where(x => x.Important);
+
 
 			var postIds = notes.Select(x => x.Id).ToList();
 			var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
@@ -161,5 +161,18 @@ namespace Web.Controllers
 			return termViewModel;
 		}
 
+		[HttpGet("{id}")]
+		public ActionResult Details(int id)
+		{
+			var note = _notesService.GetById(id);
+			if (note == null) return NotFound();
+
+			return Ok(note.MapViewModel(_mapper));
+		}
+
+
+
 	}
+
+	
 }

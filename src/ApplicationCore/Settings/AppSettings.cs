@@ -11,6 +11,7 @@ namespace ApplicationCore.Settings
 		public string Url { get; set; }
 
 		public string UploadPath { get; set; }
+		public string DataPath { get; set; }
 	}
 
 	public class AuthSettings

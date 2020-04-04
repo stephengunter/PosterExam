@@ -14,6 +14,8 @@ namespace ApplicationCore.Views
 
         public string Text { get; set; }
 
+        public bool Important { get; set; }
+
         public string Highlight { get; set; } //json string
 
         public string Reference { get; set; } //json string

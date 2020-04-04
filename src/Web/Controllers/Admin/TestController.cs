@@ -14,27 +14,25 @@ using ApplicationCore.ViewServices;
 using Web.Models;
 using ApplicationCore.Specifications;
 using Web.Helpers;
+using Newtonsoft.Json;
 
 namespace Web.Controllers.Admin
 {
 	public class ATestController : BaseController
 	{
-		private readonly DefaultContext _defaultContext;
-		public ATestController(DefaultContext defaultContext)
+		private readonly ITermsService _termsService;
+		private readonly IMapper _mapper;
+		public ATestController(ITermsService termsService, IMapper mapper)
 		{
-			_defaultContext = defaultContext;
+			_termsService = termsService;
+			_mapper = mapper;
 		}
 
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-
-			var term = _defaultContext.Terms.Find(1523);
-			term.LoadSubItems(_defaultContext.Terms.ToList());
-
-			var ids = new List<int>() { 1, 2, 3, 1 };
-			return Ok(ids.Distinct());
+			return Ok();
 		}
 
 	}
