@@ -36,7 +36,7 @@ namespace ApplicationCore.DataAccess
 		public DbSet<RecruitQuestion> RecruitQuestions { get; set; }
 
 		public DbSet<ReviewRecord> ReviewRecords { get; set; }
-		
+
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{

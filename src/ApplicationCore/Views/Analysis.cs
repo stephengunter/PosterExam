@@ -15,7 +15,7 @@ namespace ApplicationCore.Views
 
         public SubjectViewModel Subject { get; set; }
 
-        public List<QuestionAnalysisSummaryView> SummaryList { get; set; }
+        public List<QuestionAnalysisSummaryView> SummaryList { get; set; } = new List<QuestionAnalysisSummaryView>();
 
         public List<QuestionAnalysisDetailView> Details { get; set; } = new List<QuestionAnalysisDetailView>();
 

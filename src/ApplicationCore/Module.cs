@@ -10,6 +10,7 @@ using ApplicationCore.DataAccess;
 using ApplicationCore.Services;
 using ApplicationCore.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Infrastructure.Interfaces;
 
 namespace ApplicationCore
 {
@@ -25,6 +26,7 @@ namespace ApplicationCore
 			builder.RegisterType<Logger>().As<ILogger>().SingleInstance();
 			builder.RegisterType<HasPermissionHandler>().As<IAuthorizationHandler>().InstancePerLifetimeScope();
 			builder.RegisterGeneric(typeof(DefaultRepository<>)).As(typeof(IDefaultRepository<>)).InstancePerLifetimeScope();
+			builder.RegisterGeneric(typeof(MongoRepository<>)).As(typeof(IMongoRepository<>)).InstancePerLifetimeScope();
 
 			builder.RegisterAssemblyTypes(AppDomain.CurrentDomain.GetAssemblies())
 				   .Where(t => t.Name.EndsWith("Service"))

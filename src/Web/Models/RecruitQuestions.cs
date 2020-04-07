@@ -49,6 +49,7 @@ namespace Web.Models
 
     public class RQPartViewModel
     {
+        public int Order { get; set; }
         public string Title { get; set; }
         public double Points { get; set; }
         public bool MultiAnswers { get; set; }

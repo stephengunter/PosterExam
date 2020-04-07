@@ -51,17 +51,17 @@ namespace ApplicationCore.Models
 			return subIds;
 		}
 
-		public ICollection<int> GetQIds()
+		public ICollection<int> GetQuestionIds()
 		{
-			var qids = new List<int>();
-			if(!String.IsNullOrEmpty(QIds)) qids.AddRange(QIds.SplitToIds());
+			var questionIds = new List<int>();
+			if(!String.IsNullOrEmpty(QIds)) questionIds.AddRange(QIds.SplitToIds());
 
-			foreach (var item in SubItems)
-			{
-				qids.AddRange(item.QIds.SplitToIds());
-				qids.AddRange(item.GetQIds());
-			}
-			return qids;
+			if (SubItems.IsNullOrEmpty()) return questionIds.ToList();
+
+			var subQids = SubItems.SelectMany(item => item.GetQuestionIds());
+			if (subQids.IsNullOrEmpty()) return questionIds.ToList();
+
+			return questionIds.Union(subQids).Distinct().ToList();
 		}
 
 

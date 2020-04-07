@@ -14,6 +14,34 @@ namespace ApplicationCore.ViewServices
 {
     public static class AnalysisViewService
     {
+        public static RecruitQuestionAnalysisView MapAnalysisView(this ExamSettingsViewModel examSettings)
+        {
+            var model = new RecruitQuestionAnalysisView();
+            model.Recruit = examSettings.Recruit;
+            model.RecruitId = examSettings.Recruit.Id;
+
+            var subjectList = examSettings.Parts.FirstOrDefault().Subjects;
+            model.SummaryList = subjectList.Select(item => new QuestionAnalysisSummaryView() { Subject = item.Subject, SubjectId = item.SubjectId }).ToList();
+
+            foreach (var part in examSettings.Parts)
+            {
+                var points = part.Points / part.Questions;
+                foreach (var subject in part.Subjects)
+                {
+                    var summaryView = model.SummaryList.FirstOrDefault(x => x.SubjectId == subject.SubjectId);
+                    summaryView.QuestionCount += subject.TotalQuestions;
+                    summaryView.Points += points * subject.TotalQuestions;
+                }
+            }
+
+            return model;
+
+        }
+
+        public static List<RecruitQuestionAnalysisView> MapAnalysisViewList(this List<ExamSettingsViewModel> examSettingsList)
+            => examSettingsList.Select(item => item.MapAnalysisView()).ToList();
+
+
         public static RecruitQuestionAnalysisView MapViewModel(this RecruitQuestionAnalysisView model,
             Recruit recruit, ICollection<Subject> subjects, IMapper mapper)
         {

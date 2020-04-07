@@ -275,7 +275,7 @@ namespace Web.Controllers.Admin
 
 		async Task<List<QuestionViewModel>> FetchQuestionsByTermAsync(Term selectedTerm)
 		{
-			var qIds = selectedTerm.GetQIds();
+			var qIds = selectedTerm.GetQuestionIds();
 
 			if (qIds.HasItems()) qIds = qIds.Distinct().ToList();
 

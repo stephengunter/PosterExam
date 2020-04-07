@@ -63,8 +63,10 @@ namespace Web
 			.AddDefaultTokenProviders();
 
 			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+			services.Configure<RootSubjectSettings>(Configuration.GetSection("RootSubjectSettings"));
 			services.Configure<AuthSettings>(Configuration.GetSection("AuthSettings"));
 			services.Configure<AdminSettings>(Configuration.GetSection("AdminSettings"));
+			services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDBSettings"));
 
 			var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AuthSettings:SecurityKey"]));
 
@@ -156,8 +158,6 @@ namespace Web
 			});
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
-			
 
 
 			// Now register our services with Autofac container.

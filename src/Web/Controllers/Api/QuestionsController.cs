@@ -52,7 +52,7 @@ namespace Web.Controllers
 				var selectedTerm = _termsService.GetById(term);
 				if (selectedTerm == null) return NotFound();
 
-				var qIds = selectedTerm.GetQIds();
+				var qIds = selectedTerm.GetQuestionIds();
 
 				if (qIds.HasItems()) qIds = qIds.Distinct().ToList();
 

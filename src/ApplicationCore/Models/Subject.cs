@@ -46,5 +46,11 @@ namespace ApplicationCore.Models
 			this.SubIds = subIds;
 			return subIds;
 		}
+
+		public List<int> GetQuestionIds()
+		{
+			if (Terms.IsNullOrEmpty()) return new List<int>();
+			return Terms.SelectMany(item => item.GetQuestionIds()).Distinct().ToList();
+		}
 	}
 }
