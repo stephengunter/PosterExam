@@ -4,13 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using ApplicationCore.Models;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
-using Microsoft.AspNetCore.Authorization;
 using Web.Models;
 using Web.Helpers;
 
@@ -18,31 +16,30 @@ namespace Web.Controllers.Api
 {
 	public class RecruitQuestionsController : BaseController
 	{
+		private readonly IDataService _dataService;
+
 		private readonly IQuestionsService _questionsService;
 		private readonly IAttachmentsService _attachmentsService;
-		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
-		private readonly ITermsService _termsService;
-		private readonly IExamsService _examsService;
+
 		private readonly IMapper _mapper;
 
-		public RecruitQuestionsController(IQuestionsService questionsService, IRecruitsService recruitsService,
-			IAttachmentsService attachmentsService, ISubjectsService subjectsService, ITermsService termsService,
-			IExamsService examsService, IMapper mapper)
+		public RecruitQuestionsController(IDataService dataService, IQuestionsService questionsService,
+			IAttachmentsService attachmentsService, ISubjectsService subjectsService, IMapper mapper)
 		{
+			_dataService = dataService;
+
 			_questionsService = questionsService;
 			_attachmentsService = attachmentsService;
-			_recruitsService = recruitsService;
 			_subjectsService = subjectsService;
-			_termsService = termsService;
-			_examsService = examsService;
-
 			_mapper = mapper;
 		}
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int mode, int recruit)
 		{
+			var yearRecruits = _dataService.FetchYearRecruits();
+
 			RQMode selectMode = mode.ToRQModeType();
 			if (selectMode == RQMode.Unknown)
 			{
@@ -50,11 +47,11 @@ namespace Web.Controllers.Api
 				var rqIndexModel = new RQIndexViewModel();
 				rqIndexModel.LoadModeOptions();
 
-				var recruits = await _recruitsService.FetchAsync();
-				rqIndexModel.LoadYearOptions(recruits);
+				rqIndexModel.YearRecruits = yearRecruits.ToList();
 
-				var subitems = recruits.Where(x => x.RecruitEntityType == RecruitEntityType.SubItem);
-				rqIndexModel.Subjects = subitems.MapViewModelList(_mapper);
+				//考試科目
+				var examSubjects = await _subjectsService.FetchExamSubjectsAsync();
+				rqIndexModel.LoadSubjectOptions(examSubjects);
 
 				return Ok(rqIndexModel);
 			}
@@ -66,80 +63,56 @@ namespace Web.Controllers.Api
 				return BadRequest(ModelState);
 			}
 
-			var model = new RQViewModel();
+			var recruitsViews = yearRecruits.SelectMany(item => item.SubItems);
 
-			Recruit selectedRecruit = _recruitsService.GetById(recruit);			
-
-			ValidateRequest(selectedRecruit);
-			if (!ModelState.IsValid) return BadRequest(ModelState);
-
-
-			// subject
-			var allSubjects = await _subjectsService.FetchAsync();
-
-			var subject = _recruitsService.FindSubject(selectedRecruit, allSubjects);
-
-			if (subject == null)
+			var selectedRecruitView = recruitsViews.FirstOrDefault(x => x.Id == recruit);
+			if (selectedRecruitView == null)
 			{
-				ModelState.AddModelError("subject", "科目不存在");
+				ModelState.AddModelError("recruit", "年度不存在");
 				return BadRequest(ModelState);
 			}
 
-			_subjectsService.LoadSubItems(subject);
-
-
-			var allTerms = new List<Term>();
-
+			//取得題目與解析的附件
 			var types = new List<PostType> { PostType.Option, PostType.Resolve };
-			var attachments = await _attachmentsService.FetchByTypesAsync(types);
-			
-			List<Recruit> allRecruits = null;
+			var attachments = (await _attachmentsService.FetchByTypesAsync(types)).ToList();
 
-			var parts = selectedRecruit.SubItems;
+			var model = new RQViewModel();
 
-			
+			var parts = selectedRecruitView.SubItems;
 			if (parts.HasItems())
 			{
 				foreach (var part in parts)
 				{
-					var questions = await _questionsService.FetchByRecruitAsync(part, subject);
-					var partView = new RQPartViewModel { Points = part.Points };
-					partView.Questions = questions.MapViewModelList(_mapper, allRecruits, attachments.ToList(), allTerms);
+					var partView = await InitRQPartViewModelAsync(part, attachments);
 					model.Parts.Add(partView);
 				}
 
 			}
 			else
 			{
-				var questions = await _questionsService.FetchByRecruitAsync(selectedRecruit, subject);
-
-				var partView = new RQPartViewModel { Points = 100 };
-				partView.Questions = questions.MapViewModelList(_mapper, allRecruits, attachments.ToList(), allTerms);
+				var partView = await InitRQPartViewModelAsync(selectedRecruitView, attachments);
 				model.Parts.Add(partView);
 			}
 
 			model.LoadTitle();
 
 			return Ok(model);
-			
-			
 
 		}
 
-		void ValidateRequest(Recruit selectedRecruit)
+		async Task<RQPartViewModel> InitRQPartViewModelAsync(RecruitViewModel recruitView, List<UploadFile> attachments)
 		{
-			if (selectedRecruit == null)
-			{
-				ModelState.AddModelError("recruit", "年度不存在");
-				return;
-			}
+			var questions = await _questionsService.FetchByIdsAsync(recruitView.QuestionIds);
 
-			if (selectedRecruit.RecruitEntityType != RecruitEntityType.SubItem)
+			return new RQPartViewModel
 			{
-				ModelState.AddModelError("recruit", "年度錯誤");
-				return;
-			}
-
+				Points = recruitView.Points,
+				MultiAnswers = recruitView.MultiAnswers,
+				Order = recruitView.Order,
+				OptionCount = recruitView.OptionCount,
+				Title = recruitView.Title,
+				Questions = questions.MapViewModelList(_mapper, null, attachments, null)
+			};
 		}
 
 	}

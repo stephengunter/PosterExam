@@ -41,7 +41,8 @@ namespace ApplicationCore.Middlewares
 			}
 			catch (Exception ex)
 			{
-				logger.LogError($"錯誤: {ex}");
+				logger.LogException(ex);
+				
 				await HandleExceptionAsync(httpContext, ex);
 			}
 		}

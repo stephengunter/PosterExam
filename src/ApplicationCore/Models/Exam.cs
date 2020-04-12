@@ -14,8 +14,9 @@ namespace ApplicationCore.Models
 		public ExamType ExamType { get; set; }
 		public RecruitExamType RecruitExamType { get; set; } = RecruitExamType.Unknown;
 		public OptionType OptionType { get; set; }
-
+		
 		public int Year { get; set; }
+		public int RecruitId { get; set; }
 		public int SubjectId { get; set; }
 
 		public double Score { get; set; } = -1;
@@ -94,11 +95,23 @@ namespace ApplicationCore.Models
 	{ 
 		public int ExamId { get; set; }
 		public string Title { get; set; }
+		public int Order { get; set; }
 		public int OptionCount { get; set; }
 		public double Points { get; set; }
 		public bool MultiAnswers { get; set; }
 		public ICollection<ExamQuestion> Questions { get; set; } = new List<ExamQuestion>();
 		public Exam Exam { get; set; }
+
+		public void LoadExamQuestions(List<Question> questions)
+		{
+			Questions = new List<ExamQuestion>();
+			for (int i = 0; i < questions.Count; i++)
+			{
+				var examQuestion = questions[i].ConversionToExamQuestion(OptionCount);
+				examQuestion.Order = i + 1;
+				Questions.Add(examQuestion);
+			}
+		}
 	}
 
 	public enum ExamType

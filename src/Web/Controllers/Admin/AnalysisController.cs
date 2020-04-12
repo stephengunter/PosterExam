@@ -83,11 +83,16 @@ namespace Web.Controllers.Admin
 				var model = new ExamSettingsViewModel(rootSubjectView, recruit.MapViewModel(_mapper));
 				foreach (var rqPart in rqModel.Parts)
 				{
+					
 					var partSettings = new ExamPartSettings()
 					{
 						Order = rqPart.Order,
-						MultiAnswers = rqPart.MultiAnswers,
+						Title = rqPart.Title,
 						Points = rqPart.Points,
+						OptionCount = rqPart.OptionCount,
+						OptionType = rqPart.OptionType,
+						MultiAnswers = rqPart.MultiAnswers,
+
 						Questions = rqPart.Questions.Count
 					};
 
@@ -139,7 +144,15 @@ namespace Web.Controllers.Admin
 				foreach (var part in parts)
 				{
 					var questions = await _questionsService.FetchByRecruitAsync(part, subject);
-					var partView = new RQPartViewModel { Points = part.Points, Order = part.Order };
+					var partView = new RQPartViewModel
+					{ 
+						Points = part.Points,
+						Order = part.Order,
+						MultiAnswers = part.MultiAnswers,
+						OptionCount = part.OptionCount,
+						OptionType = part.OptionType.ToString(),
+						Title = part.Title
+					};
 					partView.Questions = questions.MapViewModelList(_mapper);
 					model.Parts.Add(partView);
 				}
@@ -149,7 +162,15 @@ namespace Web.Controllers.Admin
 			{
 				var questions = await _questionsService.FetchByRecruitAsync(recruit, subject);
 
-				var partView = new RQPartViewModel { Points = 100, Order = 1 };
+				var partView = new RQPartViewModel
+				{
+					Points = recruit.Points,
+					MultiAnswers = recruit.MultiAnswers,
+					OptionCount = recruit.OptionCount,
+					OptionType = recruit.OptionType.ToString(),
+					Title = recruit.Title
+
+				};
 				partView.Questions = questions.MapViewModelList(_mapper);
 				model.Parts.Add(partView);
 			}

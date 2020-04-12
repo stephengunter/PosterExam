@@ -39,10 +39,9 @@ namespace ApplicationCore.DataAccess
                 .FirstOrDefault())?.CollectionName;
         }
 
-        public virtual IQueryable<TDocument> AsQueryable()
-        {
-            return _collection.AsQueryable();
-        }
+        public virtual List<TDocument> Fetch() => _collection.Find(x => true).ToList();
+
+        public virtual IQueryable<TDocument> AsQueryable() =>  _collection.AsQueryable();
 
         public virtual IEnumerable<TDocument> FilterBy(
             Expression<Func<TDocument, bool>> filterExpression)

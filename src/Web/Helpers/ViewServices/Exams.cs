@@ -23,7 +23,6 @@ namespace Web.Helpers
             model.SubjectOptions = options;
 
         }
-
         public static void LoadStatusOptions(this ExamIndexViewModel model, string emptyText = "全部")
         {
             var options = GetStatusOptions().ToList();
@@ -32,16 +31,6 @@ namespace Web.Helpers
 
             model.StatusOptions = options;
         }
-
-        public static void LoadYearOptions(this ExamIndexViewModel model, IEnumerable<Recruit> yearRecruits, string emptyText = "全部")
-        {
-            var options = yearRecruits.ToYearOptions().ToList();
-
-            if (!String.IsNullOrEmpty(emptyText)) options.Insert(0, new BaseOption<int>(-1, emptyText));
-
-            model.YearOptions = options;
-        }
-
         public static void LoadExamTypeOptions(this ExamIndexViewModel model)
             => model.ExamTypeOptions = GetExamTypeOptions();
 

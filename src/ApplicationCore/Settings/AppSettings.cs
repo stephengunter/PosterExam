@@ -11,7 +11,6 @@ namespace ApplicationCore.Settings
 		public string Url { get; set; }
 
 		public string UploadPath { get; set; }
-		public string DataPath { get; set; }
 	}
 
 	public class RootSubjectSettings
@@ -35,5 +34,6 @@ namespace ApplicationCore.Settings
 		public string Url { get; set; }
 		public string Key { get; set; }
 		public string BackupPath { get; set; }
+		public string DataPath { get; set; }
 	}
 }

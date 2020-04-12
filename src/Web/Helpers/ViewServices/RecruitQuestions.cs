@@ -17,13 +17,15 @@ namespace Web.Helpers
         {
             model.ModeOptions = GetModeOptions();
         }
-
-        public static void LoadYearOptions(this RQIndexViewModel model, IEnumerable<Recruit> recruits)
+        public static void LoadSubjectOptions(this RQIndexViewModel model, IEnumerable<Subject> subjects, string emptyText = "")
         {
-            var years = recruits.Where(x => x.RecruitEntityType == RecruitEntityType.Year).GetOrdered();
-            model.YearOptions = years.Select(item => item.ToOption()).ToList();
-        }
+            var options = subjects.Select(item => item.ToOption()).ToList();
 
+            if (!String.IsNullOrEmpty(emptyText)) options.Insert(0, new BaseOption<int>(-1, emptyText));
+
+            model.SubjectOptions = options;
+
+        }
 
         public static ICollection<BaseOption<int>> GetModeOptions()
         {

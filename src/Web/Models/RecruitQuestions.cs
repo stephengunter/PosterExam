@@ -52,6 +52,8 @@ namespace Web.Models
         public int Order { get; set; }
         public string Title { get; set; }
         public double Points { get; set; }
+        public int OptionCount { get; set; }
+        public string OptionType { get; set; }
         public bool MultiAnswers { get; set; }
 
         public ICollection<QuestionViewModel> Questions { get; set; }
@@ -60,10 +62,9 @@ namespace Web.Models
     public class RQIndexViewModel
     {
         public ICollection<BaseOption<int>> ModeOptions { get; set; } = new List<BaseOption<int>>();
+        public ICollection<BaseOption<int>> SubjectOptions { get; set; } = new List<BaseOption<int>>();
 
-        public ICollection<BaseOption<int>> YearOptions { get; set; } = new List<BaseOption<int>>();
-
-        public ICollection<RecruitViewModel> Subjects { get; set; } = new List<RecruitViewModel>();
+        public ICollection<RecruitViewModel> YearRecruits { get; set; } = new List<RecruitViewModel>();
 
         
     }

@@ -113,12 +113,12 @@ namespace ApplicationCore.ViewServices
 		{
 			if (String.IsNullOrEmpty(sortBy)) sortBy = "LastUpdated".ToLower();
 
-			if (sortBy.ToLower() == "Score".ToLower())
+			if (sortBy.ToLower() == "score".ToLower())
 			{ 
 				return desc ? exams.OrderByDescending(item => item.Score) : exams.OrderBy(item => item.Score);
 			}
 
-			if (sortBy.ToLower() == "LastUpdated".ToLower())
+			if (sortBy.ToLower() == "lastupdated".ToLower())
 			{
 				return desc ? exams.OrderByDescending(item => item.LastUpdated) : exams.OrderBy(item => item.LastUpdated);
 			}
@@ -127,6 +127,19 @@ namespace ApplicationCore.ViewServices
 
 		}
 
+
+		public static OptionType ToOptionType(this string val)
+		{
+			try
+			{
+				var type = val.ToEnum<OptionType>();
+				return type;
+			}
+			catch (Exception ex)
+			{
+				return OptionType.Number;
+			}
+		}
 
 
 	}

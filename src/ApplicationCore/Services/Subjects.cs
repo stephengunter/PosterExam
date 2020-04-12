@@ -19,6 +19,7 @@ namespace ApplicationCore.Services
 		Task UpdateAsync(Subject existingEntity, Subject model);
 		Task RemoveAsync(Subject subject);
 
+		Task<IEnumerable<Subject>> FetchRootSubjectsAsync();
 		IEnumerable<Subject> FetchRootItems();
 		Task<IEnumerable<Subject>> FetchExamSubjectsAsync();
 		void LoadSubItems(Subject entity);
@@ -46,7 +47,7 @@ namespace ApplicationCore.Services
 			return await _subjectRepository.ListAsync(spec);
 		}
 
-		
+		public async Task<IEnumerable<Subject>> FetchRootSubjectsAsync() => await FetchAsync(0);
 
 		public async Task<Subject> GetByIdAsync(int id) => await _subjectRepository.GetByIdAsync(id);
 

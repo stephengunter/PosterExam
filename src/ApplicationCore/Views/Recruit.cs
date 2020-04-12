@@ -24,6 +24,8 @@ namespace ApplicationCore.Views
 
 		public int OptionCount { get; set; }
 
+		public string OptionType { get; set; }
+
 		public bool MultiAnswers { get; set; }
 
 		public string DoneText => this.Done ? "已結束" : "";
@@ -35,6 +37,8 @@ namespace ApplicationCore.Views
 		public ICollection<RecruitViewModel> SubItems { get; set; }
 
 		public ICollection<int> SubjectIds { get; set; }
+
+		public ICollection<int> QuestionIds { get; set; }
 
 		public SubjectViewModel Subject { get; set; }
 

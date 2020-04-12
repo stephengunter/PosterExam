@@ -10,6 +10,8 @@ namespace Infrastructure.Interfaces
 {
     public interface IMongoRepository<TDocument> where TDocument : IDocument
     {
+        List<TDocument> Fetch();
+
         IQueryable<TDocument> AsQueryable();
 
         IEnumerable<TDocument> FilterBy(

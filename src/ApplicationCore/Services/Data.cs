@@ -7,7 +7,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using ApplicationCore.Views;
+using ApplicationCore.Helpers;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace ApplicationCore.Services
 {
@@ -18,17 +20,23 @@ namespace ApplicationCore.Services
 
         IEnumerable<SubjectQuestionsViewModel> FindSubjectQuestions(int subjectId);
         void SaveSubjectQuestions(int subjectId, IEnumerable<SubjectQuestionsViewModel> models);
+
+        IEnumerable<RecruitViewModel> FetchYearRecruits();
+        void SaveYearRecruits(IEnumerable<RecruitViewModel> models);
     }
 
     public class DataService : IDataService
     {
         private readonly IMongoRepository<ExamSettings> _examSettingsRepository;
         private readonly IMongoRepository<SubjectQuestions> _subjectQuestionsRepository;
+        private readonly IMongoRepository<YearRecruit> _yearRecruitsRepository;
 
-        public DataService(IMongoRepository<ExamSettings> examSettingsRepository, IMongoRepository<SubjectQuestions> subjectQuestionsRepository)
+        public DataService(IMongoRepository<ExamSettings> examSettingsRepository, IMongoRepository<SubjectQuestions> subjectQuestionsRepository,
+            IMongoRepository<YearRecruit> yearRecruitsRepository)
         {
             _examSettingsRepository = examSettingsRepository;
             _subjectQuestionsRepository = subjectQuestionsRepository;
+            _yearRecruitsRepository = yearRecruitsRepository;
         }
 
         public void SaveExamSettings(int subjectId, ExamSettingsViewModel model)
@@ -76,6 +84,23 @@ namespace ApplicationCore.Services
                 existingDoc.LastUpdated = DateTime.Now;
                 _subjectQuestionsRepository.ReplaceOne(existingDoc);
             }
+        }
+
+        public IEnumerable<RecruitViewModel> FetchYearRecruits()
+        {
+            var docs = _yearRecruitsRepository.Fetch();
+            if (docs.IsNullOrEmpty()) return null;
+
+            return docs.Select(doc => JsonConvert.DeserializeObject<RecruitViewModel>(doc.Content));
+        }
+
+        public void SaveYearRecruits(IEnumerable<RecruitViewModel> models)
+        {
+            _yearRecruitsRepository.DeleteMany(x => true);
+
+            var docs = models.Select(model => new YearRecruit { Content = JsonConvert.SerializeObject(model) });
+
+            _yearRecruitsRepository.InsertMany(docs.ToList());
         }
 
     }

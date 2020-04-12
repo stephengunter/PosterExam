@@ -16,6 +16,8 @@ namespace ApplicationCore.Services
 		Task<IEnumerable<Question>> FetchAsync(Subject subject, ICollection<int> termIds = null, ICollection<int> recruitIds = null);
 		Task<IEnumerable<Question>> FetchByRecruitAsync(Recruit recruit, Subject subject);
 		Task<IEnumerable<Question>> FetchByIdsAsync(IEnumerable<int> ids);
+		IEnumerable<int> FetchQuestionIdsByRecruit(Recruit recruit);
+		IEnumerable<int> FetchAllRecruitQuestionIds();
 
 		Task<Question> GetByIdAsync(int id);
 		Task<Question> CreateAsync(Question question);
@@ -135,13 +137,16 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Option>> FetchAllOptionsAsync() => await _optionRepository.ListAllAsync();
 
-		IEnumerable<int> FetchQuestionIdsByRecruit(Recruit recruit)
+		
+		public IEnumerable<int> FetchQuestionIdsByRecruit(Recruit recruit)
 		{
 			var recruitQuestions = _context.RecruitQuestions.Where(x => x.RecruitId == recruit.Id);
 			if (recruitQuestions.IsNullOrEmpty()) return new List<int>();
 
 			return recruitQuestions.Select(x => x.QuestionId).ToList();
 		}
+
+		public IEnumerable<int> FetchAllRecruitQuestionIds() => _context.RecruitQuestions.Select(item => item.QuestionId);
 
 		IEnumerable<int> FetchQuestionIdsByRecruits(ICollection<int> recruitIds)
 		{

@@ -23,24 +23,27 @@ namespace Web.Controllers
 	{
 		private readonly UserManager<User> _userManager;
 
+		private readonly IDataService _dataService;
+
 		private readonly IQuestionsService _questionsService;
 		private readonly IResolvesService _resolvesService;
 		private readonly IAttachmentsService _attachmentsService;
-		private readonly IRecruitsService _recruitsService;
 		private readonly IExamsService _examsService;
 		private readonly ISubjectsService _subjectsService;
+
 		private readonly IMapper _mapper;
 
-		public ExamsController(UserManager<User> userManager, IQuestionsService questionsService, IResolvesService resolvesService,
-			IAttachmentsService attachmentsService, IRecruitsService recruitsService, 
+		public ExamsController(UserManager<User> userManager, IDataService dataService, 
+			IAttachmentsService attachmentsService, IQuestionsService questionsService, IResolvesService resolvesService,
 			IExamsService examsService, ISubjectsService subjectsService,
 			IMapper mapper)
 		{
 			_userManager = userManager;
 
+			_dataService = dataService;
+
 			_questionsService = questionsService;
 			_resolvesService = resolvesService;
-			_recruitsService = recruitsService;
 			_attachmentsService = attachmentsService;
 			_examsService = examsService;
 			_subjectsService = subjectsService;
@@ -61,8 +64,9 @@ namespace Web.Controllers
 				model.LoadExamTypeOptions();
 				model.LoadRecruitExamTypeOptions();
 
-				var yearRecruits = await _recruitsService.FetchByTypeAsync(RecruitEntityType.Year);
-				model.LoadYearOptions(yearRecruits);
+				var yearRecruits = _dataService.FetchYearRecruits();
+				model.YearRecruits = yearRecruits.ToList();
+
 
 				model.LoadStatusOptions();
 
@@ -90,84 +94,76 @@ namespace Web.Controllers
 				exams = exams.GetOrdered(sortBy, desc);
 			}
 			
-			model.PagedList = exams.GetPagedList(_mapper, page, pageSize);
+			model.PagedList = exams.GetPagedList(_mapper, page, pageSize, sortBy, desc);
 
 			return Ok(model);
 		}
 
-		[HttpGet("create")]
-		public async Task<ActionResult> Create(int recruit = 0, int type = -1, int rtype = -1, int subject = 0, int year = 0)
+        #region  Create
+        [HttpGet("create")]
+		public async Task<ActionResult> Create(int recruit = 0, int type = -1, int rtype = -1, int subject = 0)
 		{
 			Exam exam = null;
 
-			if (recruit > 0)   //歷屆試題模式, 完全相同
+			if (recruit > 0)   
 			{
-				var selectedRecruit = _recruitsService.GetById(recruit);
-				if (selectedRecruit == null) throw new EntityNotFoundException(new Recruit { Id = recruit });
+				//歷屆試題模式, 完全相同
+				var yearRecruits = _dataService.FetchYearRecruits().ToList();
+				var recruitsViews = yearRecruits.SelectMany(item => item.SubItems);
 
-				if (selectedRecruit.RecruitEntityType != RecruitEntityType.SubItem)
+				var selectedRecruitView = recruitsViews.FirstOrDefault(x => x.Id == recruit);
+				if (selectedRecruitView == null)
 				{
-					ModelState.AddModelError("recruit", "年度錯誤");
+					ModelState.AddModelError("recruit", "年度不存在");
 					return BadRequest(ModelState);
 				}
 
-				exam = await InitByRecruitAsync(selectedRecruit);
+
+				exam = await InitByRecruitAsync(selectedRecruitView, yearRecruits);
 
 			}
 			else 
 			{
-				var selectedSubject = _subjectsService.GetById(subject);
-				if (selectedSubject == null) throw new EntityNotFoundException(new Subject { Id = subject });
-
-				ExamType selectType = type.ToExamType();
-				if (selectType == ExamType.Unknown)
+				
+				ExamType examType = type.ToExamType();
+				if (examType == ExamType.Unknown)
 				{
 					ModelState.AddModelError("type", "題庫來源錯誤");
 					return BadRequest(ModelState);
 				}
 
-				selectType = ExamType.Recruit; //目前僅支援"歷屆試題"
-
-
-				if (selectType == ExamType.Recruit) //歷屆試題
+				//取得測驗設定
+				var examSettingsView = _dataService.FindExamSettings(subject);
+				if (examSettingsView == null)
 				{
-					RecruitExamType selectRType = rtype.ToRecruitExamType();
-					if (selectRType == RecruitExamType.Unknown)
-					{
-						ModelState.AddModelError("rtype", "試題配置錯誤");
-						return BadRequest(ModelState);
-					}
-
-					selectRType = RecruitExamType.Exactly; //目前僅支援"完全相同"
-					if (selectRType == RecruitExamType.Exactly)
-					{
-						if (year < 1)
-						{
-							var yearRecruits = await _recruitsService.FetchByTypeAsync(RecruitEntityType.Year);
-							year = yearRecruits.FirstOrDefault().Year;
-						}
-						
-
-						var selectedRecruit = await _recruitsService.FindByYearSubjectAsync(year, selectedSubject);
-						if (selectedRecruit == null)
-						{
-							ModelState.AddModelError("recruit", "年度錯誤");
-							return BadRequest(ModelState);
-						}
-
-						exam = await InitByRecruitAsync(selectedRecruit);
-					}
-
+					throw new Exception("ExamSettings Not Found. subject = " + subject);
 				}
 
+				//取得SubjectQuestions
+				var subjectQuestionsList = _dataService.FindSubjectQuestions(subject);
+				if (subjectQuestionsList.IsNullOrEmpty())
+				{
+					throw new Exception("SubjectQuestions Not Found. subject = " + subject);
+				}
+
+				//一定是CrossYears, 差別在 examType
+				exam = new Exam
+				{ 
+					ExamType = examType,
+					RecruitExamType = RecruitExamType.CrossYears,
+					SubjectId = subject,
+					OptionType = examSettingsView.Parts.First().OptionType.ToOptionType()
+				};
 				
-
-				//var allSubjects = await _subjectsService.FetchAsync();
-
-				//Subject selectedSubject = null;
-				//Recruit selectedRecruit = null;
-
+				await InitExamPartsAsync(exam, examSettingsView, subjectQuestionsList);
 			}
+
+
+			//begin 測試題目有無重複
+			var qids = exam.QuestionIds;
+			var dis = qids.Distinct().ToList();
+			if (qids.Count != dis.Count) throw new ExamQuestionDuplicated();
+			//end 測試題目有無重複
 
 			exam.LoadPartTitles();
 
@@ -178,6 +174,105 @@ namespace Web.Controllers
 
 			return Ok(exam.MapExamViewModel(_mapper, attachments.ToList()));
 		}
+
+		async Task<Exam> InitByRecruitAsync(RecruitViewModel recruitView, List<RecruitViewModel> recruitViewList)
+		{
+			var rootRecruitView = recruitViewList.FirstOrDefault(x => x.Id == recruitView.ParentId);
+			var exam = new Exam()
+			{
+				RecruitId = rootRecruitView.Id,
+				SubjectId = recruitView.SubjectId,
+
+				ExamType = ExamType.Recruit,
+				RecruitExamType = RecruitExamType.Exactly,
+				OptionType = recruitView.OptionType.ToOptionType()
+			};
+
+			var parts = recruitView.SubItems;
+			if (parts.HasItems())
+			{
+				foreach (var part in parts)
+				{
+					var examPart = await InitExamPartAsync(part);
+					exam.Parts.Add(examPart);
+				}
+			}
+			else
+			{
+				var examPart = await InitExamPartAsync(recruitView);
+				exam.Parts.Add(examPart);
+			}
+
+			exam.LoadPartTitles();
+			return exam;
+
+		}
+
+		async Task<ExamPart> InitExamPartAsync(RecruitViewModel recruitView)
+		{
+			var examPart = new ExamPart
+			{
+				Points = recruitView.Points,
+				MultiAnswers = recruitView.MultiAnswers,
+				Order = recruitView.Order,
+				OptionCount = recruitView.OptionCount,
+				Title = recruitView.Title
+			};
+
+
+			var questions = (await _questionsService.FetchByIdsAsync(recruitView.QuestionIds)).ToList();
+
+			examPart.LoadExamQuestions(questions);
+
+			return examPart;
+		}
+
+		async Task InitExamPartsAsync(Exam exam, ExamSettingsViewModel examSettingsView, IEnumerable<SubjectQuestionsViewModel> subjectQuestionsList)
+		{
+			List<int> recruitQuestionIds = new List<int>();
+			if (exam.ExamType == ExamType.Recruit)
+			{
+				//只要歷屆試題
+				recruitQuestionIds = _questionsService.FetchAllRecruitQuestionIds().ToList();
+			}
+
+			var pickedQids = new List<int>();
+
+			foreach (var examPartSettings in examSettingsView.Parts)
+			{
+				// 依照設定, 隨機出題
+				var examPart = new ExamPart
+				{
+					Points = examPartSettings.Points,
+					MultiAnswers = examPartSettings.MultiAnswers,
+					Order = examPartSettings.Order,
+					OptionCount = examPartSettings.OptionCount,
+					Title = examPartSettings.Title
+				};
+
+				var qids = examPartSettings.PickQuestionIds(subjectQuestionsList, pickedQids, recruitQuestionIds);
+				pickedQids.AddRange(qids);
+
+				var questions = (await _questionsService.FetchByIdsAsync(qids)).ToList();
+
+				examPart.LoadExamQuestions(questions);
+
+				exam.Parts.Add(examPart);
+				
+			}
+
+			//測試是否全為歷屆試題
+			if (recruitQuestionIds.HasItems())
+			{
+				var examQids = exam.QuestionIds;
+				var notIn = examQids.Where(x => !recruitQuestionIds.Contains(x));
+
+				if (notIn.HasItems()) throw new ExamNotRecruitQuestionSelected();
+			}
+			
+		}
+
+		#endregion
 
 		[HttpPut("{id}/{action}")]
 		public async Task<ActionResult> Save(int id, [FromBody] ExamViewModel model)
@@ -237,12 +332,13 @@ namespace Web.Controllers
 			var existingEntity = await _examsService.GetByIdAsync(id);
 			if (existingEntity == null) return NotFound();
 
+			ValidateEditRequest(existingEntity);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+
 			var exam = model.MapEntity(_mapper, CurrentUserId);
 
 			//先存檔
-			ValidateSaveRequest(exam);
-			if (!ModelState.IsValid) return BadRequest(ModelState);
-
 			_examsService.SaveExam(existingEntity, exam);
 
 			//對答案
@@ -289,75 +385,6 @@ namespace Web.Controllers
 			return Ok();
 		}
 
-		#region InitExam
-
-		async Task<Exam> InitByRecruitAsync(Recruit selectedRecruit)
-		{
-			var allSubjects = await _subjectsService.FetchAsync();
-
-			var selectedSubject = _recruitsService.FindSubject(selectedRecruit, allSubjects);
-			_subjectsService.LoadSubItems(selectedSubject);
-
-			var rootRecruit = await _recruitsService.GetByIdAsync(selectedRecruit.ParentId);
-			var exam = new Exam()
-			{
-				ExamType = ExamType.Recruit,
-				RecruitExamType = RecruitExamType.Exactly,
-				OptionType = selectedRecruit.OptionType,
-				Year = rootRecruit.Year,
-				SubjectId = selectedRecruit.SubjectId
-			};
-
-			var parts = selectedRecruit.SubItems;
-
-			if (parts.HasItems())
-			{
-				foreach (var part in parts)
-				{
-					var questions = (await _questionsService.FetchByRecruitAsync(part, selectedSubject)).ToList();
-					var examPart = new ExamPart()
-					{
-						Points = part.Points,
-						OptionCount = part.OptionCount,
-						MultiAnswers = part.MultiAnswers
-					};
-					for (int i = 0; i < questions.Count; i++)
-					{
-						var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
-
-						examQuestion.Order = i + 1;
-						examPart.Questions.Add(examQuestion);
-					}
-
-					exam.Parts.Add(examPart);
-				}
-
-			}
-			else
-			{
-				var questions = (await _questionsService.FetchByRecruitAsync(selectedRecruit, selectedSubject)).ToList();
-
-				var examPart = new ExamPart()
-				{
-					Points = selectedRecruit.Points,
-					OptionCount = selectedRecruit.OptionCount,
-					MultiAnswers = selectedRecruit.MultiAnswers
-				};
-				for (int i = 0; i < questions.Count; i++)
-				{
-					var examQuestion = questions[i].ConversionToExamQuestion(examPart.OptionCount);
-
-					examQuestion.Order = i + 1;
-					examPart.Questions.Add(examQuestion);
-				}
-
-				exam.Parts.Add(examPart);
-			}
-
-			return exam;
-		}
-
-		#endregion
 
 		#region Helper
 
@@ -390,7 +417,7 @@ namespace Web.Controllers
 
 		void ValidateEditRequest(Exam exam)
 		{
-			if (exam.UserId != CurrentUserId) ModelState.AddModelError("userId", "權限不足");
+			ValidateRequest(exam);
 
 			if (exam.IsComplete) ModelState.AddModelError("isComplete", "此測驗已經完成");
 

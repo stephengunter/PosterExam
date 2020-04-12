@@ -14,7 +14,7 @@ namespace Web.Helpers.ViewServices
     public static class RecruitsViewService
     {
         public static BaseOption<int> ToYearOption(this Recruit recruit)
-            => new BaseOption<int>(recruit.Year, recruit.Year.ToString());
+            => new BaseOption<int>(recruit.Id, recruit.Title);
 
         public static ICollection<BaseOption<int>> ToYearOptions(this IEnumerable<Recruit> recruits)
             => recruits.Select(item => item.ToYearOption()).ToList();

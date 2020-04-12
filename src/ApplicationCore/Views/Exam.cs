@@ -14,6 +14,7 @@ namespace ApplicationCore.Views
 		public string OptionType { get; set; }
 
 		public int Year { get; set; }
+		public int RecruitId { get; set; }
 		public int SubjectId { get; set; }
 
 
@@ -36,6 +37,7 @@ namespace ApplicationCore.Views
 		public int Id { get; set; }
 		public string Title { get; set; }
 		public int ExamId { get; set; }
+		public int Order { get; set; }
 		public int OptionCount { get; set; }
 		public bool MultiAnswers { get; set; }
 		public double Points { get; set; }

@@ -28,8 +28,12 @@ namespace ApplicationCore.Views
     public class ExamPartSettings
     {
         public int Order { get; set; }
-        public bool MultiAnswers { get; set; }
+        public string Title { get; set; }
         public double Points { get; set; }
+        public int OptionCount { get; set; }
+        public string OptionType { get; set; }
+        public bool MultiAnswers { get; set; }
+
         public int Questions { get; set; }
 
         public void AddQuestion(QuestionViewModel question)
@@ -47,6 +51,48 @@ namespace ApplicationCore.Views
         }
 
         public List<ExamSubjectSettings> Subjects { get; set; } = new List<ExamSubjectSettings>();
+
+
+        public List<int> PickQuestionIds(IEnumerable<SubjectQuestionsViewModel> subjectQuestionsList, List<int> pickedQids, List<int> recruitQuestionIds = null)
+        {
+            var qids = new List<int>();
+
+            foreach (var subjectSettings in Subjects)
+            {
+                //從各Subject隨機出題
+                int count = subjectSettings.TotalQuestions;
+
+                var subjectQuestions = subjectQuestionsList.FirstOrDefault(x => x.SubjectId == subjectSettings.SubjectId);
+
+                var except = qids.Union(pickedQids).ToList();
+                var pickQuestionIds = PickQuestionIds(subjectQuestions, count, except, recruitQuestionIds);
+
+                qids.AddRange(pickQuestionIds);
+            }
+
+            //題目數不足時
+            while (qids.Count < this.Questions)
+            {
+                var count = this.Questions - qids.Count;
+                var subjectQuestions = subjectQuestionsList.ToList().GetRandom();
+
+                var except = qids;
+                var pickQuestionIds = PickQuestionIds(subjectQuestions, count, except);
+
+                qids.AddRange(pickQuestionIds);
+            }
+
+
+            return qids;
+        }
+
+        IEnumerable<int> PickQuestionIds(SubjectQuestionsViewModel subjectQuestions, int count, List<int> except, List<int> recruitQuestionIds = null)
+        {
+            var mustIn = recruitQuestionIds;
+            var exceptedQuestionIds = subjectQuestions.GetQuestionIds(except, mustIn);
+            //隨機選進需要的數量
+            return exceptedQuestionIds.OrderBy(x => Guid.NewGuid()).ToList().Take(count);
+        }
     }
 
     public class ExamSubjectSettings

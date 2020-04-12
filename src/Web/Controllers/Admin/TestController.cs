@@ -17,140 +17,82 @@ using Web.Helpers;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Options;
 using ApplicationCore.Settings;
+using ApplicationCore.Exceptions;
+using System.IO;
 
 namespace Web.Controllers.Admin
 {
 	public class ATestController : BaseController
 	{
 		private readonly IDataService _dataService;
-		private readonly RootSubjectSettings _rootSubjectSettings;
-		private readonly IMapper _mapper;
-
+		private readonly IQuestionsService _questionsService;
+		private readonly IRecruitsService _recruitsService;
 		private readonly ISubjectsService _subjectsService;
+		private readonly IAttachmentsService _attachmentsService;
+		private readonly IExamsService _examsService;
+		private readonly IMapper _mapper;
+		private readonly ApplicationCore.Logging.ILogger _logger;
 
-		public ATestController(IOptions<RootSubjectSettings> rootSubjectSettings, ISubjectsService subjectsService,
-			IDataService dataService, IMapper mapper)
+		private readonly AdminSettings _adminSettings;
+
+		public ATestController(IOptions<AdminSettings> adminSettings, IDataService dataService, IQuestionsService questionsService, 
+			IRecruitsService recruitsService, ISubjectsService subjectsService,
+			IAttachmentsService attachmentsService, IExamsService examsService, IMapper mapper,
+			ApplicationCore.Logging.ILogger logger)
 		{
-			_dataService = dataService;
-			_rootSubjectSettings = rootSubjectSettings.Value;
 			_mapper = mapper;
-
+			_questionsService = questionsService;
+			_examsService = examsService;
+			_dataService = dataService;
+			_recruitsService = recruitsService;
 			_subjectsService = subjectsService;
-			
+			_attachmentsService = attachmentsService;
+			_logger = logger;
+
+			_adminSettings = adminSettings.Value;
 		}
 
+		private readonly string _folderPath;
+		private readonly string _filePath;
+
+
+
+		private readonly DefaultContext _defaultContext;
+		//public ATestController(DefaultContext defaultContext)
+		//{
+		//	_defaultContext = defaultContext;
+		//}
+
+		
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int subject)
+		public async Task<ActionResult> Index()
 		{
-			//出題
-			var rootSubject = _subjectsService.GetById(subject);
-			if (rootSubject == null) return NotFound();
-			if (rootSubject.ParentId > 0)
-			{
-				ModelState.AddModelError("subject", "錯誤的科目");
-				return BadRequest(ModelState);
-			}
-
-
-			//取得ExamSettings
-			var model = _dataService.FindExamSettings(subject);
-			if (model == null) return NotFound();
-
-			//取得每個Subject, Term 底下的QuestionId(精選試題)
-			var sqList = _dataService.FindSubjectQuestions(subject);
-
-			var subjectQuestions = sqList.FirstOrDefault(x => x.SubjectId == 17);
-
-			var questionIds = subjectQuestions.GetQuestionIds();
-
-			//var test = view.FirstOrDefault().GetQuestionIds();
-
-			//if (subject == _rootSubjectSettings.FirstId)
-			//{
-			//	//專業科目(1)：臺灣自然及人文地理
-			//	foreach (var partSettings in model.Parts)
-			//	{
-			//		var subjects = partSettings.Subjects.SelectMany(x => x.)
-			//	}
-			//}
-			//else
-			//{
-			//	//專業科目(2)：郵政法規大意及交通安全常識
-			//}
-
+			SetExamRecruitId();
 			return Ok();
 		}
 
-
-		void testSave(int subject)
+		[HttpGet("ex")]
+		public async Task<ActionResult> Ex()
 		{
-			//test
-			var models = new List<SubjectQuestionsViewModel>()
+			throw new ExamNotRecruitQuestionSelected();
+		}
+
+
+
+		void SetExamRecruitId()
+		{
+			var exams = _defaultContext.Exams.ToList();
+			foreach (var exam in exams)
 			{
-				new SubjectQuestionsViewModel
+				if (exam.Year > 0)
 				{
-					SubjectId = 12,
-					TermQuestions = new List<TermQuestionsViewModel>
-					{
-						new TermQuestionsViewModel
-						{
-						   TermId = 134,
-						   QuestionIds = new int[] { 3, 19, 66 },
-						   SubItems = new List<TermQuestionsViewModel>
-						   {
-								new TermQuestionsViewModel
-								{
-									TermId = 256,
-									QuestionIds = new int[] { 90, 17, 45 }
-								},
-								new TermQuestionsViewModel
-								{
-									TermId = 654,
-									QuestionIds = new int[] { 9, 117, 545 }
-								}
-						   }
-						},
-						new TermQuestionsViewModel
-						{
-						   TermId = 140,
-						   QuestionIds = new int[] { 77, 113 },
-						   SubItems = new List<TermQuestionsViewModel>
-						   {
-								new TermQuestionsViewModel
-								{
-									TermId = 214,
-									QuestionIds = new int[] { 217, 129, 405 }
-								},
-								new TermQuestionsViewModel
-								{
-									TermId = 521,
-									QuestionIds = new int[] { 27, 316, 218 }
-								}
-						   }
-						}
-					}
-				},
-				new SubjectQuestionsViewModel
-				{
-					SubjectId = 17,
-					TermQuestions = new List<TermQuestionsViewModel>
-					{
-						new TermQuestionsViewModel
-						{
-						   TermId = 234,
-						   QuestionIds = new int[] { 87, 119, 178 }
-						},
-						new TermQuestionsViewModel
-						{
-						   TermId = 2140,
-						   QuestionIds = new int[] { 33, 67 }
-						}
-					}
-				},
+					int year = exam.Year;
+					var recruit = _defaultContext.Recruits.Where(x => x.Year == year).FirstOrDefault();
+					exam.RecruitId = recruit.Id;
+				}
+			}
 
-			};
-
-			_dataService.SaveSubjectQuestions(subject, models);
+			_defaultContext.SaveChanges();
 		}
 
 	}

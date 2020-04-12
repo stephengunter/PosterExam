@@ -18,6 +18,7 @@ namespace ApplicationCore.ViewServices
 		{ 
 			var model = mapper.Map<RecruitViewModel>(recruit);
 			model.DateText = recruit.Date.ToDateString();
+			model.OptionType = recruit.OptionType.ToString();
 
 			if (recruit.SubItems.HasItems())
 			{
@@ -76,6 +77,9 @@ namespace ApplicationCore.ViewServices
 		public static BaseOption<int> ToOption(this Recruit recruit) 
 			=> new BaseOption<int>(recruit.Id, recruit.Title);
 
-		
+		public static BaseOption<int> ToOption(this RecruitViewModel model)
+			=> new BaseOption<int>(model.Id, model.Title);
+
+
 	}
 }

@@ -77,4 +77,50 @@ namespace ApplicationCore.Paging
 			return new PagingHeader(TotalItems, PageNumber, PageSize, TotalPages);
 		}
 	}
+
+
+	public class PagedList<T>
+	{
+		public PagedList(IEnumerable<T> list, int pageNumber = 1, int pageSize = -1, string sortBy = "", bool desc = true)
+		{
+			TotalItems = list.Count();
+			PageNumber = pageNumber < 1 ? 1 : pageNumber;
+			PageSize = pageSize == 0 ? -1 : pageSize;
+
+			List = list.GetPaged(PageNumber, PageSize).ToList();
+
+			TotalPages = (int)Math.Ceiling(TotalItems / (double)PageSize);
+
+			HasPreviousPage = PageNumber > 1;
+			HasNextPage = PageNumber < TotalPages;
+			NextPageNumber = HasNextPage ? PageNumber + 1 : TotalPages;
+			PreviousPageNumber = HasPreviousPage ? PageNumber - 1 : 1;
+
+			SortBy = sortBy;
+			Desc = desc;
+
+		}
+
+
+
+		public List<T> List { get; set; }
+
+		public int TotalItems { get; set; }
+		public int PageNumber { get; }
+		public int PageSize { get; }
+		public int TotalPages { get; }
+		public bool HasPreviousPage { get; }
+		public bool HasNextPage { get; }
+
+		public int NextPageNumber { get; }
+		public int PreviousPageNumber { get; }
+
+		public string SortBy { get; }
+		public bool Desc { get; }
+
+		public IPagingHeader GetHeader()
+		{
+			return new PagingHeader(TotalItems, PageNumber, PageSize, TotalPages);
+		}
+	}
 }
