@@ -156,7 +156,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpPost("import")]
-		public async Task<IActionResult> Import([FromForm] AdminRequest model)
+		public async Task<IActionResult> Import([FromForm] AdminFileRequest model)
 		{
 			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);

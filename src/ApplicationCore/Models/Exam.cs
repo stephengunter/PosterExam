@@ -15,7 +15,6 @@ namespace ApplicationCore.Models
 		public RecruitExamType RecruitExamType { get; set; } = RecruitExamType.Unknown;
 		public OptionType OptionType { get; set; }
 		
-		public int Year { get; set; }
 		public int RecruitId { get; set; }
 		public int SubjectId { get; set; }
 

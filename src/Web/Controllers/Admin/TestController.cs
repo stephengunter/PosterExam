@@ -35,7 +35,7 @@ namespace Web.Controllers.Admin
 
 		private readonly AdminSettings _adminSettings;
 
-		public ATestController(IOptions<AdminSettings> adminSettings, IDataService dataService, IQuestionsService questionsService, 
+		public ATestController(IOptions<AdminSettings> adminSettings, IDataService dataService, IQuestionsService questionsService,
 			IRecruitsService recruitsService, ISubjectsService subjectsService,
 			IAttachmentsService attachmentsService, IExamsService examsService, IMapper mapper,
 			ApplicationCore.Logging.ILogger logger)
@@ -57,17 +57,17 @@ namespace Web.Controllers.Admin
 
 
 
-		private readonly DefaultContext _defaultContext;
+		//private readonly DefaultContext _defaultContext;
 		//public ATestController(DefaultContext defaultContext)
 		//{
 		//	_defaultContext = defaultContext;
 		//}
 
-		
+
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-			SetExamRecruitId();
+			
 			return Ok();
 		}
 
@@ -75,24 +75,6 @@ namespace Web.Controllers.Admin
 		public async Task<ActionResult> Ex()
 		{
 			throw new ExamNotRecruitQuestionSelected();
-		}
-
-
-
-		void SetExamRecruitId()
-		{
-			var exams = _defaultContext.Exams.ToList();
-			foreach (var exam in exams)
-			{
-				if (exam.Year > 0)
-				{
-					int year = exam.Year;
-					var recruit = _defaultContext.Recruits.Where(x => x.Year == year).FirstOrDefault();
-					exam.RecruitId = recruit.Id;
-				}
-			}
-
-			_defaultContext.SaveChanges();
 		}
 
 	}

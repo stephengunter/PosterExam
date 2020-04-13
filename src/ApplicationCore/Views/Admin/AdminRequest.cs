@@ -12,6 +12,11 @@ namespace ApplicationCore.Views
 	{
 		public string Key { get; set; }
 		public string Cmd { get; set; }
+	}
+
+	public class AdminFileRequest : AdminRequest
+	{
+		
 		public List<IFormFile> Files { get; set; } = new List<IFormFile>();
 
 
@@ -22,5 +27,4 @@ namespace ApplicationCore.Views
 
 		}
 	}
-
 }

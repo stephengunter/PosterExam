@@ -13,7 +13,7 @@ namespace ApplicationCore.Views
 		public string RecruitExamType { get; set; }
 		public string OptionType { get; set; }
 
-		public int Year { get; set; }
+		
 		public int RecruitId { get; set; }
 		public int SubjectId { get; set; }
 
