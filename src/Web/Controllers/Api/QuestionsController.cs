@@ -11,17 +11,12 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Microsoft.AspNetCore.Authorization;
-using ApplicationCore.Exceptions;
-using Web.Models;
-using Web.Helpers;
-using Web.Helpers.ViewServices;
-using ApplicationCore.Specifications;
-using ApplicationCore.Paging;
+using Web.Controllers;
 
-namespace Web.Controllers
+namespace Web.Controllers.Api
 {
-	//[Authorize]
-	public class QuestionsController : BaseController
+	[Authorize]
+	public class QuestionsController : BaseApiController
 	{
 		private readonly IMapper _mapper;
 		private readonly ITermsService _termsService;

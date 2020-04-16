@@ -25,18 +25,20 @@ using ApplicationCore.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ApplicationCore.Authorization;
-using Swashbuckle.AspNetCore.Swagger;
 using ApplicationCore.Services;
 using AutoMapper;
 using ApplicationCore.DtoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Web.Helpers;
 using ApplicationCore.Middlewares;
+using Microsoft.Extensions.Hosting;
+using ApplicationCore.DI;
 
 namespace Web
 {
 	public class Startup
 	{
+		
 		public Startup(IConfiguration configuration)
 		{
 			var nLogConfigPath = string.Concat(Directory.GetCurrentDirectory(), "/nlog.config");
@@ -72,84 +74,12 @@ namespace Web
 
 			string issuer = Configuration["AppSettings:Name"];
 			string audience = Configuration["AppSettings:Url"];
+			string securityKey = Configuration["AuthSettings:SecurityKey"];
+			services.AddJwtBearer(issuer, audience, securityKey);
 
-			services.Configure<JwtIssuerOptions>(options =>
-			{
-				options.Issuer = issuer;
-				options.Audience = audience;
-				options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
-			});
+			services.AddSwagger("PosterExamStarter", "v1");
 
-			JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-			var tokenValidationParameters = new TokenValidationParameters
-			{
-				ValidateIssuer = true,
-				ValidIssuer = issuer,
-
-				ValidateAudience = true,
-				ValidAudience = audience,
-
-				ValidateIssuerSigningKey = true,
-				IssuerSigningKey = signingKey,
-
-				RequireExpirationTime = false,
-				ValidateLifetime = true,
-				ClockSkew = TimeSpan.Zero
-			};
-
-			services.AddAuthentication(options =>
-			{
-				options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-			})
-			.AddJwtBearer(configureOptions =>
-			{
-				configureOptions.ClaimsIssuer = issuer;
-				configureOptions.TokenValidationParameters = tokenValidationParameters;
-				configureOptions.SaveToken = true;
-
-				configureOptions.Events = new JwtBearerEvents
-				{
-					OnAuthenticationFailed = context =>
-					{
-						if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-						{
-							context.Response.Headers.Add("Token-Expired", "true");
-						}
-						return Task.CompletedTask;
-					}
-				};
-			});
-
-			
-
-			services.AddCors(options => options.AddPolicy("api",
-				p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
-			));
-
-			services.AddSwaggerGen(c =>
-			{
-				c.SwaggerDoc("v1", new Info { Title = "PosterExamStarter", Version = "v1" });
-				c.OperationFilter<SwaggerFileUploadFilter>();
-				c.AddSecurityDefinition("Bearer", new ApiKeyScheme
-				{
-					In = "header",
-					Description = "Please insert JWT with Bearer into field",
-					Name = "Authorization",
-					Type = "apiKey"
-				});
-
-				c.AddSecurityRequirement(new Dictionary<string, IEnumerable<string>>
-				{
-					{ "Bearer", new string[] { } }
-				});
-			});
-			
-
-			IMapper mapper = MappingConfig.CreateConfiguration().CreateMapper();
-			services.AddSingleton(mapper);
-
+			services.AddDtoMapper();
 
 			services.AddAuthorization(options =>
 			{
@@ -157,51 +87,54 @@ namespace Web
 					policy.Requirements.Add(new HasPermissionRequirement(Permissions.Admin.ToString())));
 			});
 
-			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+			services.AddCors(options => options.AddPolicy("api",
+			   p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
+		    ));
+			
+			services.AddControllers();
 
-
-			// Now register our services with Autofac container.
-			var builder = new ContainerBuilder();
-
-			builder.RegisterModule(new ApplicationCore.Modules());
-
-			builder.Populate(services);
-			var container = builder.Build();
-			// Create the IServiceProvider based on the container.
-			return new AutofacServiceProvider(container);
+			return AutofacRegister.Register(services);
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			//if (env.IsDevelopment())
-			//{
-			//	app.UseDeveloperExceptionPage();
-			//	app.UseDatabaseErrorPage();
-			//}
-			//else
-			//{
-			//	app.UseMiddleware<ExceptionMiddleware>();
-			//	app.UseHsts();
-			//}
+			if (env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+			}
+			else
+			{
+				app.UseMiddleware<ExceptionMiddleware>();
+				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+				app.UseHsts();
+			}
+			app.UseHttpsRedirection();
+			app.UseStaticFiles();
+			
 
-			app.UseMiddleware<ExceptionMiddleware>();
-			app.UseHsts();
 
 			app.UseCors("api");
 
 			app.UseSwaggerUI(c =>
 			{
-				c.SwaggerEndpoint("/swagger/v1/swagger.json", "PosterExamStarter");
+				c.SwaggerEndpoint("/swagger/v1/swagger.json", "PosterExam");
 			});
 			app.UseSwagger();
 
 			app.UseAuthentication();
 
-			
+			app.UseRouting();
 
-			app.UseHttpsRedirection();
-			app.UseMvc();
+			app.UseAuthorization();
+
+			app.UseEndpoints(endpoints =>
+			{
+				endpoints.MapControllerRoute(
+					name: "default",
+					pattern: "{controller=Home}/{action=Index}/{id?}");
+			});
+
 		}
 	}
 }

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Helpers;
+using Microsoft.AspNetCore.Authorization;
+using ApplicationCore.Views;
+using ApplicationCore.Settings;
 
 namespace Web.Controllers
 {
-	[Route("api/[controller]")]
-	[ApiController]
+	[Route("[controller]")]
 	public abstract class BaseController : ControllerBase
 	{
 		protected string RemoteIpAddress => Request.HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -22,6 +21,27 @@ namespace Web.Controllers
 			ModelState.AddModelError(key, msg);
 			return BadRequest(ModelState);
 		}
+
+	}
+
+	
+	[Route("api/[controller]")]
+	public abstract class BaseApiController : BaseController
+	{
 		
+	}
+
+	
+	[Route("admin/[controller]")]
+	[Authorize(Policy = "Admin")]
+	[Authorize]
+	public class BaseAdminController : BaseController
+	{
+
+		protected void ValidateRequest(AdminRequest model, AdminSettings adminSettings)
+		{
+			if (model.Key != adminSettings.Key) ModelState.AddModelError("key", "認證錯誤");
+
+		}
 	}
 }

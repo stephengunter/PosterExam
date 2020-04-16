@@ -15,16 +15,17 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using ApplicationCore.Settings;
+using Web.Controllers;
 
 namespace Web.Controllers.Admin
 {
 	public class UploadsController : BaseAdminController
 	{
 		private readonly IAttachmentsService _attachmentsService;
-		private readonly IHostingEnvironment _environment;
+		private readonly IWebHostEnvironment _environment;
 		private readonly AppSettings _appSettings;
 
-		public UploadsController(IHostingEnvironment environment, IOptions<AppSettings> appSettings, IAttachmentsService attachmentsService)
+		public UploadsController(IWebHostEnvironment environment, IOptions<AppSettings> appSettings, IAttachmentsService attachmentsService)
 		{
 			_environment = environment;
 			_appSettings = appSettings.Value;

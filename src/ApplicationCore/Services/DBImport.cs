@@ -6,6 +6,7 @@ using ApplicationCore.Models;
 using Infrastructure.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using ApplicationCore.Helpers;
 
 namespace ApplicationCore.Services
 {
@@ -22,6 +23,17 @@ namespace ApplicationCore.Services
 		void ImportNotes(DefaultContext _context, List<Note> models);
 		void ImportUploadFiles(DefaultContext _context, List<UploadFile> models);
 		void ImportReviewRecords(DefaultContext _context, List<ReviewRecord> models);
+
+
+		void SyncSubjects(DefaultContext _context, List<Subject> models);
+		void SyncTerms(DefaultContext _context, List<Term> models);
+		void SyncQuestions(DefaultContext _context, List<Question> models);
+		void SyncOptions(DefaultContext _context, List<Option> models);
+		void SyncResolves(DefaultContext _context, List<Resolve> models);
+		void SyncRecruits(DefaultContext _context, List<Recruit> models);
+		void SyncNotes(DefaultContext _context, List<Note> models);
+		void SyncUploadFiles(DefaultContext _context, List<UploadFile> models);
+		void SyncReviewRecords(DefaultContext _context, List<ReviewRecord> models);
 	}
 
 	public class DBImportService : IDBImportService
@@ -47,9 +59,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Terms ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Terms ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Terms OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Terms OFF");
 				}
 				finally
 				{
@@ -79,9 +91,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Subjects ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Subjects ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Subjects OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Subjects OFF");
 				}
 				finally
 				{
@@ -112,9 +124,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Questions ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Questions ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Questions OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Questions OFF");
 				}
 				finally
 				{
@@ -145,9 +157,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Options ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Options ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Options OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Options OFF");
 				}
 				finally
 				{
@@ -199,9 +211,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Resolves ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Resolves ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Resolves OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Resolves OFF");
 				}
 				finally
 				{
@@ -232,9 +244,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Recruits ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Recruits ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Recruits OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Recruits OFF");
 				}
 				finally
 				{
@@ -271,10 +283,7 @@ namespace ApplicationCore.Services
 			var newNotes = new List<Note>();
 			foreach (var noteModel in models)
 			{
-				if (noteModel == null)
-				{
-					var test = "";
-				}
+				
 				var existingEntity = _context.Notes.Find(noteModel.Id);
 				if (existingEntity == null) newNotes.Add(noteModel);
 				else Update(_context, existingEntity, noteModel);
@@ -289,9 +298,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Notes ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Notes ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT Notes OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Notes OFF");
 				}
 				finally
 				{
@@ -322,9 +331,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT UploadFiles ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT UploadFiles ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT UploadFiles OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT UploadFiles OFF");
 				}
 				finally
 				{
@@ -355,9 +364,9 @@ namespace ApplicationCore.Services
 				context.Database.OpenConnection();
 				try
 				{
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT ReviewRecords ON");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT ReviewRecords ON");
 					context.SaveChanges();
-					context.Database.ExecuteSqlCommand($"SET IDENTITY_INSERT ReviewRecords OFF");
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT ReviewRecords OFF");
 				}
 				finally
 				{
@@ -372,6 +381,106 @@ namespace ApplicationCore.Services
 			var entry = _context.Entry(existingEntity);
 			entry.CurrentValues.SetValues(model);
 			entry.State = EntityState.Modified;
+		}
+
+		public void SyncSubjects(DefaultContext _context, List<Subject> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Subjects.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Subjects.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncTerms(DefaultContext _context, List<Term> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Terms.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Terms.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+
+		public void SyncQuestions(DefaultContext _context, List<Question> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Questions.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Questions.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncOptions(DefaultContext _context, List<Option> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Options.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Options.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncResolves(DefaultContext _context, List<Resolve> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Resolves.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Resolves.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncRecruits(DefaultContext _context, List<Recruit> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Recruits.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Recruits.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncNotes(DefaultContext _context, List<Note> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Notes.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Notes.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncUploadFiles(DefaultContext _context, List<UploadFile> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.UploadFiles.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.UploadFiles.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncReviewRecords(DefaultContext _context, List<ReviewRecord> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.ReviewRecords.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.ReviewRecords.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
 		}
 
 	}

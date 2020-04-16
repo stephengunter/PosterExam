@@ -10,6 +10,7 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.Settings;
 using Microsoft.Extensions.Options;
+using Web.Controllers;
 using ApplicationCore.ViewServices;
 
 namespace Web.Controllers.Admin

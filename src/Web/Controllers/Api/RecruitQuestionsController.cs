@@ -11,10 +11,11 @@ using AutoMapper;
 using ApplicationCore.ViewServices;
 using Web.Models;
 using Web.Helpers;
+using Web.Controllers;
 
 namespace Web.Controllers.Api
 {
-	public class RecruitQuestionsController : BaseController
+	public class RecruitQuestionsController : BaseApiController
 	{
 		private readonly IDataService _dataService;
 

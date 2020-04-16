@@ -11,6 +11,7 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Infrastructure.Views;
+using Web.Controllers;
 
 namespace Web.Controllers.Admin
 {

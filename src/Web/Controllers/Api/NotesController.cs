@@ -4,23 +4,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using ApplicationCore.Models;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Microsoft.AspNetCore.Authorization;
-using ApplicationCore.Exceptions;
-using Web.Models;
 using Web.Helpers;
-using Web.Helpers.ViewServices;
-using ApplicationCore.Specifications;
+using Web.Controllers;
 
-namespace Web.Controllers
+namespace Web.Controllers.Api
 {
-	//[Authorize]
-	public class NotesController : BaseController
+	[Authorize]
+	public class NotesController : BaseApiController
 	{
 		private readonly INotesService _notesService;
 		private readonly IAttachmentsService _attachmentsService;
