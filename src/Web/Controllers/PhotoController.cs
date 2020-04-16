@@ -1,29 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Helpers;
-using ApplicationCore.Paging;
-using Newtonsoft.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using ApplicationCore.Settings;
 using ApplicationCore.Services;
+using Web.Controllers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Web.Controllers.Api
 {
 	public class PhotoController : BaseController
 	{
-		private readonly IHostingEnvironment _environment;
+		private readonly IWebHostEnvironment _environment;
 		private readonly AppSettings _appSettings;
 		private readonly IAttachmentsService _attachmentsService;
 
-		public PhotoController(IHostingEnvironment environment, IOptions<AppSettings> appSettings, IAttachmentsService attachmentsService)
+		public PhotoController(IWebHostEnvironment environment, IOptions<AppSettings> appSettings, IAttachmentsService attachmentsService)
 		{
 			_environment = environment;
 			_appSettings = appSettings.Value;

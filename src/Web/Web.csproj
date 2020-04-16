@@ -1,37 +1,41 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Areas\**" />
     <Compile Remove="Middlewares\**" />
+    <Content Remove="Areas\**" />
     <Content Remove="Middlewares\**" />
+    <EmbeddedResource Remove="Areas\**" />
     <EmbeddedResource Remove="Middlewares\**" />
+    <None Remove="Areas\**" />
     <None Remove="Middlewares\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.4.0" />
-    <PackageReference Include="AutoMapper" Version="9.0.0" />
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
-    <PackageReference Include="Google.Apis.Auth" Version="1.40.3" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.4" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" />
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <Compile Remove="Controllers\Admin\TestController.cs" />
+    <Compile Remove="Helpers\SwaggerFileUploadFilter.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
+    <PackageReference Include="Google.Apis.Auth" Version="1.42.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ApplicationCore\ApplicationCore.csproj" />
-    <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Controllers\Api\" />
+    <Folder Include="Controllers\Admin\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

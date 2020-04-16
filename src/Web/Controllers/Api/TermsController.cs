@@ -1,26 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ApplicationCore.Models;
-using ApplicationCore.Services;
-using Microsoft.AspNetCore.Identity;
+﻿using ApplicationCore.Services;
 using Microsoft.AspNetCore.Mvc;
-using ApplicationCore.Views;
-using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Microsoft.AspNetCore.Authorization;
-using ApplicationCore.Exceptions;
-using Web.Models;
-using Web.Helpers;
-using Web.Helpers.ViewServices;
-using ApplicationCore.Specifications;
+using Web.Controllers;
 
-namespace Web.Controllers
+namespace Web.Controllers.Api
 {
 	[Authorize]
-	public class TermsController : BaseController
+	public class TermsController : BaseApiController
 	{
 		private readonly IMapper _mapper;
 		private readonly ITermsService _termsService;

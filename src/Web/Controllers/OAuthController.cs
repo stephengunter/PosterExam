@@ -6,15 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using Microsoft.AspNetCore.Identity;
 using ApplicationCore.Models;
-using ApplicationCore.Auth;
-using Microsoft.Extensions.Options;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Authorization;
 using System.Net.Http;
-using Newtonsoft.Json;
 using Google.Apis.Auth;
-using ApplicationCore.Settings;
 using ApplicationCore.Exceptions;
+using Web.Controllers;
 
 namespace Web.Controllers
 {
@@ -30,9 +26,8 @@ namespace Web.Controllers
 			_userManager = userManager;
 			_authService = authService;
 		}
-		
 
-		//POST api/oauth/google
+		
 		[HttpPost("google")]
 		public async Task<ActionResult> Google([FromBody] OAuthLoginRequest model)
 		{

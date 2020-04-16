@@ -4,14 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using ApplicationCore.Models;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using ApplicationCore.Helpers;
-using AutoMapper;
-using ApplicationCore.ViewServices;
-using Web.Models;
-using ApplicationCore.Specifications;
 using ApplicationCore.Settings;
 using Microsoft.Extensions.Options;
 using ApplicationCore.DataAccess;
@@ -20,9 +15,9 @@ using System.IO;
 using Newtonsoft.Json;
 using System.Text;
 using System.Data.SqlClient;
-using Infrastructure.Entities;
 using System.Data;
 using Microsoft.AspNetCore.Http;
+using Web.Controllers;
 
 namespace Web.Controllers.Admin
 {
@@ -50,14 +45,7 @@ namespace Web.Controllers.Admin
 
 		}
 
-
-
-		string GetDbName(string connectionString)
-		{
-			
-			var builder = new SqlConnectionStringBuilder(connectionString);
-			return builder.InitialCatalog;
-		}
+		string GetDbName(string connectionString) => new SqlConnectionStringBuilder(connectionString).InitialCatalog;
 
 		[HttpGet("dbname")]
 		public ActionResult DBName()
@@ -70,7 +58,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpPost("migrate")]
-		public ActionResult Migrate(AdminRequest model)
+		public ActionResult Migrate([FromBody] AdminRequest model)
 		{
 			
 			ValidateRequest(model, _adminSettings);
@@ -82,7 +70,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpPost("backup")]
-		public ActionResult Backup(AdminRequest model)
+		public ActionResult Backup([FromBody] AdminRequest model)
 		{
 			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -109,7 +97,7 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpPost("export")]
-		public ActionResult Export(AdminRequest model)
+		public ActionResult Export([FromBody] AdminRequest model)
 		{
 			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -161,6 +149,8 @@ namespace Web.Controllers.Admin
 			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
+			var fileNames = new List<string>();
+
 			if (model.Files.Count < 1)
 			{
 				ModelState.AddModelError("files", "必須上傳檔案");
@@ -175,16 +165,19 @@ namespace Web.Controllers.Admin
 			}
 
 			string content = "";
-		
-			var file = model.GetFile(new Subject().GetType().Name);
+			string fileName = new Subject().GetType().Name;
+			var file = model.GetFile(fileName);
 			if (file != null)
 			{
+				fileNames.Add(fileName);
 				content = await ReadFileTextAsync(file);
 				var subjectModels = JsonConvert.DeserializeObject<List<Subject>>(content);
 				_dBImportService.ImportSubjects(_context, subjectModels);
+				
 			}
 
-			file = model.GetFile(new Term().GetType().Name);
+			fileName = new Term().GetType().Name;
+			file = model.GetFile(fileName);
 			if (file != null)
 			{
 				content = await ReadFileTextAsync(file);
@@ -192,7 +185,7 @@ namespace Web.Controllers.Admin
 				_dBImportService.ImportTerms(_context, termModels);
 			}
 
-			
+
 
 			file = model.GetFile(new Question().GetType().Name);
 			if (file != null)
@@ -265,6 +258,9 @@ namespace Web.Controllers.Admin
 				var reviewRecordModels = JsonConvert.DeserializeObject<List<ReviewRecord>>(content);
 				_dBImportService.ImportReviewRecords(_context, reviewRecordModels);
 			}
+
+
+			//end of import
 
 			return Ok();
 		}

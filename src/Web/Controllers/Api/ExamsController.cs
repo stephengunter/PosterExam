@@ -14,12 +14,12 @@ using Microsoft.AspNetCore.Authorization;
 using ApplicationCore.Exceptions;
 using Web.Models;
 using Web.Helpers;
-using Web.Helpers.ViewServices;
+using Web.Controllers;
 
-namespace Web.Controllers
+namespace Web.Controllers.Api
 {
 	[Authorize]
-	public class ExamsController : BaseController
+	public class ExamsController : BaseApiController
 	{
 		private readonly UserManager<User> _userManager;
 
