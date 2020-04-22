@@ -8,13 +8,14 @@ using Microsoft.Extensions.Options;
 using Infrastructure.Interfaces;
 using System.Collections.Generic;
 using ApplicationCore.Helpers;
+using ApplicationCore.Models;
 
 namespace ApplicationCore.Auth
 {
 	public interface IJwtFactory
 	{
-		Task<AccessTokenResponse> GenerateEncodedToken(string id, string userName, string provider, string picture, IList<string> roles = null);
-	}
+		Task<AccessTokenResponse> GenerateEncodedToken(User user, OAuth oAuth, IList<string> roles = null);
+    }
 
 
 	public class JwtFactory : IJwtFactory
@@ -29,16 +30,23 @@ namespace ApplicationCore.Auth
             ThrowIfInvalidOptions(_jwtOptions);
         }
 
-        public async Task<AccessTokenResponse> GenerateEncodedToken(string id, string userName, string provider, string picture, IList<string> roles = null)
+        public async Task<AccessTokenResponse> GenerateEncodedToken(User user, OAuth oAuth, IList<string> roles = null)
         {
+            string id = user.Id;
+            string userName = user.UserName;
+            string provider = oAuth.Provider.ToString();
+            string picture = oAuth.PictureUrl;
+            string name = oAuth.GivenName;
+
             var identity = GenerateClaimsIdentity(id, userName);
-			var claims = new[]
+            var claims = new[]
             {
                  new Claim(JwtRegisteredClaimNames.Sub, userName),
                  new Claim("provider", provider),
                  new Claim("picture", picture),
+                 new Claim("name", name),
                  new Claim("roles", roles.IsNullOrEmpty() ? "" : String.Join(",", roles)),
-				 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
+                 new Claim(JwtRegisteredClaimNames.Jti, await _jwtOptions.JtiGenerator()),
                  new Claim(JwtRegisteredClaimNames.Iat, ToUnixEpochDate(_jwtOptions.IssuedAt).ToString(), ClaimValueTypes.Integer64),
                  identity.FindFirst(Helpers.Constants.Strings.JwtClaimIdentifiers.Rol),
                  identity.FindFirst(Helpers.Constants.Strings.JwtClaimIdentifiers.Id)
@@ -52,9 +60,11 @@ namespace ApplicationCore.Auth
                 _jwtOptions.NotBefore,
                 _jwtOptions.Expiration,
                 _jwtOptions.SigningCredentials);
-          
+
             return new AccessTokenResponse(_jwtTokenHandler.WriteToken(jwt), (int)_jwtOptions.ValidFor.TotalSeconds);
+
         }
+       
 
         private static ClaimsIdentity GenerateClaimsIdentity(string id, string userName)
         {

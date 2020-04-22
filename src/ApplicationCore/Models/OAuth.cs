@@ -10,6 +10,12 @@ namespace ApplicationCore.Models
 	{
 		public string UserId { get; set; }
 
+		public string Name { get; set; }
+
+		public string FamilyName { get; set; }
+
+		public string GivenName { get; set; }
+
 		public string OAuthId { get; set; }
 
 		public OAuthProvider Provider { get; set; }

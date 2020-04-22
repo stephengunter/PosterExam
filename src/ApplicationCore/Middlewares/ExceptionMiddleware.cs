@@ -25,9 +25,9 @@ namespace ApplicationCore.Middlewares
 	public class ExceptionMiddleware
 	{
 		private readonly RequestDelegate next;
-		private readonly ILogger logger;
+		private readonly IAppLogger logger;
 
-		public ExceptionMiddleware(RequestDelegate next, ILogger logger)
+		public ExceptionMiddleware(RequestDelegate next, IAppLogger logger)
 		{
 			this.next = next;
 			this.logger = logger;

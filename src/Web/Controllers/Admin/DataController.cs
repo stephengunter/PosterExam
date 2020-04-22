@@ -12,6 +12,7 @@ using ApplicationCore.Settings;
 using Microsoft.Extensions.Options;
 using Web.Controllers;
 using ApplicationCore.ViewServices;
+using Web.Helpers;
 
 namespace Web.Controllers.Admin
 {
@@ -23,21 +24,25 @@ namespace Web.Controllers.Admin
 
 		private readonly ISubjectsService _subjectsService;
 		private readonly ITermsService _termsService;
+		private readonly INotesService _notesService;
+		private readonly IAttachmentsService _attachmentsService;
 		private readonly IRecruitsService _recruitsService;
 		private readonly IQuestionsService _questionsService;
 
 		private readonly IMapper _mapper;
 
 		public DataController(IOptions<RootSubjectSettings> rootSubjectSettings, IOptions<AdminSettings> adminSettings,
-			IDataService dataService, ISubjectsService subjectsService, ITermsService termsService, IRecruitsService recruitsService,
-			IQuestionsService questionsService, IMapper mapper)
+			IDataService dataService, ISubjectsService subjectsService, ITermsService termsService, INotesService notesService, 
+			IRecruitsService recruitsService, IQuestionsService questionsService, IAttachmentsService attachmentsService, IMapper mapper)
 		{
 			_adminSettings = adminSettings.Value;
 			_rootSubjectSettings = rootSubjectSettings.Value;
 			_subjectsService = subjectsService;
 			_termsService = termsService;
+			_notesService = notesService;
 			_recruitsService = recruitsService;
 			_questionsService = questionsService;
+			_attachmentsService = attachmentsService;
 
 			_dataService = dataService;
 
@@ -145,5 +150,108 @@ namespace Web.Controllers.Admin
 
 			return Ok();
 		}
+
+		[HttpPost("note-categories")]
+		public async Task<ActionResult> NoteCategories(AdminRequest model)
+		{
+			ValidateRequest(model, _adminSettings);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			var allSubjects = await _subjectsService.FetchAsync();
+			allSubjects = allSubjects.Where(x => x.Active);
+
+			var allTerms = await _termsService.FetchAllAsync();
+
+			var rootSubjects = allSubjects.Where(x => x.ParentId < 1).GetOrdered();
+
+			var categories = rootSubjects.Select(item => item.MapNoteCategoryViewModel()).ToList();
+			foreach (var root in categories)
+			{
+				int parentId = root.Id;
+				var subjects = allSubjects.Where(x => x.ParentId == parentId).GetOrdered();
+				root.SubItems = subjects.Select(item => item.MapNoteCategoryViewModel(parentId)).ToList();
+			}
+
+			var subjectCategories = categories.SelectMany(x => x.SubItems);
+
+			//只到ChapterTitle, 捨棄Hide項目
+			foreach (var subjectCategory in subjectCategories)
+			{
+				var terms = allTerms.Where(item => item.SubjectId == subjectCategory.Id && item.ParentId == 0 && item.ChapterTitle && !item.Hide).GetOrdered();
+				subjectCategory.SubItems = terms.Select(item => item.MapNoteCategoryViewModel()).ToList();
+			}
+
+			_dataService.SaveNoteCategories(categories);
+
+			return Ok();
+		}
+
+		#region term-notes
+
+		[HttpPost("term-notes")]
+		public async Task<ActionResult> TermNotes(AdminRequest model)
+		{
+			ValidateRequest(model, _adminSettings);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			_dataService.CleanTermNotes();
+
+			var categories = _dataService.FetchNoteCategories();
+			var subjects = categories.SelectMany(x => x.SubItems).ToList();
+
+
+			foreach (var subject in subjects)
+			{
+				if (subject.SubItems.HasItems())
+				{
+					foreach (var term in subject.SubItems)
+					{
+						var selectedTerm = _termsService.GetById(term.Id);
+						await SaveTermNotes(selectedTerm);
+					}
+
+				}
+				else
+				{
+					Subject selectedSubject = await _subjectsService.GetByIdAsync(subject.Id);
+					int parent = -1;
+					//科目底下所有條文
+					var terms = (await _termsService.FetchAsync(selectedSubject, parent)).Where(x => !x.ChapterTitle);
+					var termIds = terms.Select(x => x.Id).ToList();
+
+					if (terms.HasItems())
+					{
+						_termsService.LoadSubItems(terms);
+						terms = terms.GetOrdered();
+
+						foreach (var term in terms)
+						{
+							await SaveTermNotes(term);
+						}
+					}
+				}
+			}
+
+			return Ok();
+		}
+
+		async Task SaveTermNotes(Term term)
+		{
+			var termIds = new List<int>() { term.Id };
+			if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
+			var notes = await _notesService.FetchAsync(termIds);
+
+
+			var postIds = notes.Select(x => x.Id).ToList();
+			var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
+
+			var noteViewList = notes.MapViewModelList(_mapper, attachments.ToList());
+
+			var termViewModel = term.MapViewModel(_mapper);
+
+			_dataService.SaveTermNotes(termViewModel, noteViewList);
+
+		}
+		#endregion
 	}
 }

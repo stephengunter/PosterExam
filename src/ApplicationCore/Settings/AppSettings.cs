@@ -25,7 +25,8 @@ namespace ApplicationCore.Settings
 	public class AuthSettings
 	{
 		public string SecurityKey { get; set; }
-		public int RefreshTokenDaysToExpire { get; set; }		
+		public int TokenValidHours { get; set; }
+		public int RefreshTokenDaysToExpire { get; set; }
 
 	}
 

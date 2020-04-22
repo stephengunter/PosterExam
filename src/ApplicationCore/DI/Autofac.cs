@@ -40,7 +40,7 @@ namespace ApplicationCore.DI
             builder.RegisterType<TokenFactory>().As<ITokenFactory>().SingleInstance();
             builder.RegisterType<JwtTokenValidator>().As<IJwtTokenValidator>().SingleInstance().FindConstructorsWith(new InternalConstructorFinder());
 
-            builder.RegisterType<Logger>().As<ILogger>().SingleInstance();
+            builder.RegisterType<AppLogger>().As<IAppLogger>().SingleInstance();
             builder.RegisterType<HasPermissionHandler>().As<IAuthorizationHandler>().InstancePerLifetimeScope();
             builder.RegisterGeneric(typeof(DefaultRepository<>)).As(typeof(IDefaultRepository<>)).InstancePerLifetimeScope();
             builder.RegisterGeneric(typeof(MongoRepository<>)).As(typeof(IMongoRepository<>)).InstancePerLifetimeScope();

@@ -9,8 +9,6 @@ namespace ApplicationCore.Models
 {
 	public class User : IdentityUser, IAggregateRoot
 	{
-		public string Name { get; set; }
-
 		public DateTime CreatedAt { get; set; } = DateTime.Now;
 
 		public ICollection<OAuth> OAuthList { get; set; }
@@ -18,6 +16,9 @@ namespace ApplicationCore.Models
 		public RefreshToken RefreshToken { get; set; }
 
 		public ICollection<Exam> Exams { get; set; }
-		
+
+
+		public ICollection<Subscribe> Subscribes { get; set; }
+
 	}
 }

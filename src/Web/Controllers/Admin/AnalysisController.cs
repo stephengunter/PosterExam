@@ -191,69 +191,6 @@ namespace Web.Controllers.Admin
 
 			return Ok();
 		}
-
-		[HttpGet("__rq")]
-		public async Task<ActionResult> __RQ(int subject)
-		{
-			var allSubjects = await _subjectsService.FetchAsync();
-			var selectedSubject = allSubjects.FirstOrDefault(x => x.Id == subject);
-			selectedSubject.LoadSubItems(allSubjects);
-
-			var allRecruits = await _recruitsService.GetAllAsync();
-			var selectedRecruits = allRecruits.Where(x => x.SubjectId == subject);
-
-			var results = new List<RecruitQuestionAnalysisView>();
-
-			foreach (var recruit in selectedRecruits)
-			{
-				recruit.LoadParent(allRecruits);
-				recruit.LoadSubItems(allRecruits);
-
-				var model = new RecruitQuestionAnalysisView() { RecruitId = recruit.Id, SubjectId = selectedSubject .Id };
-
-				var parts = recruit.SubItems;
-				if (parts.HasItems())
-				{
-					foreach (var part in parts)
-					{
-						var questions = (await _questionsService.FetchByRecruitAsync(part, selectedSubject)).ToList();
-						var pointsPerQuestion = part.Points / questions.Count;
-
-						var details = questions.Select(q => new QuestionAnalysisDetailView
-						{
-							QuestionId = q.Id,
-							SubjectId = q.SubjectId,
-							Points = pointsPerQuestion
-						});
-
-						model.Details.AddRange(details);
-					}
-
-				}
-				else
-				{
-					var questions = (await _questionsService.FetchByRecruitAsync(recruit, selectedSubject)).ToList();
-					var pointsPerQuestion = 100 / questions.Count;
-
-					var details = questions.Select(q => new QuestionAnalysisDetailView
-					{
-						QuestionId = q.Id,
-						SubjectId = q.SubjectId,
-						Points = pointsPerQuestion
-					});
-
-					model.Details.AddRange(details);
-				}
-
-				model.LoadSummaryList();
-				results.Add(model);
-
-			}
-
-			
-			return Ok(results.MapToViewModelList(selectedRecruits.ToList(), allSubjects.ToList(), _mapper));
-		}
-
 		
 	}
 }

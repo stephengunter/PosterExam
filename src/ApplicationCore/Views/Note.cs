@@ -25,5 +25,12 @@ namespace ApplicationCore.Views
         public ICollection<ReferenceViewModel> References { get; set; } = new List<ReferenceViewModel>();
 
         public ICollection<string> Highlights { get; set; } = new List<string>();
+
+        public bool HasKeyword(string keyword)
+        {
+
+            if (String.IsNullOrEmpty(this.Text)) return false;
+            return this.Text.Contains(keyword);
+        }
     }
 }

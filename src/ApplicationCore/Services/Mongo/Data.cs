@@ -23,6 +23,15 @@ namespace ApplicationCore.Services
 
         IEnumerable<RecruitViewModel> FetchYearRecruits();
         void SaveYearRecruits(IEnumerable<RecruitViewModel> models);
+
+        IEnumerable<NoteCategoryViewModel> FetchNoteCategories();
+        void SaveNoteCategories(IEnumerable<NoteCategoryViewModel> models);
+
+        IEnumerable<TermViewModel> FetchTermNotesBySubject(int subjectId);
+        TermViewModel FindTermNotesByTerm(int termId);
+        void CleanTermNotes();
+        void SaveTermNotes(TermViewModel model, List<NoteViewModel> noteViewList);
+
     }
 
     public class DataService : IDataService
@@ -30,13 +39,18 @@ namespace ApplicationCore.Services
         private readonly IMongoRepository<ExamSettings> _examSettingsRepository;
         private readonly IMongoRepository<SubjectQuestions> _subjectQuestionsRepository;
         private readonly IMongoRepository<YearRecruit> _yearRecruitsRepository;
+        private readonly IMongoRepository<NoteCategories> _noteCategoriesRepository;
+        private readonly IMongoRepository<TermNotes> _termNotesRepository;
 
         public DataService(IMongoRepository<ExamSettings> examSettingsRepository, IMongoRepository<SubjectQuestions> subjectQuestionsRepository,
-            IMongoRepository<YearRecruit> yearRecruitsRepository)
+            IMongoRepository<YearRecruit> yearRecruitsRepository, IMongoRepository<NoteCategories> noteCategoriesRepository,
+            IMongoRepository<TermNotes> termNotesRepository)
         {
             _examSettingsRepository = examSettingsRepository;
             _subjectQuestionsRepository = subjectQuestionsRepository;
             _yearRecruitsRepository = yearRecruitsRepository;
+            _noteCategoriesRepository = noteCategoriesRepository;
+            _termNotesRepository = termNotesRepository;
         }
 
         public void SaveExamSettings(int subjectId, ExamSettingsViewModel model)
@@ -101,6 +115,57 @@ namespace ApplicationCore.Services
             var docs = models.Select(model => new YearRecruit { Content = JsonConvert.SerializeObject(model) });
 
             _yearRecruitsRepository.InsertMany(docs.ToList());
+        }
+
+        public IEnumerable<NoteCategoryViewModel> FetchNoteCategories()
+        {
+            var docs = _noteCategoriesRepository.Fetch();
+            if (docs.IsNullOrEmpty()) return null;
+
+            return docs.Select(doc => JsonConvert.DeserializeObject<NoteCategoryViewModel>(doc.Content));
+        }
+
+        public void SaveNoteCategories(IEnumerable<NoteCategoryViewModel> models)
+        {
+            _noteCategoriesRepository.DeleteMany(x => true);
+
+            var docs = models.Select(model => new NoteCategories { Content = JsonConvert.SerializeObject(model) });
+
+            _noteCategoriesRepository.InsertMany(docs.ToList());
+        }
+
+        public IEnumerable<TermViewModel> FetchTermNotesBySubject(int subjectId)
+        {
+            var docs = _termNotesRepository.FilterBy(x => x.SubjectId == subjectId);
+            if (docs.IsNullOrEmpty()) return new List<TermViewModel>();
+
+            return docs.Select(doc => JsonConvert.DeserializeObject<TermViewModel>(doc.Content));
+        }
+
+        public TermViewModel FindTermNotesByTerm(int termId)
+        {
+            var doc = _termNotesRepository.FindOne(item => item.TermId == termId);
+            if (doc == null) return null;
+
+            return JsonConvert.DeserializeObject<TermViewModel>(doc.Content);
+        }
+
+        public void CleanTermNotes() => _termNotesRepository.DeleteMany(x => true);
+
+        public void SaveTermNotes(TermViewModel model, List<NoteViewModel> noteViewList)
+        {
+            int termId = model.Id;
+            int subjectId = model.SubjectId;
+
+            model.Subject = null;
+            if (model.SubItems.HasItems()) foreach (var item in model.SubItems) item.Subject = null;
+
+            model.LoadNotes(noteViewList);
+
+
+            _termNotesRepository.InsertOne(new TermNotes { SubjectId = subjectId, TermId = termId, Content = JsonConvert.SerializeObject(model) });
+
+
         }
 
     }

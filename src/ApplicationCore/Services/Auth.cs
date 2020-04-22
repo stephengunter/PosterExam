@@ -56,7 +56,7 @@ namespace ApplicationCore.Services
 
 		public async Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, OAuth oAuth, IList<string> roles = null)
 		{
-			var accessToken = await _jwtFactory.GenerateEncodedToken(user.Id, user.UserName, oAuth.Provider.ToString(), oAuth.PictureUrl, roles);
+			var accessToken = await _jwtFactory.GenerateEncodedToken(user, oAuth, roles);
 			var refreshToken = _tokenFactory.GenerateToken();
 
 			await SetRefreshTokenAsync(ipAddress, user, refreshToken);

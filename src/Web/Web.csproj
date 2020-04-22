@@ -18,12 +18,18 @@
   <ItemGroup>
     <Compile Remove="Controllers\Admin\TestController.cs" />
     <Compile Remove="Helpers\SwaggerFileUploadFilter.cs" />
+    <Compile Remove="Helpers\ViewServices\Notes.cs" />
+    <Compile Remove="Models\Note.cs" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.42.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
@@ -34,8 +40,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Api\" />
-    <Folder Include="Controllers\Admin\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

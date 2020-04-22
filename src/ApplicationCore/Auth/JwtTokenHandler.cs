@@ -15,9 +15,9 @@ namespace ApplicationCore.Auth
 	public class JwtTokenHandler : IJwtTokenHandler
     {
         private readonly JwtSecurityTokenHandler _jwtSecurityTokenHandler;
-        private readonly ILogger _logger;
+        private readonly IAppLogger _logger;
 
-        internal JwtTokenHandler(ILogger logger)
+        internal JwtTokenHandler(IAppLogger logger)
         {
             if (_jwtSecurityTokenHandler == null)
                 _jwtSecurityTokenHandler = new JwtSecurityTokenHandler();

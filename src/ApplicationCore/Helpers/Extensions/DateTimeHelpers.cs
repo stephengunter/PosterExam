@@ -7,6 +7,28 @@ namespace ApplicationCore.Helpers
 {
 	public static class DateTimeHelpers
     {
+		public static DateTime? ToStartDate(this string input)
+		{
+			var startDate = input.ToDatetimeOrNull();
+			if (startDate.HasValue)
+			{
+				var dateStart = Convert.ToDateTime(startDate);
+				return new DateTime(dateStart.Year, dateStart.Month, dateStart.Day, 0, 0, 1);
+			}
+			else return null;
+		}
+
+		public static DateTime? ToEndDate(this string input)
+		{
+			var endDate = input.ToDatetimeOrNull();
+			if (endDate.HasValue)
+			{
+				var dateEnd = Convert.ToDateTime(endDate);
+				return new DateTime(dateEnd.Year, dateEnd.Month, dateEnd.Day, 23, 59, 59);
+			}
+			else return null;
+		}
+
 		public static DateTime ConvertToTaipeiTime(this DateTime input)
 		{
 			string taipeiTimeZoneId = "Taipei Standard Time";
@@ -38,7 +60,7 @@ namespace ApplicationCore.Helpers
 
 		public static string ToDateString(this DateTime input)
 		{
-			return input.ToString("yyyy/MM/dd");
+			return input.ToString("yyyy-MM-dd");
 		}
 
 		public static string ToDateString(this DateTime? input)
@@ -49,7 +71,7 @@ namespace ApplicationCore.Helpers
 
 		public static string ToDateTimeString(this DateTime input)
 		{
-			return input.ToString("yyyy/MM/dd H:mm:ss");
+			return input.ToString("yyyy-MM-dd H:mm:ss");
 		}
 
 		public static string ToDateTimeString(this DateTime? input)

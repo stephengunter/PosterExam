@@ -1,23 +1,20 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
-using Microsoft.AspNetCore.Identity;
 using ApplicationCore.Models;
 using ApplicationCore.Auth;
 using ApplicationCore.Services;
-using Web.Controllers;
-
 namespace Web.Controllers
 {
 	public class AuthController : BaseController
 	{
-		private readonly UserManager<User> _userManager;
+		private readonly IUsersService _usersService;
 		private readonly IAuthService _authService;
 
 
-		public AuthController(UserManager<User> userManager, IAuthService authService)
+		public AuthController(IUsersService usersService, IAuthService authService)
 		{
-			_userManager = userManager;
+			_usersService = usersService;
 			_authService = authService;
 		}
 
@@ -32,9 +29,9 @@ namespace Web.Controllers
 			ValidateRequest(model, userId);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
-			var user = await _userManager.FindByIdAsync(userId);
+			var user = await _usersService.FindUserByIdAsync(userId);
 			var oauth = _authService.FindOAuthByProvider(userId, oauthProvider);
-			var roles = await _userManager.GetRolesAsync(user);
+			var roles = await _usersService.GetRolesAsync(user);
 
 			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, oauth, roles);
 

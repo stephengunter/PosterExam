@@ -17,7 +17,7 @@ namespace Infrastructure.Views
 
 		public bool Active { get; set; }
 
-		public string StatusText => this.Active ? "上架中" : "已下架";
+		public virtual string StatusText => this.Active ? "上架中" : "已下架";
 
 		public string LastUpdatedText => LastUpdated.ToString("yyyy/MM/dd H:mm:ss");
 

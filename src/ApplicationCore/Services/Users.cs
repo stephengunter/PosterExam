@@ -7,11 +7,17 @@ using ApplicationCore.DataAccess;
 using ApplicationCore.Models;
 using Microsoft.AspNetCore.Identity;
 using ApplicationCore.Helpers;
+using ApplicationCore.Exceptions;
 
 namespace ApplicationCore.Services
 {
     public interface IUsersService
     {
+        Task<User> FindUserByEmailAsync(string email);
+        Task<User> CreateUserAsync(string email, bool emailConfirmed);
+        Task<IList<string>> GetRolesAsync(User user);
+
+        Task<User> FindUserByIdAsync(string id);
         Task<IEnumerable<User>> FetchUsersAsync(string role = "", string keyword = "");
         IEnumerable<IdentityRole> FetchRoles();
 
@@ -30,6 +36,28 @@ namespace ApplicationCore.Services
             _userManager = userManager;
             _roleManager = roleManager;
         }
+        
+        public async Task<User> FindUserByEmailAsync(string email) => await _userManager.FindByEmailAsync(email);
+
+        public async Task<User> CreateUserAsync(string email, bool emailConfirmed)
+        {
+            var user = new User
+            {
+                Email = email,
+                UserName = email,
+                EmailConfirmed = emailConfirmed
+            };
+            var result = await _userManager.CreateAsync(user);
+
+            if (result.Succeeded) return user;
+
+            var error = result.Errors.FirstOrDefault();
+            throw new CreateUserException($"{error.Code} : {error.Description}");
+        }
+
+        public async Task<IList<string>> GetRolesAsync(User user) => await _userManager.GetRolesAsync(user);
+
+        public async Task<User> FindUserByIdAsync(string id) => await _userManager.FindByIdAsync(id);
 
         public async Task<IEnumerable<User>> FetchUsersAsync(string role = "", string keyword = "")
         {
@@ -49,8 +77,8 @@ namespace ApplicationCore.Services
             if (String.IsNullOrEmpty(keyword)) return users;
             if (users.IsNullOrEmpty()) return users;
 
-            return users.Where(u => u.UserName.CaseInsensitiveContains(keyword) || u.Name.CaseInsensitiveContains(keyword));
-
+            return users.Where(u => u.UserName.CaseInsensitiveContains(keyword));
+           // return users.Where(u => u.UserName.CaseInsensitiveContains(keyword) || u.Name.CaseInsensitiveContains(keyword));
         }
 
         public IEnumerable<IdentityRole> FetchRoles() => _roleManager.Roles.ToList();

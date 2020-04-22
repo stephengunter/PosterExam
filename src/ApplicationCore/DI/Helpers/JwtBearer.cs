@@ -11,11 +11,12 @@ namespace ApplicationCore.DI
 {
     public static class JwtBearerDI
     {
-        public static void AddJwtBearer(this IServiceCollection services, string issuer, string audience, string securityKey)
+        public static void AddJwtBearer(this IServiceCollection services, int tokenValidHours, string issuer, string audience, string securityKey)
         {
             var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(securityKey));
             services.Configure<JwtIssuerOptions>(options =>
             {
+                options.ValidFor = TimeSpan.FromHours(tokenValidHours);
                 options.Issuer = issuer;
                 options.Audience = audience;
                 options.SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);

@@ -61,5 +61,7 @@ namespace ApplicationCore.ViewServices
 
 		public static IEnumerable<Note> FilterByKeyword(this IEnumerable<Note> notes, ICollection<string> keywords)
 			=> notes.Where(item => keywords.Any(item.HasKeyword)).ToList();
+
+		
 	}
 }

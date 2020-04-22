@@ -4,26 +4,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
-using Microsoft.AspNetCore.Identity;
 using ApplicationCore.Models;
 using ApplicationCore.Services;
-using System.Net.Http;
 using Google.Apis.Auth;
-using ApplicationCore.Exceptions;
-using Web.Controllers;
 
 namespace Web.Controllers
 {
 	public class OAuthController : BaseController
 	{
-		private readonly UserManager<User> _userManager;
+		private readonly IUsersService _usersService;
 		private readonly IAuthService _authService;
 
-		private static readonly HttpClient Client = new HttpClient();
-
-		public OAuthController(UserManager<User> userManager, IAuthService authService)
+		public OAuthController(IUsersService usersService, IAuthService authService)
 		{
-			_userManager = userManager;
+			_usersService = usersService;
 			_authService = authService;
 		}
 
@@ -33,52 +27,32 @@ namespace Web.Controllers
 		{
 			var payload = await GoogleJsonWebSignature.ValidateAsync(model.Token, new GoogleJsonWebSignature.ValidationSettings());
 
-			var user = await _userManager.FindByEmailAsync(payload.Email);
+			var user = await _usersService.FindUserByEmailAsync(payload.Email);
 
-			if (user == null) user = await CreateUserAsync(payload.Email, payload.Name);
-
+			if (user == null)
+			{
+				bool emailConfirmed = true;
+				user = await _usersService.CreateUserAsync(payload.Email, emailConfirmed);
+			}
+			
 			var oAuth = new OAuth
 			{
 				OAuthId = payload.Subject,
 				Provider = OAuthProvider.Google,
+				GivenName = payload.GivenName,
+				FamilyName = payload.FamilyName,
+				Name = payload.Name,
 				UserId = user.Id,
 				PictureUrl = payload.Picture
 			};
 
 			await _authService.CreateUpdateUserOAuthAsync(user.Id, oAuth);
 
-			var roles = await _userManager.GetRolesAsync(user);
-
-
+			var roles = await _usersService.GetRolesAsync(user);
 
 			var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, oAuth, roles);
 
 			return Ok(responseView);
-		}
-
-
-
-
-
-		async Task<User> CreateUserAsync(string email, string name)
-		{
-			var result = await _userManager.CreateAsync(new User
-			{
-				Email = email,
-				UserName = email,
-				Name = name,
-				EmailConfirmed = true
-			});
-
-			if (!result.Succeeded) OnCreateUserError(result);
-
-			return await _userManager.FindByEmailAsync(email);
-		}
-
-		void OnCreateUserError(IdentityResult result)
-		{
-			var error = result.Errors.FirstOrDefault();
-			throw new CreateUserException($"{error.Code} : {error.Description}");
 		}
 
 

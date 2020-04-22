@@ -16,9 +16,9 @@ namespace Web.Controllers.Admin
 {
 	public class ExceptionsController : BaseAdminController
 	{
-		private readonly ApplicationCore.Logging.ILogger _logger;
+		private readonly ApplicationCore.Logging.IAppLogger _logger;
 
-		public ExceptionsController(ApplicationCore.Logging.ILogger logger)
+		public ExceptionsController(ApplicationCore.Logging.IAppLogger logger)
 		{
 			_logger = logger;
 		}

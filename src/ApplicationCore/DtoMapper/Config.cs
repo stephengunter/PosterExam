@@ -13,24 +13,6 @@ namespace ApplicationCore.DtoMapper
 			return new MapperConfiguration(cfg => {
 				cfg.AddMaps(typeof(TermMappingProfile).Assembly);
 			});
-			//var mappingConfig = new MapperConfiguration(cfg =>
-			//{
-			//	//foreach (var profile in profiles)
-			//	//{
-			//	//	var resolvedProfile = container.Resolve(profile) as Profile;
-			//	//	cfg.AddProfile(resolvedProfile);
-			//	//}
-			//	mc.AddProfile(new TermMappingProfile());
-			//	mc.AddProfile(new SubjectMappingProfile());
-			//	mc.AddProfile(new QuestionMappingProfile());
-			//	mc.AddProfile(new OptionMappingProfile());
-			//	mc.AddProfile(new ResolveMappingProfile());
-			//	mc.AddProfile(new RecruitMappingProfile());
-			//	mc.AddProfile(new UploadFileMappingProfile());
-			//});
-
-
-			//return mappingConfig;
 		}
 
 	}

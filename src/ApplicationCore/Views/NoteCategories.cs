@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ApplicationCore.Models;
-using ApplicationCore.Paging;
-using ApplicationCore.Views;
-using Infrastructure.Views;
 
-
-namespace Web.Models
+namespace ApplicationCore.Views
 {
     public enum NoteCategoryType
     {

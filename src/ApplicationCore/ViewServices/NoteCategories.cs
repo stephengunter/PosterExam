@@ -1,23 +1,23 @@
-﻿using System;
+﻿using ApplicationCore.Views;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Web.Models;
 using ApplicationCore.Models;
+using System.Text;
 using ApplicationCore.Helpers;
+using System.Linq;
 
-namespace Web.Helpers
+namespace ApplicationCore.ViewServices
 {
-    public static class NotesViewService
-    {
+	public static class NoteCategoriesViewService
+	{
 		public static NoteCategoryViewModel MapNoteCategoryViewModel(this Subject subject, int parentId = 0)
 		{
 			return new NoteCategoryViewModel
 			{
-				 Id = subject.Id,
-				 ParentId = parentId,
-				 Text = subject.Title,
-				 Type = subject.ParentId > 0 ? NoteCategoryType.Subject.ToString() : NoteCategoryType.Root.ToString()
+				Id = subject.Id,
+				ParentId = parentId,
+				Text = subject.Title,
+				Type = subject.ParentId > 0 ? NoteCategoryType.Subject.ToString() : NoteCategoryType.Root.ToString()
 
 			};
 		}
@@ -32,7 +32,7 @@ namespace Web.Helpers
 				Type = NoteCategoryType.ChapterTitle.ToString()
 
 			};
-			
+
 			if (term.SubItems.HasItems()) model.SubItems = term.SubItems.Select(item => item.MapNoteCategoryViewModel()).ToList();
 
 			return model;

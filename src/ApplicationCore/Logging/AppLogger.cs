@@ -11,7 +11,7 @@ using System.Text;
 
 namespace ApplicationCore.Logging
 {
-	public interface ILogger
+	public interface IAppLogger
 	{
 		void LogInfo(string message);
 		void LogWarn(string message);
@@ -23,14 +23,14 @@ namespace ApplicationCore.Logging
 
 	}
 
-	public class Logger : ILogger
+	public class AppLogger : IAppLogger
 	{
 		private static readonly NLog.ILogger logger = LogManager.GetCurrentClassLogger();
 
 		private readonly AdminSettings _adminSettings;
 		private readonly string _filePath;
 
-		public Logger(IOptions<AdminSettings> adminSettings)
+		public AppLogger(IOptions<AdminSettings> adminSettings)
 		{
 			_adminSettings = adminSettings.Value;
 			var folderPath = _adminSettings.DataPath;

@@ -15,43 +15,118 @@ namespace ApplicationCore.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("ApplicationCore.Models.Bill", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("BankCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BankName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DeadLine")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("HasDiscount")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PayWayId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PayWayId");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Bills");
+                });
 
             modelBuilder.Entity("ApplicationCore.Models.Exam", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("ExamType");
+                    b.Property<int>("ExamType")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("OptionType");
+                    b.Property<int>("OptionType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RecruitExamType");
+                    b.Property<int>("RecruitExamType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("RecruitId");
+                    b.Property<int>("RecruitId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("Reserved");
+                    b.Property<bool>("Reserved")
+                        .HasColumnType("bit");
 
-                    b.Property<double>("Score");
+                    b.Property<double>("Score")
+                        .HasColumnType("float");
 
-                    b.Property<int>("SubjectId");
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -64,19 +139,26 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ExamId");
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("MultiAnswers");
+                    b.Property<bool>("MultiAnswers")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("OptionCount");
+                    b.Property<int>("OptionCount")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<double>("Points");
+                    b.Property<double>("Points")
+                        .HasColumnType("float");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -89,21 +171,29 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("AnswerIndexes");
+                    b.Property<string>("AnswerIndexes")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Correct");
+                    b.Property<bool>("Correct")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("ExamPartId");
+                    b.Property<int>("ExamPartId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("OptionIds");
+                    b.Property<string>("OptionIds")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<int>("QuestionId");
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("UserAnswerIndexes");
+                    b.Property<string>("UserAnswerIndexes")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -118,31 +208,44 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Highlight");
+                    b.Property<string>("Highlight")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Important");
+                    b.Property<bool>("Important")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<int>("ParentId");
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Reference");
+                    b.Property<string>("Reference")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("TermId");
+                    b.Property<int>("TermId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Text");
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -155,15 +258,29 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("OAuthId");
+                    b.Property<string>("FamilyName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PictureUrl");
+                    b.Property<string>("GivenName")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Provider");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("OAuthId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PictureUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Provider")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -176,13 +293,17 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("Correct");
+                    b.Property<bool>("Correct")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("QuestionId");
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -191,29 +312,158 @@ namespace ApplicationCore.Migrations
                     b.ToTable("Options");
                 });
 
+            modelBuilder.Entity("ApplicationCore.Models.Pay", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("BillId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Money")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PayWayId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillId");
+
+                    b.ToTable("Pays");
+                });
+
+            modelBuilder.Entity("ApplicationCore.Models.PayWay", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PayWay");
+                });
+
+            modelBuilder.Entity("ApplicationCore.Models.Plan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Discount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Money")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Plans");
+                });
+
             modelBuilder.Entity("ApplicationCore.Models.Question", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("MultiAnswers");
+                    b.Property<bool>("MultiAnswers")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("SubjectId");
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("TermIds");
+                    b.Property<string>("TermIds")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -226,39 +476,56 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("Date");
+                    b.Property<DateTime?>("Date")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("Done");
+                    b.Property<bool>("Done")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("MultiAnswers");
+                    b.Property<bool>("MultiAnswers")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("OptionCount");
+                    b.Property<int>("OptionCount")
+                        .HasColumnType("int");
 
-                    b.Property<int>("OptionType");
+                    b.Property<int>("OptionType")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<string>("PS");
+                    b.Property<string>("PS")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ParentId");
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("Points");
+                    b.Property<int>("Points")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("SubjectId");
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Year");
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -267,9 +534,11 @@ namespace ApplicationCore.Migrations
 
             modelBuilder.Entity("ApplicationCore.Models.RecruitQuestion", b =>
                 {
-                    b.Property<int>("RecruitId");
+                    b.Property<int>("RecruitId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("QuestionId");
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
 
                     b.HasKey("RecruitId", "QuestionId");
 
@@ -282,15 +551,20 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("Expires");
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("RemoteIpAddress");
+                    b.Property<string>("RemoteIpAddress")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Token");
+                    b.Property<string>("Token")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -305,27 +579,38 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Highlight");
+                    b.Property<string>("Highlight")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<int>("QuestionId");
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("Reviewed");
+                    b.Property<bool>("Reviewed")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Source");
+                    b.Property<string>("Source")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Text");
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -338,23 +623,32 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PostId");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("Reviewed");
+                    b.Property<bool>("Reviewed")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("Type");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -365,60 +659,131 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<int>("ParentId");
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Subjects");
                 });
 
+            modelBuilder.Entity("ApplicationCore.Models.Subscribe", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("BillId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PlanId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BillId");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Subscribes");
+                });
+
             modelBuilder.Entity("ApplicationCore.Models.Term", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool>("ChapterTitle");
+                    b.Property<bool>("ChapterTitle")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<bool>("Hide");
+                    b.Property<bool>("Hide")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Highlight");
+                    b.Property<string>("Highlight")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<int>("ParentId");
+                    b.Property<int>("ParentId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("QIds");
+                    b.Property<string>("QIds")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Reference");
+                    b.Property<string>("Reference")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<int>("SubjectId");
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Text");
+                    b.Property<string>("Text")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -429,9 +794,11 @@ namespace ApplicationCore.Migrations
 
             modelBuilder.Entity("ApplicationCore.Models.TermQuestion", b =>
                 {
-                    b.Property<int>("TermId");
+                    b.Property<int>("TermId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("QuestionId");
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
 
                     b.HasKey("TermId", "QuestionId");
 
@@ -442,37 +809,53 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Description");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Height");
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime>("LastUpdated");
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Order");
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Path");
+                    b.Property<string>("Path")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PostId");
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("PostType");
+                    b.Property<int>("PostType")
+                        .HasColumnType("int");
 
-                    b.Property<string>("PreviewPath");
+                    b.Property<string>("PreviewPath")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("Removed");
+                    b.Property<bool>("Removed")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("Title");
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Type");
+                    b.Property<string>("Type")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UpdatedBy");
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Width");
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -482,43 +865,56 @@ namespace ApplicationCore.Migrations
             modelBuilder.Entity("ApplicationCore.Models.User", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("AccessFailedCount");
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreatedAt");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
-                    b.Property<bool>("EmailConfirmed");
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
 
-                    b.Property<bool>("LockoutEnabled");
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
 
-                    b.Property<DateTimeOffset?>("LockoutEnd");
-
-                    b.Property<string>("Name");
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("NormalizedEmail")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.Property<string>("NormalizedUserName")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
-                    b.Property<string>("PasswordHash");
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PhoneNumber");
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("PhoneNumberConfirmed");
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
 
-                    b.Property<string>("SecurityStamp");
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("TwoFactorEnabled");
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
@@ -537,15 +933,18 @@ namespace ApplicationCore.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.Property<string>("NormalizedName")
+                        .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
                     b.HasKey("Id");
@@ -562,14 +961,18 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ClaimType");
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ClaimValue");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -582,14 +985,18 @@ namespace ApplicationCore.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ClaimType");
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ClaimValue");
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
@@ -600,14 +1007,18 @@ namespace ApplicationCore.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ProviderKey");
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ProviderDisplayName");
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .IsRequired();
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -618,9 +1029,11 @@ namespace ApplicationCore.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("RoleId");
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -631,17 +1044,40 @@ namespace ApplicationCore.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.Property<string>("UserId");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("LoginProvider");
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Name");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("Value");
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
+                });
+
+            modelBuilder.Entity("ApplicationCore.Models.Bill", b =>
+                {
+                    b.HasOne("ApplicationCore.Models.PayWay", "PayWay")
+                        .WithMany()
+                        .HasForeignKey("PayWayId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApplicationCore.Models.Plan", "Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApplicationCore.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.Exam", b =>
@@ -656,7 +1092,8 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Exam", "Exam")
                         .WithMany("Parts")
                         .HasForeignKey("ExamId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.ExamQuestion", b =>
@@ -664,12 +1101,14 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.ExamPart", "ExamPart")
                         .WithMany("Questions")
                         .HasForeignKey("ExamPartId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ApplicationCore.Models.Question", "Question")
                         .WithMany()
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.Note", b =>
@@ -677,7 +1116,8 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Term", "Term")
                         .WithMany("Notes")
                         .HasForeignKey("TermId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.OAuth", b =>
@@ -692,7 +1132,17 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Question", "Question")
                         .WithMany("Options")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ApplicationCore.Models.Pay", b =>
+                {
+                    b.HasOne("ApplicationCore.Models.Bill", "Bill")
+                        .WithMany("Pays")
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.Question", b =>
@@ -700,7 +1150,8 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Subject", "Subject")
                         .WithMany("Questions")
                         .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.RecruitQuestion", b =>
@@ -708,12 +1159,14 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Question", "Question")
                         .WithMany("RecruitQuestions")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("ApplicationCore.Models.Recruit", "Recruit")
                         .WithMany("RecruitQuestions")
                         .HasForeignKey("RecruitId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.RefreshToken", b =>
@@ -728,7 +1181,25 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Question", "Question")
                         .WithMany("Resolves")
                         .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ApplicationCore.Models.Subscribe", b =>
+                {
+                    b.HasOne("ApplicationCore.Models.Bill", "Bill")
+                        .WithMany("Subscribes")
+                        .HasForeignKey("BillId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApplicationCore.Models.Plan", null)
+                        .WithMany("Subscribes")
+                        .HasForeignKey("PlanId");
+
+                    b.HasOne("ApplicationCore.Models.User", "User")
+                        .WithMany("Subscribes")
+                        .HasForeignKey("UserId");
                 });
 
             modelBuilder.Entity("ApplicationCore.Models.Term", b =>
@@ -736,52 +1207,59 @@ namespace ApplicationCore.Migrations
                     b.HasOne("ApplicationCore.Models.Subject", "Subject")
                         .WithMany("Terms")
                         .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("ApplicationCore.Models.User")
+                    b.HasOne("ApplicationCore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("ApplicationCore.Models.User")
+                    b.HasOne("ApplicationCore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("ApplicationCore.Models.User")
+                    b.HasOne("ApplicationCore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("ApplicationCore.Models.User")
+                    b.HasOne("ApplicationCore.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

@@ -37,6 +37,11 @@ namespace ApplicationCore.DataAccess
 
 		public DbSet<ReviewRecord> ReviewRecords { get; set; }
 
+		public DbSet<Plan> Plans { get; set; }
+		public DbSet<Subscribe> Subscribes { get; set; }
+		public DbSet<Bill> Bills { get; set; }
+		public DbSet<Pay> Pays { get; set; }
+
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{

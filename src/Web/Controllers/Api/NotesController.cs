@@ -18,61 +18,36 @@ namespace Web.Controllers.Api
 	[Authorize]
 	public class NotesController : BaseApiController
 	{
+		private readonly IDataService _dataService;
+
 		private readonly INotesService _notesService;
-		private readonly IAttachmentsService _attachmentsService;
-		private readonly ISubjectsService _subjectsService;
-		private readonly ITermsService _termsService;
 		private readonly IMapper _mapper;
 
-		public NotesController(INotesService notesService, ISubjectsService subjectsService, ITermsService termsService,
-			 IAttachmentsService attachmentsService, IMapper mapper)
+		public NotesController(IDataService dataService, INotesService notesService, 
+			 IMapper mapper)
 		{
+			_dataService = dataService;
+
 			_notesService = notesService;
-			_subjectsService = subjectsService;
-			_termsService = termsService;
-			_attachmentsService = attachmentsService;
 
 			_mapper = mapper;
 		}
 
 		[HttpGet("categories")]
-		public async Task<ActionResult> Categories()
+		public ActionResult Categories()
 		{
-			var allSubjects = await _subjectsService.FetchAsync();
-			allSubjects = allSubjects.Where(x => x.Active);
-
-			var allTerms = await _termsService.FetchAllAsync();
-
-			var rootSubjects = allSubjects.Where(x => x.ParentId < 1).GetOrdered();
-
-			var categories = rootSubjects.Select(item => item.MapNoteCategoryViewModel()).ToList();
-			foreach (var root in categories)
-			{
-				int parentId = root.Id;
-				var subjects = allSubjects.Where(x => x.ParentId == parentId).GetOrdered();
-				root.SubItems = subjects.Select(item => item.MapNoteCategoryViewModel(parentId)).ToList();
-			}
-
-			var subjectCategories = categories.SelectMany(x => x.SubItems);
-
-			//只到ChapterTitle, 捨棄Hide項目
-			foreach (var subjectCategory in subjectCategories)
-			{
-				var terms = allTerms.Where(item => item.SubjectId == subjectCategory.Id && item.ParentId == 0 && item.ChapterTitle && !item.Hide).GetOrdered();
-				subjectCategory.SubItems = terms.Select(item => item.MapNoteCategoryViewModel()).ToList();
-			}
+			var categories = _dataService.FetchNoteCategories();
 
 			return Ok(categories);
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int mode, int term = 0, int subject = 0, string keyword = "")
+		public ActionResult Index(int term = 0, int subject = 0, string keyword = "")
 		{
 			if (term > 0)
 			{
-				var selectedTerm = _termsService.GetById(term);
-				var termViewModel = await LoadTermViewModelAsync(mode, selectedTerm);
-
+				var termViewModel = _dataService.FindTermNotesByTerm(term);
+				if (termViewModel == null) return NotFound();
 
 				if (termViewModel.SubItems.HasItems()) return Ok(termViewModel.SubItems);
 				else return Ok(new List<TermViewModel> { termViewModel });
@@ -80,82 +55,169 @@ namespace Web.Controllers.Api
 			else if (subject > 0)
 			{
 				var keywords = keyword.GetKeywords();
-				Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
-				int parent = -1;
-				//科目底下所有條文
-				var terms = (await _termsService.FetchAsync(selectedSubject, parent)).Where(x => !x.ChapterTitle);
-				var termIds = terms.Select(x => x.Id).ToList();
+				var termViewList = _dataService.FetchTermNotesBySubject(subject);
 
-				if (terms.HasItems())
+				if (keywords.IsNullOrEmpty()) return Ok(termViewList);
+
+
+				var termsHasKeywords = FilterByKeywords(termViewList, keywords);
+
+				var noteIds = FetchNoteIdsByKeywords(termViewList, keywords);
+
+				var resultList = new List<TermViewModel>();
+				if (termsHasKeywords.HasItems()) resultList.AddRange(termsHasKeywords);
+
+
+				var terms = termViewList.SelectMany(x => x.SubItems).ToList();
+				if (terms.IsNullOrEmpty()) terms = termViewList.ToList();
+
+				foreach (var termView in terms)
 				{
-					_termsService.LoadSubItems(terms);
-					
-					if (keywords.HasItems()) terms = terms.FilterByKeyword(keywords);
-					terms = terms.GetOrdered();
-				}
-
-				var termViewModelList = new List<TermViewModel>();
-				foreach (var item in terms)
-				{
-					var termViewModel = await LoadTermViewModelAsync(mode, item);
-					termViewModelList.Add(termViewModel);
-				}
-
-
-				if (keywords.HasItems())
-				{
-					var notes = await _notesService.FetchAsync(termIds);
-					notes = notes.FilterByKeyword(keywords);
-
-					if (notes.HasItems())
+					termView.Notes = termView.Notes.Where(x => noteIds.Contains(x.Id)).ToList();
+					if (termView.Notes.HasItems())
 					{
-						foreach (int termId in notes.Select(x => x.TermId).Distinct())
+						if (resultList.FirstOrDefault(x => x.Id == termView.Id) == null)
 						{
-							var exist = termViewModelList.FirstOrDefault(x => x.Id == termId);
-							if (exist == null)
-							{
-								var selectedTerm = _termsService.GetById(termId);
-								var noteInTerms = notes.Where(x => x.TermId == termId);
-
-								var termViewModel = await LoadTermViewModelAsync(mode, selectedTerm);
-								termViewModelList.Add(termViewModel);
-							}
+							resultList.Add(termView);
 						}
-
-						termViewModelList = termViewModelList.OrderBy(item => item.Order).ToList();
-
 					}
-
-					
 				}
 
-				
-				return Ok(termViewModelList);
+				return Ok(resultList);
 			}
 
 			ModelState.AddModelError("params", "錯誤的查詢參數");
 			return BadRequest(ModelState);
 		}
 
-		async Task<TermViewModel> LoadTermViewModelAsync(int mode, Term term)
+		List<TermViewModel> FilterByKeywords(IEnumerable<TermViewModel> termViewList, IList<string> keywords)
 		{
-			var termIds = new List<int>() { term.Id };
-			if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
-			var notes = await _notesService.FetchAsync(termIds);
+			var terms = termViewList.SelectMany(x => x.SubItems).ToList();
+			if (terms.HasItems())
+			{
+				return terms.Where(item => keywords.Any(item.Text.Contains)).ToList();
+			}
+			else
+			{
 
-			if (mode > 0) notes = notes.Where(x => x.Important);
-
-
-			var postIds = notes.Select(x => x.Id).ToList();
-			var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
-
-			var noteViewList = notes.MapViewModelList(_mapper, attachments.ToList());
-
-			var termViewModel = term.MapViewModel(_mapper);
-			termViewModel.LoadNotes(noteViewList);
-
-			return termViewModel;
+				return termViewList.Where(item => keywords.Any(item.Text.Contains)).ToList();
+			}
 		}
+
+		List<int> FetchNoteIdsByKeywords(IEnumerable<TermViewModel> termViewList, IList<string> keywords)
+		{
+			var terms = termViewList.SelectMany(x => x.SubItems).ToList();
+			if (terms.HasItems())
+			{
+				return terms.SelectMany(x => x.Notes).Where(item => keywords.Any(item.HasKeyword)).Select(x => x.Id).ToList();
+			}
+			else
+			{
+				return termViewList.SelectMany(x => x.Notes).Where(item => keywords.Any(item.HasKeyword)).Select(x => x.Id).ToList();
+			}
+
+
+		}
+
+		//[HttpGet("old_index")]
+		//public async Task<ActionResult> OldIndex(int mode, int term = 0, int subject = 0, string keyword = "")
+		//{
+		//	if (term > 0)
+		//	{
+		//		var selectedTerm = _termsService.GetById(term);
+		//		var termViewModel = await LoadTermViewModelAsync(mode, selectedTerm);
+
+
+		//		if (termViewModel.SubItems.HasItems()) return Ok(termViewModel.SubItems);
+		//		else return Ok(new List<TermViewModel> { termViewModel });
+		//	}
+		//	else if (subject > 0)
+		//	{
+		//		var keywords = keyword.GetKeywords();
+		//		Subject selectedSubject = await _subjectsService.GetByIdAsync(subject);
+		//		int parent = -1;
+		//		//科目底下所有條文
+		//		var terms = (await _termsService.FetchAsync(selectedSubject, parent)).Where(x => !x.ChapterTitle);
+		//		var termIds = terms.Select(x => x.Id).ToList();
+
+		//		if (terms.HasItems())
+		//		{
+		//			_termsService.LoadSubItems(terms);
+					
+		//			if (keywords.HasItems()) terms = terms.FilterByKeyword(keywords);
+		//			terms = terms.GetOrdered();
+		//		}
+
+		//		var termViewModelList = new List<TermViewModel>();
+		//		foreach (var item in terms)
+		//		{
+		//			var termViewModel = await LoadTermViewModelAsync(mode, item);
+		//			termViewModelList.Add(termViewModel);
+		//		}
+
+
+		//		if (keywords.HasItems())
+		//		{
+		//			var notes = await _notesService.FetchAsync(termIds);
+		//			notes = notes.FilterByKeyword(keywords);
+
+		//			if (notes.HasItems())
+		//			{
+		//				foreach (int termId in notes.Select(x => x.TermId).Distinct())
+		//				{
+		//					var exist = termViewModelList.FirstOrDefault(x => x.Id == termId);
+		//					if (exist == null)
+		//					{
+		//						var selectedTerm = _termsService.GetById(termId);
+		//						var noteInTerms = notes.Where(x => x.TermId == termId);
+
+		//						var termViewModel = await LoadTermViewModelAsync(mode, selectedTerm);
+		//						termViewModelList.Add(termViewModel);
+		//					}
+		//				}
+
+		//				termViewModelList = termViewModelList.OrderBy(item => item.Order).ToList();
+
+		//			}
+
+					
+		//		}
+
+				
+		//		return Ok(termViewModelList);
+		//	}
+
+		//	ModelState.AddModelError("params", "錯誤的查詢參數");
+		//	return BadRequest(ModelState);
+		//}
+
+		//async Task<TermViewModel> LoadTermViewModelAsync(int mode, Term term)
+		//{
+		//	var termIds = new List<int>() { term.Id };
+		//	if (term.SubItems.HasItems()) termIds.AddRange(term.GetSubIds());
+		//	var notes = await _notesService.FetchAsync(termIds);
+
+		//	if (mode > 0) notes = notes.Where(x => x.Important);
+
+
+		//	var postIds = notes.Select(x => x.Id).ToList();
+		//	var attachments = (await _attachmentsService.FetchAsync(PostType.Note, postIds)).ToList();
+
+		//	var noteViewList = notes.MapViewModelList(_mapper, attachments.ToList());
+
+		//	var termViewModel = term.MapViewModel(_mapper);
+		//	termViewModel.Subject = null;
+		//	if (termViewModel.SubItems.HasItems())
+		//	{
+		//		foreach (var item in termViewModel.SubItems)
+		//		{
+		//			item.Subject = null;
+		//		}
+		//	}
+		//	termViewModel.LoadNotes(noteViewList);
+
+		//	return termViewModel;
+		//}
 
 		[HttpGet("{id}")]
 		public ActionResult Details(int id)
