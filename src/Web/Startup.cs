@@ -53,6 +53,7 @@ namespace Web
 			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 			services.Configure<RootSubjectSettings>(Configuration.GetSection("RootSubjectSettings"));
 			services.Configure<AuthSettings>(Configuration.GetSection("AuthSettings"));
+			services.Configure<SubscribesSettings>(Configuration.GetSection("SubscribesSettings"));
 			services.Configure<AdminSettings>(Configuration.GetSection("AdminSettings"));
 			services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDBSettings"));
 

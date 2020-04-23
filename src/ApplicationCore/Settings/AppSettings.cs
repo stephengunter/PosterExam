@@ -30,6 +30,12 @@ namespace ApplicationCore.Settings
 
 	}
 
+	public class SubscribesSettings
+	{
+		public int BillDaysToExpire { get; set; }
+
+	}
+
 	public class AdminSettings
 	{
 		public string Url { get; set; }

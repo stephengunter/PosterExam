@@ -14,6 +14,7 @@ namespace ApplicationCore.Services
 	{
 		Task<IEnumerable<Bill>> FetchAsync(bool active);
 		Task<IEnumerable<Bill>> FetchByUserAsync(string userId);
+		Task<IEnumerable<Bill>> FetchByUserAsync(User user, Plan plan);
 
 		Task<IEnumerable<Bill>> FetchAllAsync();
 		Bill GetById(int id);
@@ -42,6 +43,12 @@ namespace ApplicationCore.Services
 		public async Task<IEnumerable<Bill>> FetchByUserAsync(string userId)
 		{
 			var spec = new BillFilterSpecification(new User { Id = userId });
+			return await _billRepository.ListAsync(spec);
+		}
+
+		public async Task<IEnumerable<Bill>> FetchByUserAsync(User user, Plan plan)
+		{
+			var spec = new BillFilterSpecification(user, plan);
 			return await _billRepository.ListAsync(spec);
 		}
 

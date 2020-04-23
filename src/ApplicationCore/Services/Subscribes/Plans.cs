@@ -40,7 +40,6 @@ namespace ApplicationCore.Services
 
 			return plans.Where(x => x.Active == active);
 		}
-		
 
 
 		public async Task<IEnumerable<Plan>> FetchAllAsync() => await _planRepository.ListAsync(new PlanFilterSpecification());

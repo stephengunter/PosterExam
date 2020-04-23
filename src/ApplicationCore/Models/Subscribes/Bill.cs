@@ -21,10 +21,7 @@ namespace ApplicationCore.Models
 		public bool HasDiscount { get; set; }
 
 		public DateTime DeadLine { get; set; }
-
-		public string BankName { get; set; }
-
-		public string BankCode { get; set; }
+		
 
 		public int PayWayId { get; set; }
 
@@ -39,7 +36,13 @@ namespace ApplicationCore.Models
 		public ICollection<Pay> Pays { get; set; } = new List<Pay>();
 
 		[NotMapped]
-		public bool Payed => Pays.IsNullOrEmpty() ? false : Pays.Where(p => !p.Removed).Sum(p => p.Money) >= Amount;
+		public bool Payed => TotalPayed >= Amount;
+
+		[NotMapped]
+		public decimal NeedPayMoney => Amount - TotalPayed;
+
+
+		decimal TotalPayed => Pays.IsNullOrEmpty() ? 0 : Pays.Where(p => !p.Removed).Sum(p => p.Money);
 
 		[NotMapped]
 		public DateTime? PayedDate

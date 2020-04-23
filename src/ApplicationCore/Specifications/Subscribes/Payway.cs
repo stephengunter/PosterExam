@@ -18,5 +18,10 @@ namespace ApplicationCore.Specifications
 
         }
 
+        public PayWayFilterSpecification(string code) : base(item => !item.Removed && item.Code.ToLower() == code.ToLower())
+        {
+
+        }
+
     }
 }

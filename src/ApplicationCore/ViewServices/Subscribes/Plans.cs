@@ -38,7 +38,7 @@ namespace ApplicationCore.ViewServices
 			var entity = mapper.Map<PlanViewModel, Plan>(model);
 			entity.Money = Convert.ToDecimal(model.Price);
 			entity.StartDate = model.StartDateText.ToStartDate();
-			entity.EndDate = model.EndDateText.ToStartDate();
+			entity.EndDate = model.EndDateText.ToEndDate();
 
 			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);

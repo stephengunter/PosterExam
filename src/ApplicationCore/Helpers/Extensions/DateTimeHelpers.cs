@@ -24,9 +24,14 @@ namespace ApplicationCore.Helpers
 			if (endDate.HasValue)
 			{
 				var dateEnd = Convert.ToDateTime(endDate);
-				return new DateTime(dateEnd.Year, dateEnd.Month, dateEnd.Day, 23, 59, 59);
+				return dateEnd.ToEndDate();
 			}
 			else return null;
+		}
+
+		public static DateTime ToEndDate(this DateTime date)
+		{
+			return new DateTime(date.Year, date.Month, date.Day, 23, 59, 59);
 		}
 
 		public static DateTime ConvertToTaipeiTime(this DateTime input)

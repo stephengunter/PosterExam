@@ -15,25 +15,33 @@ using Web.Controllers;
 using Web.Models;
 using ApplicationCore.Logging;
 using ApplicationCore.Exceptions;
+using Microsoft.Extensions.Options;
+using ApplicationCore.Settings;
 
 namespace Web.Controllers.Api
 {
 	[Authorize]
 	public class SubscribesController : BaseApiController
 	{
+		private readonly SubscribesSettings _subscribesSettings;
+
 		private readonly ISubscribesService _subscribesService;
 		private readonly IPlansService _plansService;
-		private readonly IPayWaysService _paywaysService;
+		private readonly IPaysService _paywaysService;
+		private readonly IBillsService _billsService;
 		private readonly IMapper _mapper;
 		private readonly IAppLogger _logger;
 
 		
-		public SubscribesController(ISubscribesService subscribesService, IPlansService plansService,
-			IPayWaysService paywaysService, IAppLogger logger, IMapper mapper)
+		public SubscribesController(IOptions<SubscribesSettings> subscribesSettings, ISubscribesService subscribesService, IPlansService plansService,
+			IPaysService paywaysService, IBillsService billsService, IAppLogger logger, IMapper mapper)
 		{
+			_subscribesSettings = subscribesSettings.Value;
+
 			_subscribesService = subscribesService;
 			_plansService = plansService;
 			_paywaysService = paywaysService;
+			_billsService = billsService;
 			_logger = logger;
 			_mapper = mapper;
 		}
@@ -42,8 +50,46 @@ namespace Web.Controllers.Api
 		public async Task<ActionResult> Index()
 		{
 			var model = await GetIndexViewAsync();
-			
-			var payways = (await _paywaysService.FetchAsync()).GetOrdered();
+
+			var bills = await _billsService.FetchByUserAsync(CurrentUserId);
+
+			model.Bills = bills.MapViewModelList(_mapper);
+
+			var payways = (await _paywaysService.FetchPayWaysAsync()).GetOrdered();
+			model.PayWays = payways.MapViewModelList(_mapper);
+
+			return Ok(model);
+		}
+
+		[HttpGet("create")]
+		public async Task<ActionResult> Create()
+		{
+			var model = await GetIndexViewAsync();
+
+			var plan = model.Plan;
+			if (plan == null) return Ok(model); //正在訂閱期內或無方案可訂閱
+
+			//查看是否已經有帳單未繳
+			var bills = await _billsService.FetchByUserAsync(new User { Id = CurrentUserId }, new Plan { Id = plan.Id });
+			if (bills.HasItems())
+			{
+				//帳單有繳的話, 應該在訂閱期內
+				//所以應該只會有未繳的
+				var unPayedBills = bills.Where(x => !x.Payed).ToList();
+				if (unPayedBills.IsNullOrEmpty())
+				{
+					//沒有未繳帳單,異常
+					//例外
+					_logger.LogException(new BillPayedButNoCurrentSubscribe(new User { Id = CurrentUserId }, new Plan { Id = plan.Id }));
+					
+				}
+
+				return Ok(model); //有未繳帳單或帳單異常
+			}
+
+			//只有進行到這裡,才可建立新訂單
+
+			var payways = (await _paywaysService.FetchPayWaysAsync()).GetOrdered();
 			model.PayWays = payways.MapViewModelList(_mapper);
 
 			return Ok(model);
@@ -52,28 +98,41 @@ namespace Web.Controllers.Api
 		[HttpPost("")]
 		public async Task<ActionResult> Store([FromBody] SubscribeEditForm form)
 		{
+			//驗證表單
 			if (form.Plan == null)
 			{
 				ModelState.AddModelError("plan", "無法讀取訂單資料");
 			}
+
+			int payWayId = form.PayWayId;
+			var selectedPayWay = _paywaysService.GetPayWayById(payWayId);
+			if (selectedPayWay == null || !selectedPayWay.Active)
+			{
+				ModelState.AddModelError("payWay", "錯誤的付款方式");
+			}
+
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
+			//取得訂閱紀錄與
 			var model = await GetIndexViewAsync();
-			var activePlan = CheckForExceptions(model, form);
+
+			//核對方案與金額
+			var activePlanView = await CheckForExceptionsAsync(model, form);
 
 			//開始建立Bill
 			var bill = new Bill
 			{
 				UserId = CurrentUserId,
-				PlanId = activePlan.Id,
-				Amount = activePlan.Price,
-				HasDiscount = activePlan.HasDiscount,
-				//PayWay = 
+				PlanId = activePlanView.Id,
+				Amount = activePlanView.Price,
+				HasDiscount = activePlanView.HasDiscount,
+				PayWayId = payWayId,
+				DeadLine = DateTime.Today.AddDays(10).ToEndDate()
 			};
 
+			bill = await _billsService.CreateAsync(bill);
 
-
-			return Ok();
+			return Ok(bill.MapViewModel(_mapper));
 		}
 
 		async Task<SubscribesIndexViewModel> GetIndexViewAsync()
@@ -132,7 +191,7 @@ namespace Web.Controllers.Api
 
 
 
-		PlanViewModel CheckForExceptions(SubscribesIndexViewModel model, SubscribeEditForm form)
+		async Task<PlanViewModel> CheckForExceptionsAsync(SubscribesIndexViewModel model, SubscribeEditForm form)
 		{
 			if (model.Current != null)
 			{
@@ -142,7 +201,7 @@ namespace Web.Controllers.Api
 			}
 
 			if (model.Plan == null) throw new Exception();
-
+			
 			var selectedPlan = form.Plan;
 			var activePlan = model.Plan;
 
@@ -152,9 +211,30 @@ namespace Web.Controllers.Api
 				throw new SelectedPlanDifferentFromActivePlan(selectedPlan.Id, activePlan.Id);
 			}
 
+			//查看是否已經有帳單未繳
+			var bills = await _billsService.FetchByUserAsync(new User { Id = CurrentUserId }, new Plan { Id = selectedPlan.Id });
+			if (bills.HasItems())
+			{
+				//帳單有繳的話, 應該在訂閱期內
+				//所以應該只會有未繳的
+				var unPayedBills = bills.Where(x => !x.Payed).ToList();
+				if (unPayedBills.IsNullOrEmpty())
+				{
+					//沒有未繳帳單,異常
+					//例外
+					_logger.LogException(new BillPayedButNoCurrentSubscribe(new User { Id = CurrentUserId }, new Plan { Id = selectedPlan.Id }));
+
+				}
+				//有未繳帳單或帳單異常
+				//試圖建立第二張帳單
+				throw new TryToCreateSecondValidBill(new User { Id = CurrentUserId }, new Plan { Id = selectedPlan.Id });
+				
+			}
+
+
 			if (selectedPlan.Price != activePlan.Price)
 			{
-				//找不到指定的方案
+				//金額不對
 				throw new SelectedPriceDifferentFromActivePlan(selectedPlan.Id, activePlan.Id);
 			}
 

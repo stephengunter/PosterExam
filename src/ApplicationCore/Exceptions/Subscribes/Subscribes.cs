@@ -5,32 +5,13 @@ using ApplicationCore.Models;
 
 namespace ApplicationCore.Exceptions
 {
-    public class CreateWhileCurrentSubscribeExist : Exception
+
+    public class BillPayedButNoCurrentSubscribe : Exception
     {
-        //目前仍在訂閱期, 試圖建立新訂閱
-        public CreateWhileCurrentSubscribeExist(string userId) : base($"userId: {userId}")
+        //有已繳帳單, 但是沒有CurrentSubscribe
+        public BillPayedButNoCurrentSubscribe(User user, Plan plan) : base($"userId: {user.Id}  , planId: {plan.Id}")
         {
 
         }
     }
-
-    public class SelectedPlanDifferentFromActivePlan : Exception
-    {
-        //試圖建立新訂閱時, 找不到指定的方案
-        public SelectedPlanDifferentFromActivePlan(int selectedPlanId, int activePlanId) : base($"selectedPlanId: {selectedPlanId}  , activePlanId: {activePlanId}")
-        {
-
-        }
-    }
-
-
-    public class SelectedPriceDifferentFromActivePlan : Exception
-    {
-        //指定的方案價格與ActivePlan不同
-        public SelectedPriceDifferentFromActivePlan(int selectedPlanId, int activePlanId) : base($"selectedPlanId: {selectedPlanId}  , activePlanId: {activePlanId}")
-        {
-
-        }
-    }
-
 }

@@ -29,5 +29,12 @@ namespace ApplicationCore.Specifications
             AddInclude(item => item.Subscribes);
         }
 
+        public BillFilterSpecification(User user, Plan plan) : base(item => !item.Removed && item.UserId == user.Id && item.PlanId == plan.Id)
+        {
+            AddInclude(item => item.Pays);
+            AddInclude(item => item.Plan);
+            AddInclude(item => item.Subscribes);
+        }
+
     }
 }
