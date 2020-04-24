@@ -15,15 +15,21 @@ namespace ApplicationCore.ViewServices
 	public static class BillsViewService
 	{
 
-		public static BillViewModel MapViewModel(this Bill bill, IMapper mapper)
+		public static BillViewModel MapViewModel(this Bill bill, IMapper mapper, IEnumerable<PayWay> payWays = null)
 		{ 
 		    var model = mapper.Map<BillViewModel>(bill);
-			
+
+			model.DeadLineText = bill.DeadLine.ToDateString();
+			model.PayedDateText = bill.PayedDate.ToDateTimeString();
+
+			if (bill.Plan != null) model.Plan = bill.Plan.MapViewModel(mapper, bill.HasDiscount);
+			if (payWays.HasItems()) model.Pays = bill.Pays.MapViewModelList(mapper, payWays);
+
 			return model;
 		}
 
-		public static List<BillViewModel> MapViewModelList(this IEnumerable<Bill> bills, IMapper mapper)
-			=> bills.Select(item => MapViewModel(item, mapper)).ToList();
+		public static List<BillViewModel> MapViewModelList(this IEnumerable<Bill> bills, IMapper mapper, IEnumerable<PayWay> payWays = null)
+			=> bills.Select(item => MapViewModel(item, mapper, payWays)).ToList();
 
 		
 		public static Bill MapEntity(this BillViewModel model, IMapper mapper, string currentUserId)

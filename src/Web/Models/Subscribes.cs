@@ -33,4 +33,13 @@ namespace Web.Models
 
         public int PayWayId { get; set; }
     }
+
+    public class BillEditForm
+    {
+        public BillViewModel Bill { get; set; }
+
+        public PlanViewModel Plan { get; set; }
+
+        public List<PayWayViewModel> PayWays { get; set; } = new List<PayWayViewModel>();
+    }
 }

@@ -53,5 +53,7 @@ namespace ApplicationCore.Models
 				return null;
 			}
 		}
+
+		public bool Expired => Payed ? false : DateTime.Now > DeadLine;
 	}
 }

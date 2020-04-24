@@ -22,13 +22,24 @@ namespace ApplicationCore.Views
 		public bool HasDiscount { get; set; }
 
 		public int PayWayId { get; set; }
+		
 
 		public DateTime DeadLine { get; set; }
+
+		public string DeadLineText { get; set; }
+
+		public bool Expired { get; set; }
 
 		public bool Payed { get; set; }
 
 		public decimal NeedPayMoney { get; set; }
 
 		public DateTime? PayedDate { get; set; }
+
+		public string PayedDateText { get; set; }
+
+		public PlanViewModel Plan { get; set; }
+
+		public ICollection<PayViewModel> Pays { get; set; } = new List<PayViewModel>();
 	}
 }

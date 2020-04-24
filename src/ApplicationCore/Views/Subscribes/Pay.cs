@@ -19,6 +19,8 @@ namespace ApplicationCore.Views
 
 		public int PayWayId { get; set; }
 
+		public string PayWayTitle { get; set; }
+
 	}
 
 	public class PayWayViewModel : BaseRecordView
