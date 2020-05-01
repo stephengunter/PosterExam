@@ -331,8 +331,11 @@ namespace ApplicationCore.Migrations
                     b.Property<int>("Order")
                         .HasColumnType("int");
 
-                    b.Property<int>("PayWayId")
-                        .HasColumnType("int");
+                    b.Property<string>("PayWay")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Provider")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Removed")
                         .HasColumnType("bit");

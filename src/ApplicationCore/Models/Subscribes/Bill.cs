@@ -12,7 +12,7 @@ namespace ApplicationCore.Models
 	{
 		public string UserId { get; set; }
 
-		public string Code { get; set; } = Guid.NewGuid().ToString("N");
+		public string Code { get; set; }
 
 		public int PlanId { get; set; }
 

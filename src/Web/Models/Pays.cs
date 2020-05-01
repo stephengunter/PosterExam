@@ -8,6 +8,7 @@ using Infrastructure.Views;
 
 namespace Web.Models
 {
+
     public class PayForm
     {
         public string Id { get; set; }  //支付廠商帳單Id

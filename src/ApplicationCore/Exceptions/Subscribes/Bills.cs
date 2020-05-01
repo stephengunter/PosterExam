@@ -42,5 +42,13 @@ namespace ApplicationCore.Exceptions
         }
     }
 
-   
+    public class NotPayedAfterPay : Exception
+    {
+        //支付成功後,帳單仍然是未支付, 可能金額不對或支付際路錯誤
+        public NotPayedAfterPay(Bill bill, Pay pay) : base($"billId: {bill.Id}  , payId: {pay.Id}")
+        {
+
+        }
+    }
+
 }

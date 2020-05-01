@@ -124,6 +124,8 @@ namespace Web.Controllers.Api
 			}
 			else 
 			{
+				//限訂閱會員
+				if (!CurrentUserIsSubscriber) return Forbid();
 				
 				ExamType examType = type.ToExamType();
 				if (examType == ExamType.Unknown)

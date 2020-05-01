@@ -19,6 +19,7 @@ using ApplicationCore.Authorization;
 using ApplicationCore.Middlewares;
 using Microsoft.Extensions.Hosting;
 using ApplicationCore.DI;
+using ApplicationCore;
 
 namespace Web
 {
@@ -60,7 +61,7 @@ namespace Web
 			var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AuthSettings:SecurityKey"]));
 
 			string issuer = Configuration["AppSettings:Name"];
-			string audience = Configuration["AppSettings:Url"];
+			string audience = Configuration["AppSettings:ClientUrl"];
 			string securityKey = Configuration["AuthSettings:SecurityKey"];
 			int tokenValidHours = Convert.ToInt32(Configuration["AuthSettings:TokenValidHours"]);
 			services.AddJwtBearer(tokenValidHours, issuer, audience, securityKey);
@@ -71,8 +72,11 @@ namespace Web
 
 			services.AddAuthorization(options =>
 			{
-				options.AddPolicy(Permissions.Admin.ToString(), policy =>
-					policy.Requirements.Add(new HasPermissionRequirement(Permissions.Admin.ToString())));
+				options.AddPolicy("Subscriber", policy =>
+					policy.Requirements.Add(new HasPermissionRequirement(Permissions.Subscriber)));
+
+				options.AddPolicy("Admin", policy =>
+					policy.Requirements.Add(new HasPermissionRequirement(Permissions.Admin)));
 			});
 
 			services.AddCors(options => options.AddPolicy("api",
@@ -81,6 +85,10 @@ namespace Web
 			
 			services.AddControllers();
 
+			services.AddHttpClient(Consts.TradeRemoteApiName, c =>
+			{
+				c.BaseAddress = new Uri(Configuration["ECPaySettings:TradeUrl"]);
+			});
 			return AutofacRegister.Register(services);
 		}
 

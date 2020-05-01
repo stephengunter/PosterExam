@@ -10,47 +10,30 @@ namespace ApplicationCore.Authorization
 {
 	public class HasPermissionHandler : AuthorizationHandler<HasPermissionRequirement>
 	{
-		IPermissionsService permissionService;
-		public HasPermissionHandler(IPermissionsService permissionService)
-		{
-			this.permissionService = permissionService;
-		}
 
 		protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, HasPermissionRequirement requirement)
 		{
-			bool isDev = context.CurrentUserIsDev();
-			if (isDev)
+			Permissions permissione = requirement.Permission;
+
+			if (permissione == Permissions.Subscriber)
 			{
-				context.Succeed(requirement);
-				return Task.CompletedTask;
+				if(context.CurrentUserIsSubscriber())
+				{
+					context.Succeed(requirement);
+					return Task.CompletedTask;
+				} 
+			}
+			else if(permissione == Permissions.Admin)
+			{
+				if(context.CurrentUserIsBoss() || context.CurrentUserIsDev())
+				{
+					context.Succeed(requirement);
+					return Task.CompletedTask;
+				}
+				
 			}
 
-			bool isBoss = context.CurrentUserIsBoss();
-			if (isBoss)
-			{
-				context.Succeed(requirement);
-				return Task.CompletedTask;
-			}
-
-			string permissionName = requirement.PermissionName;
-			string userId = context.CurrentUserId();
-
-			if (String.IsNullOrEmpty(userId))
-			{
-				context.Fail();
-				return Task.CompletedTask;
-			}
-
-
-			var roles = context.CurrentUseRoles();
-
-
-			bool hasPermission = permissionService.IsUserHasPermission(permissionName, userId, roles);
-
-			if (hasPermission) context.Succeed(requirement);
-			else context.Fail();
-
-
+			context.Fail();
 			return Task.CompletedTask;
 		}
 	}

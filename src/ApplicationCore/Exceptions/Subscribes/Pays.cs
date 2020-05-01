@@ -49,4 +49,13 @@ namespace ApplicationCore.Exceptions
         }
     }
 
+    public class CreateThirdPartyTradeFailed : Exception
+    {
+        //創建第三方支付交易失敗
+        public CreateThirdPartyTradeFailed(Bill bill) : base($"billId: {bill.Id}")
+        {
+
+        }
+    }
+
 }

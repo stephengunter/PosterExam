@@ -9,8 +9,6 @@ namespace ApplicationCore.Models
 	{
 		public string UserId { get; set; }
 
-		
-
 		public int BillId { get; set; }
 
 		public DateTime? StartDate { get; set; }
@@ -23,7 +21,18 @@ namespace ApplicationCore.Models
 
 		public Bill Bill { get; set; }
 
-
+		public static Subscribe Create(Bill bill)
+		{
+			var plan = bill.Plan;
+			
+			return new Subscribe
+			{
+				BillId = bill.Id,
+				UserId = bill.UserId,
+				StartDate = DateTime.Now > plan.StartDate ? DateTime.Now : plan.StartDate,
+				EndDate = plan.EndDate
+			};
+		}
 
 		public void OnPayed(Subscribe activeSubscribe = null)
 		{

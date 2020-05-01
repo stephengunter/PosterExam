@@ -4,6 +4,7 @@ using ApplicationCore.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using ApplicationCore.Views;
 using ApplicationCore.Settings;
+using System.Collections.Generic;
 
 namespace Web.Controllers
 {
@@ -15,6 +16,29 @@ namespace Web.Controllers
 		protected string CurrentUserName => User.Claims.IsNullOrEmpty() ? "" : User.Claims.Where(c => c.Type == "sub").FirstOrDefault().Value;
 
 		protected string CurrentUserId => User.Claims.IsNullOrEmpty() ? "" : User.Claims.Where(c => c.Type == "id").FirstOrDefault().Value;
+
+		protected IEnumerable<string> CurrentUseRoles
+		{
+			get
+			{
+				var entity = User.Claims.Where(c => c.Type == "roles").FirstOrDefault();
+				if (entity == null) return null;
+				return entity.Value.Split(',');
+			}
+			
+		}
+
+		protected bool CurrentUserIsSubscriber
+		{
+			get
+			{
+				var roles = CurrentUseRoles;
+				if (roles.IsNullOrEmpty()) return false;
+				var match = roles.Where(r => r.ToUpper() == ApplicationCore.Consts.SubscriberRoleName.ToUpper()).FirstOrDefault();
+
+				return match != null;
+			}
+		}
 
 		protected IActionResult RequestError(string key, string msg)
 		{

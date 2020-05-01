@@ -8,7 +8,10 @@ namespace ApplicationCore.Settings
 	{
 		public string Name { get; set; }
 		public string Title { get; set; }
-		public string Url { get; set; }
+		public string ClientUrl { get; set; }
+		public string AdminUrl { get; set; }
+		public string BackendUrl { get; set; }
+		public string PayUrl { get; set; }
 
 		public string UploadPath { get; set; }
 	}

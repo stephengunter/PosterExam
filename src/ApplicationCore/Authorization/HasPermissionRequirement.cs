@@ -4,14 +4,14 @@ namespace ApplicationCore.Authorization
 {
 	public class HasPermissionRequirement : IAuthorizationRequirement
 	{
-		public string PermissionName { get; private set; }
+		private readonly Permissions _permission;
 
-		public HasPermissionRequirement(string permissionName)
+		public HasPermissionRequirement(Permissions permission)
 		{
-			this.PermissionName = permissionName;
+			this._permission = permission;
 		}
 
-		
+		public Permissions Permission => _permission;
 	}
 
 }

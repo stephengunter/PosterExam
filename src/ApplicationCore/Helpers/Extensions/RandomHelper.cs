@@ -33,5 +33,7 @@ namespace ApplicationCore.Helpers
             return randomList.Take(take).ToList(); //return the new random list
         }
 
+        
+
     }
 }

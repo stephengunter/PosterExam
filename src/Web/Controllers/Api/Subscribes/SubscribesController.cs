@@ -33,8 +33,10 @@ namespace Web.Controllers.Api
 		private readonly IAppLogger _logger;
 
 		
-		public SubscribesController(IOptions<SubscribesSettings> subscribesSettings, ISubscribesService subscribesService, IPlansService plansService,
-			IPaysService paysService, IBillsService billsService, IAppLogger logger, IMapper mapper)
+		public SubscribesController(IOptions<SubscribesSettings> subscribesSettings, 
+			ISubscribesService subscribesService, IPlansService plansService,
+			IPaysService paysService, IBillsService billsService, 
+			IAppLogger logger, IMapper mapper)
 		{
 			_subscribesSettings = subscribesSettings.Value;
 
@@ -110,59 +112,20 @@ namespace Web.Controllers.Api
 			return Ok(model);
 		}
 
-		[HttpGet("__create")]
-		public async Task<ActionResult> xxCreate()
-		{
-			var model = await GetIndexViewAsync();
-
-			var plan = model.Plan;
-			if (plan == null) return Ok(model); //正在訂閱期內或無方案可訂閱
-
-			//查看是否已經有帳單未繳
-			var bills = await _billsService.FetchByUserAsync(new User { Id = CurrentUserId }, new Plan { Id = plan.Id });
-			if (bills.HasItems())
-			{
-				//帳單有繳的話, 應該在訂閱期內
-				//所以應該只會有未繳的
-				var unPayedBills = bills.Where(x => !x.Payed).ToList();
-				if (unPayedBills.IsNullOrEmpty())
-				{
-					//沒有未繳帳單,異常
-					//例外
-					_logger.LogException(new BillPayedButNoCurrentSubscribe(new User { Id = CurrentUserId }, new Plan { Id = plan.Id }));
-
-				}
-
-				return Ok(model); //有未繳帳單或帳單異常
-			}
-
-			//只有進行到這裡,才可建立新訂單
-
-			var payways = (await _paysService.FetchPayWaysAsync()).GetOrdered();
-			model.PayWays = payways.MapViewModelList(_mapper);
-
-			return Ok(model);
-		}
-
 		[HttpPost("")]
 		public async Task<ActionResult> Store([FromBody] BillViewModel model)
 		{
 			//驗證表單
 			int planId = model.PlanId;
 			var selectedPlan = await _plansService.GetByIdAsync(planId);
-			if (selectedPlan == null)
-			{
-				ModelState.AddModelError("plan", "錯誤的方案");
-			}
+			if (selectedPlan == null) throw new EntityNotFoundException(new Plan { Id = planId });
 
 			int payWayId = model.PayWayId;
 			var selectedPayWay = _paysService.GetPayWayById(payWayId);
 			if (selectedPayWay == null || !selectedPayWay.Active)
 			{
-				ModelState.AddModelError("payWay", "錯誤的付款方式");
+				throw new EntityNotFoundException(new PayWay { Id = payWayId });
 			}
-
-			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			//取得訂閱紀錄
 			var indexModel = await GetIndexViewAsync();
@@ -179,53 +142,13 @@ namespace Web.Controllers.Api
 				Amount = activePlanView.Price,
 				HasDiscount = activePlanView.HasDiscount,
 				PayWayId = payWayId,
-				DeadLine = DateTime.Today.AddDays(10).ToEndDate()
+				DeadLine = DateTime.Today.AddDays(_subscribesSettings.BillDaysToExpire).ToEndDate()
 			};
 
 			bill = await _billsService.CreateAsync(bill);
 
 			return Ok(bill.MapViewModel(_mapper));
 		}
-
-		//[HttpPost("xx__Store")]
-		//public async Task<ActionResult> xxStore([FromBody] SubscribeEditForm form)
-		//{
-		//	//驗證表單
-		//	if (form.Plan == null)
-		//	{
-		//		ModelState.AddModelError("plan", "無法讀取訂單資料");
-		//	}
-
-		//	int payWayId = form.PayWayId;
-		//	var selectedPayWay = _paysService.GetPayWayById(payWayId);
-		//	if (selectedPayWay == null || !selectedPayWay.Active)
-		//	{
-		//		ModelState.AddModelError("payWay", "錯誤的付款方式");
-		//	}
-
-		//	if (!ModelState.IsValid) return BadRequest(ModelState);
-
-		//	//取得訂閱紀錄與
-		//	var model = await GetIndexViewAsync();
-
-		//	//核對方案與金額
-		//	var activePlanView = await CheckForExceptionsAsync(model, form);
-
-		//	//開始建立Bill
-		//	var bill = new Bill
-		//	{
-		//		UserId = CurrentUserId,
-		//		PlanId = activePlanView.Id,
-		//		Amount = activePlanView.Price,
-		//		HasDiscount = activePlanView.HasDiscount,
-		//		PayWayId = payWayId,
-		//		DeadLine = DateTime.Today.AddDays(10).ToEndDate()
-		//	};
-
-		//	bill = await _billsService.CreateAsync(bill);
-
-		//	return Ok(bill.MapViewModel(_mapper));
-		//}
 
 		async Task<SubscribesIndexViewModel> GetIndexViewAsync()
 		{
@@ -236,6 +159,8 @@ namespace Web.Controllers.Api
 
 			if (subscribes.HasItems())
 			{
+				subscribes = subscribes.GetOrdered();
+
 				//User訂閱紀錄
 				model.Records = subscribes.MapViewModelList(_mapper);
 

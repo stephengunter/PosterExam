@@ -20,7 +20,7 @@ namespace ApplicationCore.ViewServices
 
 			if (payWays.HasItems())
 			{
-				var payway = payWays.FirstOrDefault(x => x.Id == pay.PayWayId);
+				var payway = payWays.FirstOrDefault(x => x.Code == pay.PayWay);
 				if(payway != null) model.PayWayTitle = payway.Title;
 			}
 

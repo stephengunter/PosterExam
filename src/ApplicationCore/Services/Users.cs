@@ -22,6 +22,11 @@ namespace ApplicationCore.Services
         IEnumerable<IdentityRole> FetchRoles();
 
         IEnumerable<IdentityRole> GetRolesByUserId(string userId);
+
+       
+        Task<User> FindSubscriberAsync(string userId);
+        Task<User> AddSubscriberRoleAsync(string userId);
+        Task RemoveSubscriberRoleAsync(string userId);
     }
 
     public class UsersService : IUsersService
@@ -36,6 +41,8 @@ namespace ApplicationCore.Services
             _userManager = userManager;
             _roleManager = roleManager;
         }
+
+        
         
         public async Task<User> FindUserByEmailAsync(string email) => await _userManager.FindByEmailAsync(email);
 
@@ -78,7 +85,6 @@ namespace ApplicationCore.Services
             if (users.IsNullOrEmpty()) return users;
 
             return users.Where(u => u.UserName.CaseInsensitiveContains(keyword));
-           // return users.Where(u => u.UserName.CaseInsensitiveContains(keyword) || u.Name.CaseInsensitiveContains(keyword));
         }
 
         public IEnumerable<IdentityRole> FetchRoles() => _roleManager.Roles.ToList();
@@ -90,6 +96,48 @@ namespace ApplicationCore.Services
 
             return _roleManager.Roles.Where(r => roleIds.Contains(r.Id));
         }
-       
+
+        public async Task RemoveSubscriberRoleAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) throw new UserNotFoundException(userId, "Id");
+
+            bool isSubscriber = await _userManager.IsInRoleAsync(user, ApplicationCore.Consts.SubscriberRoleName);
+            if (isSubscriber)
+            {
+                var result = await _userManager.RemoveFromRoleAsync(user, ApplicationCore.Consts.SubscriberRoleName);
+                if (!result.Succeeded)
+                {
+                    var error = result.Errors.FirstOrDefault();
+                    throw new AddUserToRoleException($"{error.Code} : {error.Description}");
+                }
+            }
+            
+        }
+
+        public async Task<User> AddSubscriberRoleAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) throw new UserNotFoundException(userId, "Id");
+
+            bool isSubscriber = await _userManager.IsInRoleAsync(user, ApplicationCore.Consts.SubscriberRoleName);
+            if (isSubscriber) return user;
+
+            var result = await _userManager.AddToRoleAsync(user, ApplicationCore.Consts.SubscriberRoleName);
+            if (result.Succeeded) return user;
+
+            var error = result.Errors.FirstOrDefault();
+            throw new AddUserToRoleException($"{error.Code} : {error.Description}");
+        }
+
+        public async Task<User> FindSubscriberAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) throw new UserNotFoundException(userId, "Id");
+
+            bool isSubscriber = await _userManager.IsInRoleAsync(user, ApplicationCore.Consts.SubscriberRoleName);
+
+            return isSubscriber ? user : null;
+        }
     }
 }

@@ -6,6 +6,8 @@ namespace ApplicationCore.Authorization
 {
 	public enum Permissions
 	{
-		Admin
+		Admin,
+		Subscriber
+
 	}
 }

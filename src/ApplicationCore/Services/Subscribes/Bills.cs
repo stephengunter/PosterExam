@@ -18,6 +18,7 @@ namespace ApplicationCore.Services
 
 		Task<IEnumerable<Bill>> FetchAllAsync();
 		Bill GetById(int id);
+		Task UpdateAsync(Bill bill);
 		Task<Bill> CreateAsync(Bill bill);
 	}
 
@@ -31,6 +32,8 @@ namespace ApplicationCore.Services
 		}
 
 		public async Task<Bill> CreateAsync(Bill bill) => await _billRepository.AddAsync(bill);
+
+		public async Task UpdateAsync(Bill bill) => await _billRepository.UpdateAsync(bill);
 
 		public async Task<IEnumerable<Bill>> FetchAsync(bool active)
 		{

@@ -9,10 +9,6 @@ using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
-using Microsoft.AspNetCore.Authorization;
-using Web.Helpers;
-using Web.Controllers;
-using Web.Models;
 using ApplicationCore.Logging;
 using ApplicationCore.Exceptions;
 

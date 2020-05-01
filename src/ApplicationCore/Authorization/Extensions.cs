@@ -15,8 +15,6 @@ namespace ApplicationCore.Authorization
 			if (entity == null) return "";
 
 			return entity.Value;
-
-
 		}
 
 		public static IEnumerable<string> CurrentUseRoles(this AuthorizationHandlerContext context)
@@ -43,7 +41,7 @@ namespace ApplicationCore.Authorization
 			var roles = CurrentUseRoles(context);
 			if (roles.IsNullOrEmpty()) return false;
 
-			var match = roles.Where(r => r.ToUpper() == "DEV").FirstOrDefault();
+			var match = roles.Where(r => r.ToUpper() == ApplicationCore.Consts.DevRoleName.ToUpper()).FirstOrDefault();
 
 			return match != null;
 		}
@@ -53,7 +51,17 @@ namespace ApplicationCore.Authorization
 			var roles = CurrentUseRoles(context);
 			if (roles.IsNullOrEmpty()) return false;
 
-			var match = roles.Where(r => r.ToUpper() == "BOSS").FirstOrDefault();
+			var match = roles.Where(r => r.ToUpper() == ApplicationCore.Consts.BossRoleName.ToUpper()).FirstOrDefault();
+
+			return match != null;
+		}
+
+		public static bool CurrentUserIsSubscriber(this AuthorizationHandlerContext context)
+		{
+			var roles = CurrentUseRoles(context);
+			if (roles.IsNullOrEmpty()) return false;
+
+			var match = roles.Where(r => r.ToUpper() == ApplicationCore.Consts.SubscriberRoleName.ToUpper()).FirstOrDefault();
 
 			return match != null;
 		}

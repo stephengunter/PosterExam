@@ -14,6 +14,8 @@ namespace ApplicationCore.Views
 
 		public int BillId { get; set; }
 
+		public BillViewModel Bill { get; set; }
+
 		public string StartDateText { get; set; }
 
 		public string EndDateText { get; set; }
@@ -26,7 +28,7 @@ namespace ApplicationCore.Views
 		{
 			get
 			{
-				if (Active) return "進行中";
+				if (Active) return "有效";
 				else if(Before) return "未開始";
 				else if (Ended) return "已結束";
 				return "";

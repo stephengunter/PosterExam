@@ -21,17 +21,22 @@ namespace Web.Controllers.Api
 	[Authorize]
 	public class BillsController : BaseApiController
 	{
+		private readonly IAppLogger _logger;
+
 		private readonly IBillsService _billsService;
 		private readonly IPaysService _paysService;
+		private readonly IThirdPartyPayService _thirdPartyPayService;
 		private readonly IMapper _mapper;
 
 		
-		public BillsController(IBillsService billsService, IPaysService paysService,
-			IMapper mapper)
+		public BillsController(IAppLogger logger, IBillsService billsService, IPaysService paysService, 
+			IThirdPartyPayService thirdPartyPayService, IMapper mapper)
 		{
-			
+			_logger = logger;
+
 			_billsService = billsService;
 			_paysService = paysService;
+			_thirdPartyPayService = thirdPartyPayService;
 			_mapper = mapper;
 		}
 
@@ -79,6 +84,46 @@ namespace Web.Controllers.Api
 			var model = bill.MapViewModel(_mapper, payways);
 
 			return Ok(model);
+		}
+
+		[HttpPut("{id}")]
+		public async Task<ActionResult> Update(int id, [FromBody] BillViewModel model)
+		{
+			// BeginPay 支付帳單
+			var existingBill = _billsService.GetById(id);
+			if (existingBill == null) return NotFound();
+
+			var payway = _paysService.GetPayWayById(model.PayWayId);
+			if (payway == null) throw new EntityNotFoundException(new PayWay { Id = model.PayWayId });
+
+
+			if (existingBill.Payed)
+			{
+				ModelState.AddModelError("payed", "此訂單已經支付過了");
+				return BadRequest(ModelState);
+			}
+
+			if (existingBill.Expired)
+			{
+				ModelState.AddModelError("expired", "訂單已過繳款期限");
+				return BadRequest(ModelState);
+			}
+
+			existingBill.Code = TickId.Create();
+			existingBill.PayWayId = payway.Id;
+			await _billsService.UpdateAsync(existingBill);
+
+			try
+			{
+				var ecPayTradeModel = await _thirdPartyPayService.CreateEcPayTradeAsync(existingBill, payway);
+				return Ok(ecPayTradeModel);
+			}
+			catch (Exception ex)
+			{
+				// Create ThirdParty Trade Failed
+				_logger.LogException(ex);
+				throw ex;
+			}
 		}
 
 	}

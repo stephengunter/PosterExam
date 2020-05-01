@@ -23,7 +23,7 @@ namespace ApplicationCore.Specifications
 
         }
 
-        public PayFilterSpecification(PayWay payWay) : base(item => !item.Removed && item.PayWayId == payWay.Id)
+        public PayFilterSpecification(PayWay payWay) : base(item => !item.Removed && item.PayWay == payWay.Code)
         {
            
         }

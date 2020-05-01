@@ -17,94 +17,80 @@ using ApplicationCore.Logging;
 using ApplicationCore.Exceptions;
 using Microsoft.Extensions.Options;
 using ApplicationCore.Settings;
+using Newtonsoft.Json;
+using System.Threading;
+using System.Net.Http;
+using System.Text;
+using ApplicationCore;
 
 namespace Web.Controllers.Api
 {
+	//[Authorize]
 	public class ATestController : BaseApiController
 	{
-		private readonly SubscribesSettings _subscribesSettings;
+		private readonly IHttpClientFactory _clientFactory;
 
-		private readonly ISubscribesService _subscribesService;
-		private readonly IPlansService _plansService;
-		private readonly IPaysService _paysService;
-		private readonly IBillsService _billsService;
-		private readonly IMapper _mapper;
+		private readonly IAppLogger _logger;
+		private readonly AppSettings _appSettings;
+		private readonly IThirdPartyPayService _thirdPartyPayService;
 
-
-		public ATestController(IOptions<SubscribesSettings> subscribesSettings, ISubscribesService subscribesService, IPlansService plansService,
-			IPaysService paysService, IBillsService billsService, IMapper mapper)
+		private readonly IUsersService _usersService;
+		public ATestController(IOptions<AppSettings> appSettings, IThirdPartyPayService thirdPartyPayService,
+			IUsersService usersService, IAppLogger logger, IHttpClientFactory clientFactory)
 		{
-			_subscribesSettings = subscribesSettings.Value;
-
-			_subscribesService = subscribesService;
-			_plansService = plansService;
-			_paysService = paysService;
-			_billsService = billsService;
-			_mapper = mapper;
+			_appSettings = appSettings.Value;
+			_thirdPartyPayService = thirdPartyPayService;
+			_usersService = usersService;
+			_logger = logger;
+			_clientFactory = clientFactory;
 		}
+
+		string PayStoreUrl => $"{_appSettings.BackendUrl}/api/pay";
+
+		
 
 		[HttpGet]
-		public async Task<ActionResult> Index()
+		public async Task<ActionResult> Index(string code)
 		{
-			var pay = new Pay
+
+			var bill = new Bill
 			{
-				BillId = 2,
-				Code = Guid.NewGuid().ToString("N"),
-				Money = 190,
-				PayWayId = 1
+				Code = code,
+				Amount = 190,
+				 
 			};
-
-			pay = await _paysService.CreateAsync(pay);
-
-			return Ok(pay.MapViewModel(_mapper));
-
-
-			//string userId = "695f31b3-74d7-4fa2-b877-898c31997b00";
-
-			//var activePlan = await FindPlanAsync();
-
-			////開始建立Bill
-			//var bill = new Bill
-			//{
-			//	UserId = userId,
-			//	PlanId = activePlan.Id,
-			//	Amount = activePlan.Money,
-			//	HasDiscount = false,
-			//	PayWayId = 1,
-			//	DeadLine = DateTime.Today.AddDays(10).ToEndDate()
-			//};
-
-			//bill = await _billsService.CreateAsync(bill);
-
-			//return Ok(bill.MapViewModel(_mapper));
-		}
-
-		async Task<Pay> CreatePayAsync()
-		{
-			var pay = new Pay
+			var payway = new PayWay { Code = "ATM" };
+			try
 			{
-				BillId = 2,
-				Code = Guid.NewGuid().ToString("N"),
-				Money = 190,
-				PayWayId = 1
-			};
-
-			return await _paysService.CreateAsync(pay);
-
+				var ecPayTradeModel = await _thirdPartyPayService.CreateEcPayTradeAsync(bill, payway);
+				return Ok(ecPayTradeModel);
+			}
+			catch (Exception ex)
+			{
+				// Create ThirdParty Trade Failed
+				
+				_logger.LogException(ex);
+				throw ex;
+			}
 
 		}
 
-		async Task<Plan> FindPlanAsync()
+
+		[HttpGet("user")]
+		public async Task<ActionResult> UserRole()
 		{
-			bool active = true;
-			var activePlans = await _plansService.FetchAsync(active);
-			
-			return activePlans.FirstOrDefault();
-		}
+			var user = await _usersService.FindSubscriberAsync(CurrentUserId);
+			if (user == null)
+			{
+				await _usersService.AddSubscriberRoleAsync(CurrentUserId);
+			}
+			else
+			{
+				await _usersService.RemoveSubscriberRoleAsync(CurrentUserId);
+			}
 
-		void CreateBill()
-		{ 
-			
+			return Ok();
+
 		}
 
 		[HttpGet("ex")]
