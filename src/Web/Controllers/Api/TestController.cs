@@ -53,25 +53,7 @@ namespace Web.Controllers.Api
 		public async Task<ActionResult> Index(string code)
 		{
 
-			var bill = new Bill
-			{
-				Code = code,
-				Amount = 190,
-				 
-			};
-			var payway = new PayWay { Code = "ATM" };
-			try
-			{
-				var ecPayTradeModel = await _thirdPartyPayService.CreateEcPayTradeAsync(bill, payway);
-				return Ok(ecPayTradeModel);
-			}
-			catch (Exception ex)
-			{
-				// Create ThirdParty Trade Failed
-				
-				_logger.LogException(ex);
-				throw ex;
-			}
+			return Ok();
 
 		}
 

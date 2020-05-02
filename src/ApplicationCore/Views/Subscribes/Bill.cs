@@ -13,8 +13,6 @@ namespace ApplicationCore.Views
 
 		public string UserId { get; set; }
 
-		public string Code { get; set; }
-
 		public int PlanId { get; set; }
 
 		public decimal Amount { get; set; }
@@ -41,5 +39,11 @@ namespace ApplicationCore.Views
 		public PlanViewModel Plan { get; set; }
 
 		public ICollection<PayViewModel> Pays { get; set; } = new List<PayViewModel>();
+
+
+		public PayViewModel PayInfo => Pays.HasItems()
+			? Pays.Where(p => !p.Removed && !p.HasMoney && p.PayWay == PaymentTypes.ATM.ToString()).FirstOrDefault()
+			: null;
+
 	}
 }

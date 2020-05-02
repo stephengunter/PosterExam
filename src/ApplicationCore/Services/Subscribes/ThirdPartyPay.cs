@@ -18,7 +18,7 @@ namespace ApplicationCore.Services
 {
     public interface IThirdPartyPayService
     {
-        Task<EcPayTradeModel> CreateEcPayTradeAsync(Bill bill, PayWay payWay);
+        Task<EcPayTradeModel> CreateEcPayTradeAsync(Pay pay, int amount);
 
     }
 
@@ -42,13 +42,13 @@ namespace ApplicationCore.Services
 
         public HttpClient Client { get; }
 
-        public async Task<EcPayTradeModel> CreateEcPayTradeAsync(Bill bill, PayWay payWay)
+        public async Task<EcPayTradeModel> CreateEcPayTradeAsync(Pay pay, int amount)
         {
             var model = new TradeRequestModel
             {
                 AppName = _appSettings.Name,
-                Code = bill.Code,
-                Amount = Convert.ToInt32(bill.NeedPayMoney),
+                Code = pay.Code,
+                Amount = amount,
                 ValidDays = _subscribesSettings.BillDaysToExpire
             };
 
@@ -65,10 +65,10 @@ namespace ApplicationCore.Services
                     if (ecPayTradeModel.HasToken)
                     {
                         //only here success
-                        ecPayTradeModel.PaymentType = payWay.Code;
+                        ecPayTradeModel.PaymentType = pay.PayWay;
                         return ecPayTradeModel;
                     }
-                    else throw new CreateThirdPartyTradeFailed(bill);
+                    else throw new CreateThirdPartyTradeFailed(pay);
                 }
                 else
                 {
@@ -79,109 +79,6 @@ namespace ApplicationCore.Services
             {
                 throw new RemoteApiException($"{PayUrl}/{action}", ex);
             }
-
-           
-          
-
-        }
-
-        public async Task<EcPayTradeModel> __CreateEcPayTradeAsync(Bill bill, PayWay payWay)
-        {
-            var model = new TradeRequestModel
-            {
-                AppName = _appSettings.Name,
-                Code = bill.Code,
-                Amount = Convert.ToInt32(bill.NeedPayMoney),
-                ValidDays = _subscribesSettings.BillDaysToExpire
-            };
-
-            var content = new StringContent(JsonConvert.SerializeObject(model), Encoding.UTF8, "application/json");
-            
-            string action = "api/ecpay/create";
-
-
-
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(PayUrl);
-                    
-                    var response = await client.PostAsync(action, content);
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        var result = await response.Content.ReadAsStringAsync();
-                        var ecPayTradeModel = JsonConvert.DeserializeObject<EcPayTradeModel>(result);
-
-                        if (ecPayTradeModel.HasToken)
-                        {
-                            //only here success
-                            ecPayTradeModel.PaymentType = payWay.Code;
-                            return ecPayTradeModel;
-                        }
-                        else throw new CreateThirdPartyTradeFailed(bill);
-                    }
-                    else
-                    {
-                        throw new RemoteApiException((int)response.StatusCode, $"{PayUrl}/{action}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-
-                throw new RemoteApiException($"{PayUrl}/{action}", ex);
-            }
-
-            //using (var client = new HttpClient())
-            //{
-            //    string action = "api/ecpay/create";
-            //    try 
-            //    {
-            //        client.BaseAddress = new Uri(PayUrl);
-
-            //        var response = await client.PostAsync(action, content);
-            //        //response.EnsureSuccessStatusCode();
-
-            //        //var result = await response.Content.ReadAsStringAsync();
-            //        //var ecPayTradeModel = JsonConvert.DeserializeObject<EcPayTradeModel>(result);
-
-            //        //if (ecPayTradeModel.HasToken)
-            //        //{
-            //        //    //only here success
-            //        //    ecPayTradeModel.PaymentType = payWay.Code;
-            //        //    return ecPayTradeModel;
-            //        //}
-            //        //else throw new CreateThirdPartyTradeFailed(bill);
-
-            //        if (response.IsSuccessStatusCode)
-            //        {
-            //            var result = await response.Content.ReadAsStringAsync();
-            //            var ecPayTradeModel = JsonConvert.DeserializeObject<EcPayTradeModel>(result);
-
-            //            if (ecPayTradeModel.HasToken)
-            //            {
-            //                //only here success
-            //                ecPayTradeModel.PaymentType = payWay.Code;
-            //                return ecPayTradeModel;
-            //            }
-            //            else throw new CreateThirdPartyTradeFailed(bill);
-            //        }
-            //        else
-            //        {
-            //            throw new RemoteApiException((int)response.StatusCode, $"{PayUrl}/{action}");
-            //        }
-
-
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        var type = ex.GetType();
-            //        throw new Exception();
-            //        //throw new RemoteApiException($"{PayUrl}/{action}", ex);
-            //    }
-            //}
 
         }
 

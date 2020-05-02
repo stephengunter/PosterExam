@@ -52,7 +52,7 @@ namespace ApplicationCore.Exceptions
     public class CreateThirdPartyTradeFailed : Exception
     {
         //創建第三方支付交易失敗
-        public CreateThirdPartyTradeFailed(Bill bill) : base($"billId: {bill.Id}")
+        public CreateThirdPartyTradeFailed(Pay pay) : base($"billId: {pay.BillId}")
         {
 
         }

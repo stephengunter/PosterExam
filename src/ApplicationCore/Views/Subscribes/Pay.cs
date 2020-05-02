@@ -17,9 +17,19 @@ namespace ApplicationCore.Views
 
 		public decimal Money { get; set; }
 
-		public int PayWayId { get; set; }
+		public string PayWay { get; set; }
 
 		public string PayWayTitle { get; set; }
+
+		public string TradeNo { get; set; }
+
+		public string BankCode { get; set; }
+
+		public string BankAccount { get; set; }
+
+		public string Provider { get; set; }
+		
+		public bool HasMoney { get; set; }
 
 	}
 

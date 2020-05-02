@@ -12,6 +12,7 @@ namespace ApplicationCore.Services
 {
 	public interface IPaysService
 	{
+		
 		Task<Pay> CreateAsync(Pay pay);
 		Pay FindByCode(string code);
 
@@ -33,6 +34,7 @@ namespace ApplicationCore.Services
 			this._payWayRepository = payWayRepository;
 		}
 
+		
 		public Pay FindByCode(string code) => _payRepository.GetSingleBySpec(new PayFilterSpecification(code));
 
 		public async Task<Pay> CreateAsync(Pay pay) => await _payRepository.AddAsync(pay);

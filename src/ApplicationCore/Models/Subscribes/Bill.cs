@@ -12,8 +12,6 @@ namespace ApplicationCore.Models
 	{
 		public string UserId { get; set; }
 
-		public string Code { get; set; }
-
 		public int PlanId { get; set; }
 
 		public decimal Amount { get; set; }
@@ -21,7 +19,6 @@ namespace ApplicationCore.Models
 		public bool HasDiscount { get; set; }
 
 		public DateTime DeadLine { get; set; }
-		
 
 		public int PayWayId { get; set; }
 

@@ -15,6 +15,7 @@ using Web.Controllers;
 using Web.Models;
 using ApplicationCore.Logging;
 using ApplicationCore.Exceptions;
+using ApplicationCore;
 
 namespace Web.Controllers.Api
 {
@@ -93,8 +94,9 @@ namespace Web.Controllers.Api
 			var existingBill = _billsService.GetById(id);
 			if (existingBill == null) return NotFound();
 
-			var payway = _paysService.GetPayWayById(model.PayWayId);
-			if (payway == null) throw new EntityNotFoundException(new PayWay { Id = model.PayWayId });
+			int paywayId = model.PayWayId;
+			var payway = _paysService.GetPayWayById(paywayId);
+			if (payway == null) throw new EntityNotFoundException(new PayWay { Id = paywayId });
 
 
 			if (existingBill.Payed)
@@ -109,13 +111,27 @@ namespace Web.Controllers.Api
 				return BadRequest(ModelState);
 			}
 
-			existingBill.Code = TickId.Create();
-			existingBill.PayWayId = payway.Id;
-			await _billsService.UpdateAsync(existingBill);
+			var pay = Pay.Create(existingBill, payway, ThirdPartyPayment.EcPay);
+
+			//await _paysService.CreateAsync(pay);
+
+			//existingBill.Code = TickId.Create();
+			//existingBill.PayWayId = payway.Id;
+			//await _billsService.UpdateAsync(existingBill);
 
 			try
 			{
-				var ecPayTradeModel = await _thirdPartyPayService.CreateEcPayTradeAsync(existingBill, payway);
+				var amount = Convert.ToInt32(existingBill.NeedPayMoney);
+				var ecPayTradeModel = await _thirdPartyPayService.CreateEcPayTradeAsync(pay, amount);
+
+				await _paysService.CreateAsync(pay);
+
+				if (existingBill.PayWayId != paywayId)
+				{
+					existingBill.PayWayId = paywayId;
+					await _billsService.UpdateAsync(existingBill);
+				}
+
 				return Ok(ecPayTradeModel);
 			}
 			catch (Exception ex)

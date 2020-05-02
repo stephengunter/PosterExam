@@ -13,6 +13,12 @@ namespace ApplicationCore
         public static string TradeRemoteApiName => "Trade";
     }
 
+    public enum PaymentTypes
+    {
+        CREDIT,
+        ATM
+    }
+
     public enum ThirdPartyPayment
     { 
         EcPay
