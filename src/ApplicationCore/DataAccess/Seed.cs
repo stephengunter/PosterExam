@@ -30,7 +30,6 @@ namespace ApplicationCore.DataAccess
 
 				await SeedRoles(roleManager);
 				await SeedUsers(userManager);
-				await SeedPlans(defaultContext);
 
 			}
 
@@ -120,31 +119,7 @@ namespace ApplicationCore.DataAccess
 			}
 		}
 
-		static async Task SeedPlans(DefaultContext context)
-		{
-			if (context.Plans.HasItems()) return;
-
-			var defaultPlan = new Plan
-			{
-				Money = 190,
-				Discount = 50
-			};
-
-			context.Plans.Add(defaultPlan);
-
-
-			var discountPlan = new Plan
-			{
-				Money = 95,
-			};
-			context.Plans.Add(discountPlan);
-
-
-
-			await context.SaveChangesAsync();
-
-		}
-
+		
 		
 	}
 }

@@ -23,7 +23,7 @@ namespace ApplicationCore.Models
 
 		public int BillId { get; set; }
 		
-		public string Code { get; set; } = TickId.Create();
+		public string Code { get; set; } = TickId.Create(20);
 
 		public string PayWay { get; set; }
 
@@ -36,13 +36,17 @@ namespace ApplicationCore.Models
 		public string Provider { get; set; }
 
 		public decimal Money { get; set; }
-		
+
+		public DateTime? PayedDate { get; set; }
+
+		public string TradeData { get; set; } //json string
+
 
 		public Bill Bill { get; set; }
 
 
 		[NotMapped]
-		public bool HasMoney => Money > 0;
+		public bool HasMoney => Removed ? false : Money > 0;
 	}
 
 	public class PayWay : BaseRecord

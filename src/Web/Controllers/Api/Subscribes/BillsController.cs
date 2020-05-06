@@ -113,33 +113,26 @@ namespace Web.Controllers.Api
 
 			var pay = Pay.Create(existingBill, payway, ThirdPartyPayment.EcPay);
 
-			//await _paysService.CreateAsync(pay);
+			var amount = Convert.ToInt32(existingBill.NeedPayMoney);
+			var ecPayTradeModel = _thirdPartyPayService.CreateEcPayTrade(pay, amount);
 
-			//existingBill.Code = TickId.Create();
-			//existingBill.PayWayId = payway.Id;
-			//await _billsService.UpdateAsync(existingBill);
-
-			try
+			if (!ecPayTradeModel.HasToken)
 			{
-				var amount = Convert.ToInt32(existingBill.NeedPayMoney);
-				var ecPayTradeModel = await _thirdPartyPayService.CreateEcPayTradeAsync(pay, amount);
-
-				await _paysService.CreateAsync(pay);
-
-				if (existingBill.PayWayId != paywayId)
-				{
-					existingBill.PayWayId = paywayId;
-					await _billsService.UpdateAsync(existingBill);
-				}
-
-				return Ok(ecPayTradeModel);
+				ModelState.AddModelError("", "開啟支付程序失敗，請稍候再試.");
+				return BadRequest(ModelState);
 			}
-			catch (Exception ex)
+
+			await _paysService.CreateAsync(pay);
+
+			if (existingBill.PayWayId != paywayId)
 			{
-				// Create ThirdParty Trade Failed
-				_logger.LogException(ex);
-				throw ex;
+				existingBill.PayWayId = paywayId;
+				await _billsService.UpdateAsync(existingBill);
 			}
+
+			ecPayTradeModel.PaymentType = payway.Code;
+
+			return Ok(ecPayTradeModel);
 		}
 
 	}

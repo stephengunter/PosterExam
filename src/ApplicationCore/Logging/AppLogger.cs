@@ -7,7 +7,9 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ApplicationCore.Logging
 {
@@ -19,7 +21,7 @@ namespace ApplicationCore.Logging
 		void LogError(string message);
 
 		void LogException(Exception ex);
-		List<ExceptionViewModel> FetchAllExceptions();
+		IEnumerable<ExceptionViewModel> FetchAllExceptions();
 
 	}
 
@@ -28,7 +30,7 @@ namespace ApplicationCore.Logging
 		private static readonly NLog.ILogger logger = LogManager.GetCurrentClassLogger();
 
 		private readonly AdminSettings _adminSettings;
-		private readonly string _filePath;
+		private string _exceptionsFilePath;
 
 		public AppLogger(IOptions<AdminSettings> adminSettings)
 		{
@@ -36,13 +38,18 @@ namespace ApplicationCore.Logging
 			var folderPath = _adminSettings.DataPath;
 			if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
-			var filePath = Path.Combine(folderPath, "exceptions.json");
-			if (!System.IO.File.Exists(filePath)) System.IO.File.Create(filePath);
-
-			_filePath = filePath;
+			//exceptions
+			InitExceptionsFile(folderPath);
 		}
 
-		
+		void InitExceptionsFile(string folderPath)
+		{
+			//exceptions
+			var exceptionsfilePath = Path.Combine(folderPath, "exceptions.json");
+			if (!File.Exists(exceptionsfilePath)) File.Create(exceptionsfilePath);
+			_exceptionsFilePath = exceptionsfilePath;
+		}
+
 
 		public void LogDebug(string message)
 		{
@@ -74,21 +81,22 @@ namespace ApplicationCore.Logging
 
 		public void SaveException(ExceptionViewModel model)
 		{
-			var list = FetchAllExceptions();
+			var list = FetchAllExceptions().ToList();
 			list.Add(model);
 
-			System.IO.File.WriteAllText(_filePath, JsonConvert.SerializeObject(list));
+			System.IO.File.WriteAllText(_exceptionsFilePath, JsonConvert.SerializeObject(list));
 		}
 
-		public List<ExceptionViewModel> FetchAllExceptions()
+		public IEnumerable<ExceptionViewModel> FetchAllExceptions()
 		{
-			var doc = System.IO.File.ReadAllText(_filePath);
+			var doc = System.IO.File.ReadAllText(_exceptionsFilePath);
 
-			var list = JsonConvert.DeserializeObject<List<ExceptionViewModel>>(doc);
+			var list = JsonConvert.DeserializeObject<IEnumerable<ExceptionViewModel>>(doc);
 
 
 			return list.IsNullOrEmpty() ? new List<ExceptionViewModel>() : list;
 		}
+
 
 	}
 }

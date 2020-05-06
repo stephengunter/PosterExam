@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>ECPay</AssemblyName>
+    <RootNamespace>ECPay</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Logger\**" />
+    <EmbeddedResource Remove="Logger\**" />
+    <None Remove="Logger\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="AllInEscrow.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+  </ItemGroup>
+
+</Project>

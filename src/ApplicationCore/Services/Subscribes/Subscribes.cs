@@ -20,6 +20,8 @@ namespace ApplicationCore.Services
 		Task<Subscribe> CreateAsync(Subscribe subscribe);
 
 		Task<Subscribe> FindCurrentSubscribeAsync(string userId);
+		Subscribe Find(Bill bill);
+		Task RemoveAsync(Subscribe subscribe);
 	}
 
 	public class SubscribesService : ISubscribesService
@@ -60,6 +62,18 @@ namespace ApplicationCore.Services
 			var subscribes = await FetchByUserAsync(userId);
 
 			return subscribes.HasItems() ? subscribes.Where(x => x.Active).FirstOrDefault() : null;
+		}
+
+		public Subscribe Find(Bill bill)
+		{
+			var spec = new SubscribeFilterSpecification(bill);
+			return _subscribeRepository.GetSingleBySpec(spec);
+		}
+
+		public async Task RemoveAsync(Subscribe subscribe)
+		{
+			subscribe.Removed = true;
+			await _subscribeRepository.UpdateAsync(subscribe);
 		}
 	}
 }

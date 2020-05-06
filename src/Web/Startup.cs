@@ -55,6 +55,7 @@ namespace Web
 			services.Configure<RootSubjectSettings>(Configuration.GetSection("RootSubjectSettings"));
 			services.Configure<AuthSettings>(Configuration.GetSection("AuthSettings"));
 			services.Configure<SubscribesSettings>(Configuration.GetSection("SubscribesSettings"));
+			services.Configure<EcPaySettings>(Configuration.GetSection("EcPaySettings"));
 			services.Configure<AdminSettings>(Configuration.GetSection("AdminSettings"));
 			services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDBSettings"));
 
@@ -87,7 +88,7 @@ namespace Web
 
 			services.AddHttpClient(Consts.TradeRemoteApiName, c =>
 			{
-				c.BaseAddress = new Uri(Configuration["ECPaySettings:TradeUrl"]);
+				c.BaseAddress = new Uri(Configuration["EcPaySettings:TradeUrl"]);
 			});
 			return AutofacRegister.Register(services);
 		}

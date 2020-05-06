@@ -8,6 +8,10 @@ namespace ApplicationCore.Helpers
 {
 	public static class CommonHelpers
 	{
+		public static bool HasValue(this string text) => !String.IsNullOrEmpty(text);
+
+		public static bool EqualTo(this string val, string other) => String.Compare(val, other, true) == 0;
+
 		public static bool CaseInsensitiveContains(this string text, string value)
 		{
 			StringComparison stringComparison = StringComparison.CurrentCultureIgnoreCase;

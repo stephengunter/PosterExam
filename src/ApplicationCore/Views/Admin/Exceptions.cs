@@ -21,6 +21,9 @@ namespace ApplicationCore.Views
         public string Content { get; set; }
 
         public DateTime DateTime { get; set; } = DateTime.Now;
-        
+
+
+        public string DateTimeText => DateTime.ToString("yyyy-MM-dd H:mm:ss");
+
     }
 }

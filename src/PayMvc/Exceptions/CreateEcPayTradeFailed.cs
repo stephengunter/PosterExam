@@ -11,5 +11,10 @@ namespace PayMvc.Exceptions
         {
 
         }
+
+        public CreateEcPayTradeFailed(string msg, Exception ex) : base(msg, ex)
+        {
+
+        }
     }
 }

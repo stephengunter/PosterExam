@@ -6,12 +6,17 @@ namespace ApplicationCore.Helpers
 {
     public class TickId
     {
-        public static string Create() => ConvertToBase(DateTime.Now.Ticks);
+        public static string Create(int length = 20)
+        {
+            string val = $"{DateTime.Today.ToDateNumber()}{ConvertToBase(DateTime.Now.Ticks)}";
+            return val.Length > length ? val.Substring(0, 20) : val;
+        }
+        
 
         static String ConvertToBase(long num)
         {
             int nbase = 36;
-            String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
             long r;
             String newNumber = "";
@@ -26,7 +31,7 @@ namespace ApplicationCore.Helpers
             // the last number to convert
             newNumber = chars[(int)num] + newNumber;
 
-            return newNumber.ToLower();
+            return newNumber;
         }
     }
 }

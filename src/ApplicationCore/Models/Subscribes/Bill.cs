@@ -39,14 +39,14 @@ namespace ApplicationCore.Models
 		public decimal NeedPayMoney => Amount - TotalPayed;
 
 
-		decimal TotalPayed => Pays.IsNullOrEmpty() ? 0 : Pays.Where(p => !p.Removed).Sum(p => p.Money);
+		decimal TotalPayed => Pays.IsNullOrEmpty() ? 0 : Pays.Where(p => p.HasMoney).Sum(p => p.Money);
 
 		[NotMapped]
 		public DateTime? PayedDate
 		{
 			get
 			{
-				if (Payed) return Pays.OrderByDescending(p => p.CreatedAt).FirstOrDefault().CreatedAt;
+				if (Payed) return Pays.Where(p => p.HasMoney).OrderByDescending(p => p.PayedDate).FirstOrDefault().PayedDate;
 				return null;
 			}
 		}

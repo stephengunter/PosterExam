@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace PayMvc.Views
+namespace PayMvc.Models
 {
+
     public class ExceptionViewModel
     {
         public ExceptionViewModel() { }

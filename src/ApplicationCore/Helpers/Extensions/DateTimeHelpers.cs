@@ -13,7 +13,7 @@ namespace ApplicationCore.Helpers
 			if (startDate.HasValue)
 			{
 				var dateStart = Convert.ToDateTime(startDate);
-				return new DateTime(dateStart.Year, dateStart.Month, dateStart.Day, 0, 0, 1);
+				return new DateTime(dateStart.Year, dateStart.Month, dateStart.Day, 0, 0, 0);
 			}
 			else return null;
 		}

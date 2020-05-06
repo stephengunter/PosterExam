@@ -8,6 +8,7 @@ namespace ApplicationCore.Settings
 	{
 		public string Name { get; set; }
 		public string Title { get; set; }
+		public string Email { get; set; }
 		public string ClientUrl { get; set; }
 		public string AdminUrl { get; set; }
 		public string BackendUrl { get; set; }
@@ -41,7 +42,6 @@ namespace ApplicationCore.Settings
 
 	public class AdminSettings
 	{
-		public string Url { get; set; }
 		public string Key { get; set; }
 		public string BackupPath { get; set; }
 		public string DataPath { get; set; }

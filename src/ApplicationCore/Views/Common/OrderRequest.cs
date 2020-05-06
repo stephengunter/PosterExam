@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ApplicationCore.Views
 {
-    public class OrderRequest
+    public class OrderRequest  //處理變更排序專用
     {
         public int TargetId { get; set; }
 

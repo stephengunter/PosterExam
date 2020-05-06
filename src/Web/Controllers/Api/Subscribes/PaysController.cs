@@ -11,11 +11,13 @@ using Web.Models;
 using ApplicationCore.Logging;
 using ApplicationCore.Exceptions;
 using System.Collections;
+using ApplicationCore.Helpers;
 
 namespace Web.Controllers.Api
 {
 	public class PaysController : BaseApiController
 	{
+		private readonly IThirdPartyPayService _thirdPartyPayService;
 		private readonly IPaysService _paysService;
 		private readonly IBillsService _billsService;
 		private readonly ISubscribesService _subscribesService;
@@ -23,12 +25,12 @@ namespace Web.Controllers.Api
 		private readonly IMapper _mapper;
 		private readonly IAppLogger _logger;
 
-
-		public PaysController(IPaysService paysService, IBillsService billsService,
+		public PaysController(IThirdPartyPayService thirdPartyPayService, 
+			IPaysService paysService, IBillsService billsService, 
 			ISubscribesService subscribesService, IUsersService usersService,
 			IAppLogger logger, IMapper mapper)
 		{
-
+			_thirdPartyPayService = thirdPartyPayService;
 			_paysService = paysService;
 			_billsService = billsService;
 			_subscribesService = subscribesService;
@@ -38,16 +40,134 @@ namespace Web.Controllers.Api
 			_mapper = mapper;
 		}
 
+		[HttpPost("")]
+		public async Task<ActionResult> Store()
+		{
+			try
+			{
+				var model = _thirdPartyPayService.ResolveTradeResult(Request);
 
-        [HttpPost("")]
-        public ActionResult Store([FromBody] EcPayTradeResultModel model)
-        {
+				var pay = _paysService.FindByCode(model.Code);
+				if (pay == null) throw new PayNotFound($"code: {model.Code}");
 
+				if (model.Payed) //付款成功的資料
+				{
+					if (!pay.HasMoney)  //不處理重複發送的資料
+					{
+						pay.Money = Convert.ToDecimal(model.Amount);
+						pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
+						pay.TradeNo = model.TradeNo;
+						pay.TradeData = model.Data;
+
+						await _paysService.UpdateAsync(pay);
+
+						await OnPayedAsync(pay);
+					}
+
+				}
+				else
+				{
+					if (!String.IsNullOrEmpty(model.BankAccount))
+					{
+						// 獲取ATM虛擬帳號
+						pay.BankCode = model.BankCode;
+						pay.BankAccount = model.BankAccount;
+
+						if (!String.IsNullOrEmpty(model.PayWay)) pay.PayWay = model.PayWay;
+
+						await _paysService.UpdateAsync(pay);
+
+					}
+
+				}
+
+				_logger.LogInfo("ResolveTradeResult: 1|OK");
+				return Ok("1|OK");
+
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException(ex);
+
+				if (ex is EcPayTradeFeedBackFailed)
+				{
+					// rtnCode 不是 1 也不是 2
+					_logger.LogInfo("ResolveTradeResult: 1|OK");
+					return Ok("1|OK");
+				}
+				else if (ex is EcPayTradeFeedBackError)
+				{
+					_logger.LogInfo($"ResolveTradeResult: 0|{ex.Message}");
+					return Ok($"0|{ex.Message}");
+				}
+				else
+				{
+					throw ex;
+				}
+
+			}
 			
+		}
 
 
-			return Ok("1|OK");
+
+		[HttpPost("xxstore")]
+        public async Task<ActionResult> xxStore([FromBody] TradeResultModel model)
+        {
+			var pay = _paysService.FindByCode(model.Code);
+			if (pay == null) throw new PayNotFound($"code: {model.Code}");
+
+			if (model.Payed) //付款成功的資料
+			{
+				if (!pay.HasMoney)  //不處理重複發送的資料
+				{
+					pay.Money = Convert.ToDecimal(model.Amount);
+					pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
+					pay.TradeNo = model.TradeNo;
+					pay.TradeData = model.Data;
+
+					await _paysService.UpdateAsync(pay);
+
+					await OnPayedAsync(pay);
+				}
+				
+			}
+			else
+			{
+				if (!String.IsNullOrEmpty(model.BankAccount))
+				{
+					// 獲取ATM虛擬帳號
+					pay.BankCode = model.BankCode;
+					pay.BankAccount = model.BankAccount;
+
+					if (!String.IsNullOrEmpty(model.PayWay)) pay.PayWay = model.PayWay;
+
+					await _paysService.UpdateAsync(pay);
+
+				}
+				
+			}
+
+
+			return Ok();
         }
+
+		async Task OnPayedAsync(Pay pay)  //當付款成功紀錄後執行
+		{
+			var bill = _billsService.GetById(pay.BillId);
+			if (bill == null) throw new BillNotFoundWhilePay($"bill id: {pay.BillId}");
+
+			if (!bill.Payed) throw new NotPayedAfterPay(bill, pay);
+
+
+			//建立 Subscribe
+			var subscribe = _subscribesService.Find(bill);
+			if (subscribe == null) subscribe = await _subscribesService.CreateAsync(Subscribe.Create(bill));
+
+
+			//加入角色
+			if (subscribe.Active) await _usersService.AddSubscriberRoleAsync(subscribe.UserId);
+		}
 
         
 

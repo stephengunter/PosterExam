@@ -337,11 +337,17 @@ namespace ApplicationCore.Migrations
                     b.Property<string>("PayWay")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("PayedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Provider")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Removed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("TradeData")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TradeNo")
                         .HasColumnType("nvarchar(max)");

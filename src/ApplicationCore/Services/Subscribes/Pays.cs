@@ -15,6 +15,7 @@ namespace ApplicationCore.Services
 		
 		Task<Pay> CreateAsync(Pay pay);
 		Pay FindByCode(string code);
+		Task UpdateAsync(Pay pay);
 
 		Task<IEnumerable<PayWay>> FetchPayWaysAsync(bool active = true);
 		Task<IEnumerable<PayWay>> FetchAllPayWaysAsync();
@@ -39,7 +40,7 @@ namespace ApplicationCore.Services
 
 		public async Task<Pay> CreateAsync(Pay pay) => await _payRepository.AddAsync(pay);
 
-
+		public async Task UpdateAsync(Pay pay) => await _payRepository.UpdateAsync(pay);
 
 		public async Task<PayWay> CreatePayWayAsync(PayWay payWay) => await _payWayRepository.AddAsync(payWay);
 
