@@ -15,6 +15,7 @@ namespace ApplicationCore.Settings
 		public string PayUrl { get; set; }
 
 		public string UploadPath { get; set; }
+		public string TemplatePath { get; set; }
 	}
 
 	public class RootSubjectSettings

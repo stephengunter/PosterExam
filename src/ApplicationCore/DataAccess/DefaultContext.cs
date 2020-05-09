@@ -42,6 +42,8 @@ namespace ApplicationCore.DataAccess
 		public DbSet<Bill> Bills { get; set; }
 		public DbSet<Pay> Pays { get; set; }
 
+		public DbSet<Message> Messages { get; set; }
+
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{

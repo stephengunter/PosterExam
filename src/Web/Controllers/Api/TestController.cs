@@ -59,14 +59,14 @@ namespace Web.Controllers.Api
 		[HttpGet]
 		public async Task<ActionResult> Index()
 		{
-			//string subject = "Test Mail";
-			//string message = "Test Msg";
-			//var emails = new List<string> { "traders.com.tw@gmail.com" };
-			//var response =  await _mailService.Execute();
+			
 
-			//var sendGridService = new SendGridService();
+			return Ok(_appSettings.Title);
 
+		}
 
+		async Task TestMail()
+		{
 			var mails = new List<string>
 			{
 				"traders.com.tw@gmail.com", "poster.examlearner@gmail.com"
@@ -82,17 +82,12 @@ namespace Web.Controllers.Api
 			catch (Exception ex)
 			{
 				_logger.LogException(ex);
-				
+
 			}
-			
-			
-
-
-			return Ok(_appSettings.Title);
 
 		}
 
-	    async Task RemoveSubsrcibe(int id)
+		async Task RemoveSubsrcibe(int id)
 		{
 			var subscribe = _subscribesService.GetById(id);
 
@@ -105,22 +100,22 @@ namespace Web.Controllers.Api
 		}
 
 
-		[HttpGet("user")]
-		public async Task<ActionResult> UserRole()
-		{
-			var user = await _usersService.FindSubscriberAsync(CurrentUserId);
-			if (user == null)
-			{
-				await _usersService.AddSubscriberRoleAsync(CurrentUserId);
-			}
-			else
-			{
-				await _usersService.RemoveSubscriberRoleAsync(CurrentUserId);
-			}
+		//[HttpGet("user")]
+		//public async Task<ActionResult> UserRole()
+		//{
+		//	var user = await _usersService.FindSubscriberAsync(CurrentUserId);
+		//	if (user == null)
+		//	{
+		//		await _usersService.AddSubscriberRoleAsync(CurrentUserId);
+		//	}
+		//	else
+		//	{
+		//		await _usersService.RemoveSubscriberRoleAsync(CurrentUserId);
+		//	}
 
-			return Ok();
+		//	return Ok();
 
-		}
+		//}
 
 		[HttpGet("ex")]
 		public async Task<ActionResult> Ex()

@@ -20,6 +20,7 @@ using ApplicationCore.Middlewares;
 using Microsoft.Extensions.Hosting;
 using ApplicationCore.DI;
 using ApplicationCore;
+using Microsoft.AspNetCore.Http;
 
 namespace Web
 {
@@ -86,10 +87,20 @@ namespace Web
 			
 			services.AddControllers();
 
-			services.AddHttpClient(Consts.TradeRemoteApiName, c =>
+
+			//PayMvc
+			//services.AddHttpClient(Consts.TradeRemoteApiName, c =>
+			//{
+			//	c.BaseAddress = new Uri(Configuration["EcPaySettings:TradeUrl"]);
+			//});
+
+			services.AddHttpClient(Consts.Google, c =>
 			{
-				c.BaseAddress = new Uri(Configuration["EcPaySettings:TradeUrl"]);
+				c.BaseAddress = new Uri("https://www.google.com");
 			});
+
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
 			return AutofacRegister.Register(services);
 		}
 

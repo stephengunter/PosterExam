@@ -22,6 +22,7 @@ namespace ApplicationCore.Views
 
         public DateTime DateTime { get; set; } = DateTime.Now;
 
+        public bool Checked { get; set; }
 
         public string DateTimeText => DateTime.ToString("yyyy-MM-dd H:mm:ss");
 

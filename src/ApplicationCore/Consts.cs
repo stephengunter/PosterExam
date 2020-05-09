@@ -6,11 +6,13 @@ namespace ApplicationCore
 {
     public class Consts
     {
+        public static string Google => "Google";
+
         public static string BossRoleName => "Boss";
         public static string DevRoleName => "Dev";
         public static string SubscriberRoleName => "Subscriber";
 
-        public static string TradeRemoteApiName => "Trade";
+        public static string TradeRemoteApiName => "Trade";  //PayMvc
     }
 
     public enum PaymentTypes

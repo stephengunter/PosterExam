@@ -32,7 +32,7 @@ namespace Web.Controllers.Admin
 			_attachmentsService = attachmentsService;
 		}
 
-		string UploadFilesPath => Path.Combine(_environment.WebRootPath, _appSettings.UploadPath);
+		string UploadFilesPath => Path.Combine(_environment.WebRootPath, _appSettings.UploadPath.HasValue() ? _appSettings.UploadPath : "uploads");
 
 		[HttpPost("")]
 		public async Task<IActionResult> Store([FromForm] UploadForm form)
