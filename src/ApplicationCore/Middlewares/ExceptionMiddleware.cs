@@ -24,24 +24,24 @@ namespace ApplicationCore.Middlewares
 
 	public class ExceptionMiddleware
 	{
-		private readonly RequestDelegate next;
-		private readonly IAppLogger logger;
+		private readonly RequestDelegate _next;
+		private readonly IAppLogger _logger;
 
 		public ExceptionMiddleware(RequestDelegate next, IAppLogger logger)
 		{
-			this.next = next;
-			this.logger = logger;
+			_next = next;
+			_logger = logger;
 		}
 
 		public async Task InvokeAsync(HttpContext httpContext)
 		{
 			try
 			{
-				await next(httpContext);
+				await _next(httpContext);
 			}
 			catch (Exception ex)
 			{
-				logger.LogException(ex);
+				_logger.LogException(ex);
 				
 				await HandleExceptionAsync(httpContext, ex);
 			}

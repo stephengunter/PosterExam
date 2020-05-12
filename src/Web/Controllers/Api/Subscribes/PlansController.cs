@@ -16,50 +16,24 @@ namespace Web.Controllers.Api
 {
 	public class PlansController : BaseApiController
 	{
-		private readonly IPlansService _plansService;
+		private readonly Web.Services.ISubscribesService _subscribesService;
 		private readonly IMapper _mapper;
-		private readonly IAppLogger _logger;
 
-		
-		public PlansController(IPlansService plansService,
-			IAppLogger logger, IMapper mapper)
+		public PlansController(Web.Services.ISubscribesService subscribesService, IMapper mapper)
 		{
-			
-			_plansService = plansService;
-			_logger = logger;
+			_subscribesService = subscribesService;
 			_mapper = mapper;
 		}
+
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index()
 		{
-			var plan = await FindPlanAsync();
+			var plan = await _subscribesService.FindActivePlanAsync();
 			if (plan == null) return NotFound();
 			
 			return Ok(plan.MapViewModel(_mapper));
 			
-		}
-
-		async Task<Plan> FindPlanAsync()
-		{
-			bool active = true;
-			var activePlans = await _plansService.FetchAsync(active);
-
-			if (activePlans.IsNullOrEmpty())
-			{
-				//例外
-				_logger.LogException(new NoActivePlanFound());
-
-				return null;
-			}
-			else if (activePlans.Count() > 1)
-			{
-				//例外
-				_logger.LogException(new MutiActivePlanFound());
-
-				return activePlans.GetOrdered().FirstOrDefault();
-			}
-			else return activePlans.FirstOrDefault();
 		}
 
 	}

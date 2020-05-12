@@ -12,6 +12,8 @@ namespace ApplicationCore.Views
 	{
 		public string Key { get; set; }
 		public string Cmd { get; set; }
+
+		public string Data { get; set; } //json string
 	}
 
 	public class AdminFileRequest : AdminRequest

@@ -15,4 +15,11 @@ namespace ApplicationCore.Views
         public DateTime DateTime { get; set; } = DateTime.Now;
 
     }
+
+    public class RequestErrorViewModel
+    {
+        public string Key { get; set; }
+
+        public string Message { get; set; }
+    }
 }

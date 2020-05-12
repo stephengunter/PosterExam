@@ -17,6 +17,8 @@
 
   <ItemGroup>
     <Compile Remove="Controllers\Admin\TestController.cs" />
+    <Compile Remove="Controllers\Api\Subscribes\xxBillsController.cs" />
+    <Compile Remove="Controllers\Api\Subscribes\xxSubscribesController.cs" />
     <Compile Remove="Helpers\SwaggerFileUploadFilter.cs" />
     <Compile Remove="Helpers\ViewServices\Notes.cs" />
     <Compile Remove="Models\Note.cs" />

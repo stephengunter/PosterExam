@@ -34,49 +34,11 @@ namespace ApplicationCore.Models
 			};
 		}
 
-		public void OnPayed(Subscribe activeSubscribe = null)
-		{
-			DateTime dateStart = DateTime.Now;
-			if (activeSubscribe != null) dateStart = activeSubscribe.EndDate.Value.AddDays(1);
 
-			StartDate = new DateTime(dateStart.Year, dateStart.Month, dateStart.Day, 0, 0, 1);
-		}
+		public override bool Active => (Before == false && Ended == false);
 
+		public bool Before => StartDate.HasValue ? DateTime.Now < StartDate.Value : false;
 
-		public bool Payed => StartDate.HasValue;
-
-		public override bool Active
-		{
-			get
-			{
-				if (!Payed) return false;
-				if (!EndDate.HasValue) return false;
-
-				return (DateTime.Now >= StartDate.Value) && DateTime.Now <= EndDate.Value;
-			}
-
-		}
-
-		public bool Before
-		{
-			get
-			{
-				if (!Payed) return false;
-
-				return DateTime.Now < StartDate.Value;
-			}
-
-		}
-
-		public bool Ended
-		{
-			get
-			{
-				if (!EndDate.HasValue) return false;
-
-				return DateTime.Now > EndDate.Value;
-			}
-
-		}
+		public bool Ended => EndDate.HasValue ? DateTime.Now > EndDate.Value : false;
 	}
 }

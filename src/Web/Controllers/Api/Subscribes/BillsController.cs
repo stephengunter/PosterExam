@@ -22,54 +22,19 @@ namespace Web.Controllers.Api
 	[Authorize]
 	public class BillsController : BaseApiController
 	{
-		private readonly IAppLogger _logger;
+		private readonly Web.Services.ISubscribesService _subscribesService;
 
-		private readonly IBillsService _billsService;
-		private readonly IPaysService _paysService;
-		private readonly IThirdPartyPayService _thirdPartyPayService;
-		private readonly IMapper _mapper;
-
-		
-		public BillsController(IAppLogger logger, IBillsService billsService, IPaysService paysService, 
-			IThirdPartyPayService thirdPartyPayService, IMapper mapper)
+		public BillsController(Web.Services.ISubscribesService subscribesService)
 		{
-			_logger = logger;
-
-			_billsService = billsService;
-			_paysService = paysService;
-			_thirdPartyPayService = thirdPartyPayService;
-			_mapper = mapper;
+			_subscribesService = subscribesService;
 		}
 
 		[HttpGet("edit/{id}")]
 		public async Task<ActionResult> Edit(int id)
 		{
-			var bill = _billsService.GetById(id);
-			if (bill == null) return NotFound();
-			if (bill.Payed) return NotFound(); //已經支付, 應該去Details
-
-			var form = new BillEditForm()
-			{
-				Bill = bill.MapViewModel(_mapper)
-			};
-
-			bool canPay = !bill.Expired;
-			if (canPay)
-			{
-				var bills = await _billsService.FetchByUserAsync(new User { Id = CurrentUserId }, new Plan { Id = bill.PlanId });
-				if (bills.HasItems())
-				{
-					//查看是否已經有同方案, 已支付的帳單
-					var payedBill = bills.Where(x => x.Payed).FirstOrDefault();
-					if (payedBill != null) canPay = false;
-				}
-			}
-
-			if (canPay)
-			{
-				var payways = (await _paysService.FetchPayWaysAsync()).GetOrdered();
-				form.PayWays = payways.MapViewModelList(_mapper);
-			}
+			var form = await _subscribesService.GetEditBillFormAsync(id, CurrentUserId);
+			
+			if(form == null) return NotFound();
 
 			return Ok(form);
 		}
@@ -77,12 +42,9 @@ namespace Web.Controllers.Api
 		[HttpGet("{id}")]
 		public async Task<ActionResult> Details(int id)
 		{
-			var bill = _billsService.GetById(id);
-			if (bill == null) return NotFound();
-
-			var payways = await _paysService.FetchPayWaysAsync();
-
-			var model = bill.MapViewModel(_mapper, payways);
+			var model = await _subscribesService.GetBillDetailsViewAsync(id, CurrentUserId);
+			
+			if (model == null) return NotFound();
 
 			return Ok(model);
 		}
@@ -90,49 +52,28 @@ namespace Web.Controllers.Api
 		[HttpPut("{id}")]
 		public async Task<ActionResult> Update(int id, [FromBody] BillViewModel model)
 		{
-			// BeginPay 支付帳單
-			var existingBill = _billsService.GetById(id);
-			if (existingBill == null) return NotFound();
-
-			int paywayId = model.PayWayId;
-			var payway = _paysService.GetPayWayById(paywayId);
-			if (payway == null) throw new EntityNotFoundException(new PayWay { Id = paywayId });
-
-
-			if (existingBill.Payed)
+			//begin pay,  請求ecpayTradeToken啟動付款程序, 
+			try
 			{
-				ModelState.AddModelError("payed", "此訂單已經支付過了");
-				return BadRequest(ModelState);
-			}
+				var ecPayTradeModel = await _subscribesService.BeginPayAsync(id, model, CurrentUserId);
 
-			if (existingBill.Expired)
+				if (ecPayTradeModel == null) return NotFound();
+
+				return Ok(ecPayTradeModel);
+			}
+			catch (Exception ex)
 			{
-				ModelState.AddModelError("expired", "訂單已過繳款期限");
-				return BadRequest(ModelState);
+				if (ex is BadRequestException)
+				{
+					var badRequestException = ex as BadRequestException;
+					foreach (var err in badRequestException.Errors)
+					{
+						ModelState.AddModelError(err.Key, err.Message);
+					}
+					return BadRequest(ModelState);
+				}
+				throw ex;
 			}
-
-			var pay = Pay.Create(existingBill, payway, ThirdPartyPayment.EcPay);
-
-			var amount = Convert.ToInt32(existingBill.NeedPayMoney);
-			var ecPayTradeModel = _thirdPartyPayService.CreateEcPayTrade(pay, amount);
-
-			if (!ecPayTradeModel.HasToken)
-			{
-				ModelState.AddModelError("", "開啟支付程序失敗，請稍候再試.");
-				return BadRequest(ModelState);
-			}
-
-			await _paysService.CreateAsync(pay);
-
-			if (existingBill.PayWayId != paywayId)
-			{
-				existingBill.PayWayId = paywayId;
-				await _billsService.UpdateAsync(existingBill);
-			}
-
-			ecPayTradeModel.PaymentType = payway.Code;
-
-			return Ok(ecPayTradeModel);
 		}
 
 	}

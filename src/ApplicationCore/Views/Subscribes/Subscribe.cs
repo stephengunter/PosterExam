@@ -10,11 +10,15 @@ namespace ApplicationCore.Views
 	{
 		public int Id { get; set; }
 
-		public int PlanId { get; set; }
-
 		public int BillId { get; set; }
 
 		public BillViewModel Bill { get; set; }
+
+		public DateTime? StartDate { get; set; }
+
+		public DateTime? EndDate { get; set; }
+
+
 
 		public string StartDateText { get; set; }
 

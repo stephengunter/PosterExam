@@ -42,24 +42,6 @@ namespace Web.Controllers.Admin
 			_mapper = mapper;
 		}
 
-		string MailTemplatePath => Path.Combine(_environment.WebRootPath, _appSettings.TemplatePath.HasValue() ? _appSettings.TemplatePath : "templates");
-
-
-		string GetMailTemplate()
-		{
-			var pathToFile = Path.Combine(MailTemplatePath, "email.html");
-			if (!System.IO.File.Exists(pathToFile)) throw new Exception("email template file not found: " + pathToFile);
-
-			string body = "";
-			using (StreamReader reader = System.IO.File.OpenText(pathToFile))
-			{
-				body = reader.ReadToEnd();
-			}
-
-			return body.Replace("APPNAME", _appSettings.Title).Replace("APPURL", _appSettings.ClientUrl);
-			
-		}
-
 
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int status = 0, string start = "", string end = "", int page = 1, int pageSize = 10)
@@ -95,7 +77,11 @@ namespace Web.Controllers.Admin
 
 			if (!(message.Returned))
 			{
-				if (String.IsNullOrEmpty(model.ReturnContentView.Template)) model.ReturnContentView.Template = GetMailTemplate();
+				if (String.IsNullOrEmpty(model.ReturnContentView.Template))
+				{
+					model.ReturnContentView.Template = GetMailTemplate(_environment, _appSettings);
+				}
+					
 			}
 
 			return Ok(model);

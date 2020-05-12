@@ -12,7 +12,6 @@ namespace ApplicationCore.Services
 {
 	public interface IPaysService
 	{
-		
 		Task<Pay> CreateAsync(Pay pay);
 		Pay FindByCode(string code);
 		Task UpdateAsync(Pay pay);

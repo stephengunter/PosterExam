@@ -41,5 +41,6 @@ namespace Web.Models
         public PlanViewModel Plan { get; set; }
 
         public List<PayWayViewModel> PayWays { get; set; } = new List<PayWayViewModel>();
+        
     }
 }

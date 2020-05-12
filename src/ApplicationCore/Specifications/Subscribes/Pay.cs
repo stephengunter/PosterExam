@@ -13,15 +13,17 @@ namespace ApplicationCore.Specifications
            
         }
 
+        public PayFilterSpecification(string code) : base(item => item.Code == code)
+        {
+
+        }
+
         public PayFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)
         {
            
         }
 
-        public PayFilterSpecification(string code) : base(item => !item.Removed && item.Code == code)
-        {
-
-        }
+        
 
         public PayFilterSpecification(PayWay payWay) : base(item => !item.Removed && item.PayWay == payWay.Code)
         {

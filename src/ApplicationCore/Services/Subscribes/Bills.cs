@@ -20,6 +20,7 @@ namespace ApplicationCore.Services
 		Bill GetById(int id);
 		Task UpdateAsync(Bill bill);
 		Task<Bill> CreateAsync(Bill bill);
+		void Remove(Bill bill);
 	}
 
 	public class BillsService : IBillsService
@@ -62,5 +63,19 @@ namespace ApplicationCore.Services
 			var spec = new BillFilterSpecification(id);
 			return _billRepository.GetSingleBySpec(spec);
 		}
+
+		public void Remove(Bill bill)
+		{
+			bill.Removed = true;
+
+			foreach (var pay in bill.Pays)
+			{
+				pay.Removed = true;
+			}
+
+			_billRepository.Update(bill);
+		}
+
+		
 	}
 }

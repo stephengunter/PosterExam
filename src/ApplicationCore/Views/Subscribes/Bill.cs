@@ -40,9 +40,8 @@ namespace ApplicationCore.Views
 
 		public ICollection<PayViewModel> Pays { get; set; } = new List<PayViewModel>();
 
-
 		public PayViewModel PayInfo => Pays.HasItems()
-			? Pays.Where(p => !p.Removed && !p.HasMoney && p.PayWay == PaymentTypes.ATM.ToString()).FirstOrDefault()
+			? Pays.Where(p => !p.Removed && !p.HasMoney && p.PayWay == PaymentTypes.ATM.ToString()).OrderByDescending(p => p.CreatedAt).FirstOrDefault()
 			: null;
 
 	}

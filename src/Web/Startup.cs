@@ -36,6 +36,10 @@ namespace Web
 
 		public IConfiguration Configuration { get; }
 
+		string ClientUrl => Configuration["AppSettings:ClientUrl"];
+
+		string AdminUrl => Configuration["AppSettings:AdminUrl"];
+
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public IServiceProvider ConfigureServices(IServiceCollection services)
 		{
@@ -63,7 +67,7 @@ namespace Web
 			var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AuthSettings:SecurityKey"]));
 
 			string issuer = Configuration["AppSettings:Name"];
-			string audience = Configuration["AppSettings:ClientUrl"];
+			string audience = ClientUrl;
 			string securityKey = Configuration["AuthSettings:SecurityKey"];
 			int tokenValidHours = Convert.ToInt32(Configuration["AuthSettings:TokenValidHours"]);
 			services.AddJwtBearer(tokenValidHours, issuer, audience, securityKey);
@@ -81,10 +85,42 @@ namespace Web
 					policy.Requirements.Add(new HasPermissionRequirement(Permissions.Admin)));
 			});
 
-			services.AddCors(options => options.AddPolicy("api",
-			   p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()
-		    ));
-			
+
+			services.AddCors(options =>
+			{
+				options.AddPolicy("Api",
+				builder =>
+				{
+					builder.WithOrigins(ClientUrl)
+							.AllowAnyHeader()
+							.AllowAnyMethod();
+				});
+
+				options.AddPolicy("Admin",
+				builder =>
+				{
+					builder.WithOrigins(AdminUrl)
+							.AllowAnyHeader()
+							.AllowAnyMethod();
+				});
+
+				options.AddPolicy("Global",
+				builder =>
+				{
+					builder.WithOrigins(ClientUrl, AdminUrl)
+							.AllowAnyHeader()
+							.AllowAnyMethod();
+				});
+
+				options.AddPolicy("EcPay",
+				builder =>
+				{
+					builder.WithOrigins(Configuration["EcPaySettings:Url"])
+							.AllowAnyHeader()
+							.AllowAnyMethod();
+				});
+			});
+
 			services.AddControllers();
 
 
@@ -101,12 +137,16 @@ namespace Web
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+			services.AddScoped<Web.Services.ISubscribesService, Web.Services.SubscribesService>();
+
 			return AutofacRegister.Register(services);
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			app.UseMiddleware<IPListMiddleware>(Configuration["IPList"]);
+
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
@@ -121,9 +161,6 @@ namespace Web
 			app.UseStaticFiles();
 			
 
-
-			app.UseCors("api");
-
 			app.UseSwaggerUI(c =>
 			{
 				c.SwaggerEndpoint("/swagger/v1/swagger.json", "PosterExam");
@@ -134,13 +171,13 @@ namespace Web
 
 			app.UseRouting();
 
+			app.UseCors();
+
 			app.UseAuthorization();
 
 			app.UseEndpoints(endpoints =>
 			{
-				endpoints.MapControllerRoute(
-					name: "default",
-					pattern: "{controller=Home}/{action=Index}/{id?}");
+				endpoints.MapControllers();
 			});
 
 		}
