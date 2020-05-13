@@ -68,6 +68,13 @@ namespace Web.Controllers.Api
 				await _mailService.SendAsync(mailTo, subject, content, text);
 				
 			}
+			else if (model.Cmd.EqualTo("remove-bill"))
+			{
+				var billView = JsonConvert.DeserializeObject<BillViewModel>(model.Data);
+				_testsService.RemoveBill(billView.Id);
+
+				return Ok();
+			}
 			else if (model.Cmd.EqualTo("remove-subsrcibes"))
 			{
 				await _testsService.RemoveSubsrcibesFromUserAsync();

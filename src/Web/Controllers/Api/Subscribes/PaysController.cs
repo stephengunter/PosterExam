@@ -12,9 +12,11 @@ using ApplicationCore.Logging;
 using ApplicationCore.Exceptions;
 using System.Collections;
 using ApplicationCore.Helpers;
+using Microsoft.AspNetCore.Cors;
 
 namespace Web.Controllers.Api
 {
+	[EnableCors("EcPay")]
 	public class PaysController : BaseApiController
 	{
 		private readonly Web.Services.ISubscribesService _subscribesService;

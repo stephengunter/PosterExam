@@ -22,7 +22,7 @@ namespace ApplicationCore.Views
 		public int PayWayId { get; set; }
 		
 
-		public DateTime DeadLine { get; set; }
+		public DateTime? DeadLine { get; set; }
 
 		public string DeadLineText { get; set; }
 
@@ -32,6 +32,8 @@ namespace ApplicationCore.Views
 
 		public decimal NeedPayMoney { get; set; }
 
+		public decimal TotalPayed { get; set; }
+
 		public DateTime? PayedDate { get; set; }
 
 		public string PayedDateText { get; set; }
@@ -40,9 +42,15 @@ namespace ApplicationCore.Views
 
 		public ICollection<PayViewModel> Pays { get; set; } = new List<PayViewModel>();
 
-		public PayViewModel PayInfo => Pays.HasItems()
-			? Pays.Where(p => !p.Removed && !p.HasMoney && p.PayWay == PaymentTypes.ATM.ToString()).OrderByDescending(p => p.CreatedAt).FirstOrDefault()
-			: null;
+		public PayViewModel PayInfo
+		{
+			get
+			{
+				if (Pays.IsNullOrEmpty()) return null;
+				if (Payed) return null;
+				return Pays.Where(p => !p.Removed && !p.HasMoney && p.PayWay == PaymentTypes.ATM.ToString()).OrderByDescending(p => p.CreatedAt).FirstOrDefault();
+			}
+		}
 
 	}
 }

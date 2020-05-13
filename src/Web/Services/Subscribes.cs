@@ -42,12 +42,12 @@ namespace Web.Services
 
     public class SubscribesService : ISubscribesService
     {
-        
+        private readonly Web.Services.IThirdPartyPayService _thirdPartyPayService;
+
         private readonly ApplicationCore.Services.ISubscribesService _subscribesService;
         private readonly IPlansService _plansService;
         private readonly IBillsService _billsService;
         private readonly IPaysService _paysService;
-        private readonly IThirdPartyPayService _thirdPartyPayService;
         private readonly IUsersService _usersService;
 
         private readonly SubscribesSettings _subscribesSettings;
@@ -55,9 +55,10 @@ namespace Web.Services
         private readonly IMapper _mapper;
 
 
-        public SubscribesService(ApplicationCore.Services.ISubscribesService subscribesService,
-             IPlansService plansService, IBillsService billsService, IPaysService paysService,
-            IThirdPartyPayService thirdPartyPayService, IUsersService usersService,
+        public SubscribesService(Web.Services.IThirdPartyPayService thirdPartyPayService, 
+            ApplicationCore.Services.ISubscribesService subscribesService,
+            IPlansService plansService, IBillsService billsService, IPaysService paysService,
+            IUsersService usersService,
             IOptions<SubscribesSettings> subscribesSettings, IAppLogger logger, IMapper mapper)
         {
            
@@ -376,6 +377,12 @@ namespace Web.Services
 
                     await _paysService.UpdateAsync(pay);
 
+                    if (pay.Bill.Removed)
+                    {
+                        pay.Bill.Removed = false;
+                        await _billsService.UpdateAsync(pay.Bill);
+                    } 
+
                     await OnPayedAsync(pay);
                 }
 
@@ -405,6 +412,14 @@ namespace Web.Services
             if (bill == null) throw new BillNotFoundWhilePay($"bill id: {pay.BillId}");
 
             if (!bill.Payed) throw new NotPayedAfterPay(bill, pay);
+
+            bill.DeadLine = null;
+
+            var payWay = _paysService.FindPayWayByCode(pay.PayWay);
+            if (payWay == null) _logger.LogException(new PayWayNotFound(pay.PayWay));
+            else bill.PayWayId = payWay.Id;
+
+            await _billsService.UpdateAsync(bill);
 
             //建立 Subscribe
             var subscribe = _subscribesService.Find(bill);

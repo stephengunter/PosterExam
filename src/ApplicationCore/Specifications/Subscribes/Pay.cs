@@ -15,7 +15,7 @@ namespace ApplicationCore.Specifications
 
         public PayFilterSpecification(string code) : base(item => item.Code == code)
         {
-
+            AddInclude(item => item.Bill);
         }
 
         public PayFilterSpecification(int id) : base(item => !item.Removed && item.Id == id)

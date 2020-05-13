@@ -12,7 +12,6 @@ namespace ApplicationCore.Settings
 		public string ClientUrl { get; set; }
 		public string AdminUrl { get; set; }
 		public string BackendUrl { get; set; }
-		public string PayUrl { get; set; }
 
 		public string UploadPath { get; set; }
 		public string TemplatePath { get; set; }

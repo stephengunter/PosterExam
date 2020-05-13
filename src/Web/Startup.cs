@@ -124,12 +124,6 @@ namespace Web
 			services.AddControllers();
 
 
-			//PayMvc
-			//services.AddHttpClient(Consts.TradeRemoteApiName, c =>
-			//{
-			//	c.BaseAddress = new Uri(Configuration["EcPaySettings:TradeUrl"]);
-			//});
-
 			services.AddHttpClient(Consts.Google, c =>
 			{
 				c.BaseAddress = new Uri("https://www.google.com");
@@ -137,6 +131,7 @@ namespace Web
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+			services.AddScoped<Web.Services.IThirdPartyPayService, Web.Services.EcPayService>();
 			services.AddScoped<Web.Services.ISubscribesService, Web.Services.SubscribesService>();
 
 			return AutofacRegister.Register(services);
@@ -145,7 +140,8 @@ namespace Web
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
-			app.UseMiddleware<IPListMiddleware>(Configuration["IPList"]);
+			//是否過濾IP
+			//app.UseMiddleware<IPListMiddleware>(Configuration["IPList"]);
 
 			if (env.IsDevelopment())
 			{

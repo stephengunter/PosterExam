@@ -18,7 +18,7 @@ namespace ApplicationCore.Models
 
 		public bool HasDiscount { get; set; }
 
-		public DateTime DeadLine { get; set; }
+		public DateTime? DeadLine { get; set; }
 
 		public int PayWayId { get; set; }
 
@@ -39,7 +39,7 @@ namespace ApplicationCore.Models
 		public decimal NeedPayMoney => Amount - TotalPayed;
 
 
-		decimal TotalPayed => Pays.IsNullOrEmpty() ? 0 : Pays.Where(p => p.HasMoney).Sum(p => p.Money);
+		public decimal TotalPayed => Pays.IsNullOrEmpty() ? 0 : Pays.Where(p => p.HasMoney).Sum(p => p.Money);
 
 		[NotMapped]
 		public DateTime? PayedDate
@@ -51,6 +51,14 @@ namespace ApplicationCore.Models
 			}
 		}
 
-		public bool Expired => Payed ? false : DateTime.Now > DeadLine;
+		public bool Expired
+		{
+			get
+			{
+				if (Payed) return false;
+				if (DeadLine.HasValue) return DateTime.Now > DeadLine;
+				return false;
+			}
+		}
 	}
 }

@@ -24,17 +24,17 @@ namespace ApplicationCore.Services
 {
     public interface ITestsService
     {
-        Task Test();
         Task<AuthResponse> LoginAsync(string remoteIp);
         Task RemoveSubsrcibesFromUserAsync();
         Task RemoveBillsFromUserAsync();
+
+        void RemoveBill(int id);
     }
 
     public class TestsService : ITestsService
     {
         private readonly IAppLogger _logger;
         private readonly AppSettings _appSettings;
-        private readonly IThirdPartyPayService _thirdPartyPayService;
         private readonly IBillsService _billsService;
         private readonly IPaysService _paysService;
         private readonly ISubscribesService _subscribesService;
@@ -42,17 +42,16 @@ namespace ApplicationCore.Services
         private readonly IAuthService _authService;
 
         public TestsService(IAppLogger logger, IOptions<AppSettings> appSettings, 
-            IThirdPartyPayService thirdPartyPayService, IPaysService paysService, IBillsService billsService,
+             IPaysService paysService, IBillsService billsService,
             ISubscribesService subscribesService, IUsersService usersService, IAuthService authService)
         {
             _logger = logger;
             _appSettings = appSettings.Value;
 
-            _thirdPartyPayService = thirdPartyPayService;
+            
             _paysService = paysService;
             _billsService = billsService;
             _subscribesService = subscribesService;
-            
 
             _usersService = usersService;
             _authService = authService;
@@ -70,7 +69,14 @@ namespace ApplicationCore.Services
 
         public async Task Test()
         {
-            await RemoveSubsrcibesFromUserAsync();
+            var bills = await _billsService.FetchByUserAsync(TestUser.Id);
+            foreach (var bill in bills)
+            {
+                bill.DeadLine = DateTime.Now.AddDays(-1);
+                await _billsService.UpdateAsync(bill);
+
+                _billsService.Remove(bill);
+            }
         }
 
         public async Task<AuthResponse> LoginAsync(string remoteIp)
@@ -110,6 +116,15 @@ namespace ApplicationCore.Services
                 _billsService.Remove(bill);
             }
 
+        }
+
+        public void RemoveBill(int id)
+        {
+            var bill = _billsService.GetById(id);
+            if(bill == null) throw new EntityNotFoundException(new Bill { Id = id });
+            if(bill.UserId != TestUser.Id) throw new Exception();
+
+            _billsService.Remove(bill);
         }
 
     }

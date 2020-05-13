@@ -8,6 +8,8 @@
     <Compile Remove="Migrations\20200422122416_Bill Payway.cs" />
     <Compile Remove="Migrations\20200422122416_Bill Payway.Designer.cs" />
     <Compile Remove="Module.cs" />
+    <Compile Remove="Services\Subscribes\PayMvc.cs" />
+    <Compile Remove="Services\Subscribes\ThirdPartyPay.cs" />
     <Compile Remove="Swagger\SwaggerFileUploadFilter.cs" />
   </ItemGroup>
 
@@ -36,7 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EcPay\EcPay.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
