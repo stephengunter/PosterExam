@@ -42,10 +42,8 @@ namespace Web.Controllers.Api
 			_subscribesService = subscribesService;
 		}
 		[HttpGet]
-		public async Task<ActionResult> Index()
+		public ActionResult Index(string val)
 		{
-			
-
 			return Ok(_ecpaySettings.MerchantID);
 		}
 

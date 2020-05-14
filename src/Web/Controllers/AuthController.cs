@@ -22,9 +22,6 @@ namespace Web.Controllers
 		[HttpPost("refreshtoken")]
 		public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenRequest model)
 		{
-			ModelState.AddModelError("token", "身分驗證失敗. 請重新登入");
-			return BadRequest(ModelState);
-
 			var cp = _authService.ResolveClaimsFromToken(model.AccessToken);
 			string userId = cp.GetUserId();
 			OAuthProvider oauthProvider = cp.GetOAuthProvider();

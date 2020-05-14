@@ -52,7 +52,7 @@ namespace Web.Controllers.Api
 		[HttpPut("{id}")]
 		public async Task<ActionResult> Update(int id, [FromBody] BillViewModel model)
 		{
-			//begin pay,  請求ecpayTradeToken啟動付款程序, 
+			//begin pay,  請求ecpayTradeToken啟動付款程序
 			try
 			{
 				var ecPayTradeModel = await _subscribesService.BeginPayAsync(id, model, CurrentUserId);

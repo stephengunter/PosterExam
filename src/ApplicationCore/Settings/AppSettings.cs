@@ -44,6 +44,7 @@ namespace ApplicationCore.Settings
 	{
 		public string Key { get; set; }
 		public string Email { get; set; }
+		public string Id { get; set; }
 		public string BackupPath { get; set; }
 		public string DataPath { get; set; }
 	}

@@ -24,6 +24,8 @@ namespace ApplicationCore.Views
 
         public string Code { get; set; }
 
+        public bool Simulate { get; set; }
+
         public string TradeNo { get; set; }
 
         public int Amount { get; set; }

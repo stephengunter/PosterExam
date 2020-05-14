@@ -25,7 +25,7 @@ namespace ApplicationCore.Exceptions
     public class PayNotFound : Exception
     {
         //支付時找不到Pay
-        public PayNotFound(string code) : base($"code: code")
+        public PayNotFound(string code) : base($"code: {code}")
         {
 
         }

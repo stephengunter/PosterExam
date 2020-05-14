@@ -60,10 +60,6 @@ namespace Web.Services
             else return "";
         }
 
-        
-
-        HttpClient Client { get; }
-
         public EcPayTradeModel CreateEcPayTrade(Pay pay, int amount)
         {
             EcPayTradeSPToken resultModel = null;
@@ -172,18 +168,12 @@ namespace Web.Services
                         bool simulatePaid = false;
                         if (htFeedback.ContainsKey("SimulatePaid")) simulatePaid = htFeedback["SimulatePaid"].ToString().ToInt() > 0;
 
-                        if (simulatePaid)
-                        {
-                            //模擬的付款紀錄 
-                        }
-                        else
-                        {
-                            //真的付款紀錄
+                        tradeResultModel.Simulate = simulatePaid; //是否為模擬的付款紀錄
 
-                            tradeResultModel.Payed = true;
-                            tradeResultModel.PayedDate = htFeedback["PaymentDate"].ToString();
-                            tradeResultModel.PayWay = GetPaymentType(htFeedback["PaymentType"].ToString());
-                        }
+                        tradeResultModel.Payed = true;
+                        tradeResultModel.PayedDate = htFeedback["PaymentDate"].ToString();
+                        tradeResultModel.PayWay = GetPaymentType(htFeedback["PaymentType"].ToString());
+                       
                     }
                     else if (rtnCode == 2) //ATM 取號成功
                     {

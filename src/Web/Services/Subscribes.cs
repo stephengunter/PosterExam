@@ -51,6 +51,7 @@ namespace Web.Services
         private readonly IUsersService _usersService;
 
         private readonly SubscribesSettings _subscribesSettings;
+        private readonly AdminSettings _adminSettings;
         private readonly IAppLogger _logger;
         private readonly IMapper _mapper;
 
@@ -59,7 +60,8 @@ namespace Web.Services
             ApplicationCore.Services.ISubscribesService subscribesService,
             IPlansService plansService, IBillsService billsService, IPaysService paysService,
             IUsersService usersService,
-            IOptions<SubscribesSettings> subscribesSettings, IAppLogger logger, IMapper mapper)
+            IOptions<SubscribesSettings> subscribesSettings, IOptions<AdminSettings> adminSettings,
+            IAppLogger logger, IMapper mapper)
         {
            
             _subscribesService = subscribesService;
@@ -70,6 +72,7 @@ namespace Web.Services
             _usersService = usersService;
 
             _subscribesSettings = subscribesSettings.Value;
+            _adminSettings = adminSettings.Value;
             _logger = logger;
             _mapper = mapper;
         }
@@ -303,9 +306,16 @@ namespace Web.Services
                     _logger.LogException(new BillPayedButNoCurrentSubscribe(new User { Id = userId }, new Plan { Id = selectedPlan.Id }));
 
                 }
-                //有未繳帳單或帳單異常
-                //試圖建立第二張帳單
-                throw new TryToCreateSecondValidBill(new User { Id = userId }, new Plan { Id = selectedPlan.Id });
+                else
+                {
+                    //只有帳單過期, 才可建立新訂單
+                    var validBills = unPayedBills.Where(x => !x.Expired);
+                    if (validBills.HasItems())
+                    {
+                        //試圖建立第二張帳單
+                        throw new TryToCreateSecondValidBill(new User { Id = userId }, new Plan { Id = selectedPlan.Id });
+                    }
+                }
 
             }
 
@@ -365,46 +375,83 @@ namespace Web.Services
             var pay = _paysService.FindByCode(model.Code);
             if (pay == null) throw new PayNotFound($"code: {model.Code}");
 
-            if (model.Payed) //付款成功的資料
+            if (model.Simulate)
             {
-                if (!pay.HasMoney)  //不處理重複發送的資料
-                {
-                    pay.Money = Convert.ToDecimal(model.Amount);
-                    pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
-                    pay.TradeNo = model.TradeNo;
-                    pay.TradeData = model.Data;
-                    pay.Removed = false;
-
-                    await _paysService.UpdateAsync(pay);
-
-                    if (pay.Bill.Removed)
-                    {
-                        pay.Bill.Removed = false;
-                        await _billsService.UpdateAsync(pay.Bill);
-                    } 
-
-                    await OnPayedAsync(pay);
-                }
-
+               await HandleSimulatePayAsync(pay, model);
             }
             else
             {
-                if (!String.IsNullOrEmpty(model.BankAccount))
+                if (model.Payed) //付款成功的資料
                 {
-                    // 獲取ATM虛擬帳號
-                    pay.BankCode = model.BankCode;
-                    pay.BankAccount = model.BankAccount;
+                    if (!pay.HasMoney)  //不處理重複發送的資料
+                    {
+                        pay.Money = Convert.ToDecimal(model.Amount);
+                        pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
+                        pay.TradeNo = model.TradeNo;
+                        pay.TradeData = model.Data;
+                        pay.Removed = false;
 
-                    if (!String.IsNullOrEmpty(model.PayWay)) pay.PayWay = model.PayWay;
+                        await _paysService.UpdateAsync(pay);
 
-                    await _paysService.UpdateAsync(pay);
+                        if (pay.Bill.Removed)
+                        {
+                            pay.Bill.Removed = false;
+                            await _billsService.UpdateAsync(pay.Bill);
+                        }
+
+                        await OnPayedAsync(pay);
+                    }
 
                 }
+                else
+                {
+                    if (!String.IsNullOrEmpty(model.BankAccount))
+                    {
+                        DateTime? expireDate = model.ExpireDate.ToEndDate();
+                        // 獲取ATM虛擬帳號
+                        pay.BankCode = model.BankCode;
+                        pay.BankAccount = model.BankAccount;
+                        if (!String.IsNullOrEmpty(model.PayWay)) pay.PayWay = model.PayWay;
 
+                        await _paysService.UpdateAsync(pay);
+
+                        if (expireDate.HasValue)
+                        {
+                            pay.Bill.DeadLine = expireDate;
+                            await _billsService.UpdateAsync(pay.Bill);
+                        }
+
+                    }
+
+                }
             }
-            
         }
 
+        async Task HandleSimulatePayAsync(Pay pay, TradeResultModel model)
+        {
+            string userId = pay.Bill.UserId;
+            if (userId != _adminSettings.Id) return;
+            if (!model.Payed) return;
+
+            if (!pay.HasMoney)  //不處理重複發送的資料
+            {
+                pay.Money = Convert.ToDecimal(model.Amount);
+                pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
+                pay.TradeNo = model.TradeNo;
+                pay.TradeData = model.Data;
+                pay.Removed = false;
+
+                await _paysService.UpdateAsync(pay);
+
+                if (pay.Bill.Removed)
+                {
+                    pay.Bill.Removed = false;
+                    await _billsService.UpdateAsync(pay.Bill);
+                }
+
+                await OnPayedAsync(pay);
+            }
+        }
 
         async Task OnPayedAsync(Pay pay)  //當付款成功紀錄後執行
         {
