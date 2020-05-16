@@ -19,9 +19,9 @@ namespace Infrastructure.Views
 
 		public virtual string StatusText => this.Active ? "上架中" : "已下架";
 
-		public string CreatedAtText => CreatedAt.ToString("yyyy-MM-dd H:mm:ss");
+		public string CreatedAtText => CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
 
-		public string LastUpdatedText => LastUpdated.ToString("yyyy-MM-dd H:mm:ss");
+		public string LastUpdatedText => LastUpdated.ToString("yyyy-MM-dd HH:mm:ss");
 
 		public void SetUpdated(string userId)
 		{

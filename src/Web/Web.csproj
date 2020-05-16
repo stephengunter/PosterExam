@@ -46,7 +46,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Admin\" />
     <Folder Include="EcPay\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>

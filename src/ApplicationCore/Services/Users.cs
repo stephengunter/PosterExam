@@ -22,8 +22,8 @@ namespace ApplicationCore.Services
         IEnumerable<IdentityRole> FetchRoles();
 
         IEnumerable<IdentityRole> GetRolesByUserId(string userId);
+        Task<bool> IsAdminAsync(User user);
 
-       
         Task<User> FindSubscriberAsync(string userId);
         Task<User> AddSubscriberRoleAsync(string userId);
         Task RemoveSubscriberRoleAsync(string userId);
@@ -95,6 +95,15 @@ namespace ApplicationCore.Services
             var roleIds = userRoles.Select(ur => ur.RoleId);
 
             return _roleManager.Roles.Where(r => roleIds.Contains(r.Id));
+        }
+
+        public async Task<bool> IsAdminAsync(User user)
+        {
+            var roles = await GetRolesAsync(user);
+            if (roles.IsNullOrEmpty()) return false;
+            var match = roles.Where(r => r.Equals(Consts.DevRoleName) || r.Equals(Consts.BossRoleName)).FirstOrDefault();
+
+            return match != null;
         }
 
         public async Task RemoveSubscriberRoleAsync(string userId)

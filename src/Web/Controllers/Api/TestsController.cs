@@ -11,6 +11,8 @@ using Microsoft.Extensions.Options;
 using ApplicationCore.Settings;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Hosting;
+using ApplicationCore.ViewServices;
+using AutoMapper;
 
 namespace Web.Controllers.Api
 {
@@ -24,11 +26,15 @@ namespace Web.Controllers.Api
 		private readonly ITestsService _testsService;
 		private readonly IMailService _mailService;
 
+		private readonly INoticesService _noticesService;
+
+		private readonly IMapper _mapper;
+
 		private readonly Web.Services.ISubscribesService _subscribesService;
 
 		public ATestsController(IOptions<EcPaySettings> ecPaySettings, IPaysService paysService, IWebHostEnvironment environment, IOptions<AppSettings> appSettings, 
 			IOptions<AdminSettings> adminSettings, ITestsService testsService, IMailService mailService,
-			Web.Services.ISubscribesService subscribesService)
+			Web.Services.ISubscribesService subscribesService, INoticesService noticesService, IMapper mapper)
 		{
 			_ecpaySettings = ecPaySettings.Value;
 			_paysService = paysService;
@@ -40,11 +46,34 @@ namespace Web.Controllers.Api
 			_mailService = mailService;
 
 			_subscribesService = subscribesService;
+
+			_noticesService = noticesService;
+			_mapper = mapper;
 		}
 		[HttpGet]
-		public ActionResult Index(string val)
+		public async Task<ActionResult> Index()
 		{
-			return Ok(_ecpaySettings.MerchantID);
+			var receivers = await _noticesService.FetchUserNotificationsAsync(_adminSettings.Id);
+
+			return Ok(receivers.MapViewModelList(_mapper));
+			//return Ok(_ecpaySettings.MerchantID);
+		}
+
+		async Task CreateFakeUserNoticesAsync()
+		{
+			var notices = new List<Notice>
+			{
+				new Notice { Title = "娃哈哈回应开奶茶店称由授权合作伙伴运营", Content = "娃哈哈回应开奶茶店 称由授权合作伙伴运营" },
+				new Notice { Title = "平安健康涉嫌侵犯商业秘密后续：雪扬公司称已立案", Content = "平安健康涉嫌侵犯商业秘密后续：雪扬公司称已立案" },
+				new Notice { Title = "新冠疫情暴露世界领导力危机：当心跌入金德尔伯格陷阱", Content = "新冠疫情暴露世界领导力危机：当心跌入金德尔伯格陷阱" },
+			};
+
+			var userIds = new List<string> { _adminSettings.Id };
+
+			foreach (var item in notices)
+			{
+				await _noticesService.CreateUserNotificationAsync(item, userIds);
+			}
 		}
 
 
@@ -94,6 +123,20 @@ namespace Web.Controllers.Api
 				await _subscribesService.StorePayAsync(tradeResultModel);
 
 				return Ok("1|OK");
+			}
+			else if (model.Cmd.EqualTo("fake-notices"))
+			{
+				var models = JsonConvert.DeserializeObject<List<NoticeViewModel>>(model.Data);
+
+				
+				foreach (var item in models)
+				{
+					var entity = item.MapEntity(_mapper, _adminSettings.Id);
+					entity.CreatedAt = item.CreatedAt;
+					await _noticesService.CreateAsync(entity);
+				}
+
+				return Ok(models);
 			}
 			else
 			{
