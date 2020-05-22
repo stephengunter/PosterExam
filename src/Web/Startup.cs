@@ -21,6 +21,9 @@ using Microsoft.Extensions.Hosting;
 using ApplicationCore.DI;
 using ApplicationCore;
 using Microsoft.AspNetCore.Http;
+using Web.Hubs;
+using ApplicationCore.Hubs;
+using Hangfire;
 
 namespace Web
 {
@@ -64,6 +67,11 @@ namespace Web
 			services.Configure<AdminSettings>(Configuration.GetSection("AdminSettings"));
 			services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDBSettings"));
 
+
+			services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("Default")));
+			services.AddHangfireServer();
+
+
 			var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration["AuthSettings:SecurityKey"]));
 
 			string issuer = Configuration["AppSettings:Name"];
@@ -93,7 +101,7 @@ namespace Web
 				{
 					builder.WithOrigins(ClientUrl)
 							.AllowAnyHeader()
-							.AllowAnyMethod();
+							.AllowAnyMethod().AllowCredentials();
 				});
 
 				options.AddPolicy("Admin",
@@ -123,12 +131,15 @@ namespace Web
 
 			services.AddControllers();
 
+			services.AddSignalR();
+
 
 			services.AddHttpClient(Consts.Google, c =>
 			{
 				c.BaseAddress = new Uri("https://www.google.com");
 			});
 
+			services.AddSingleton<IHubConnectionManager, HubConnectionManager>();
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
 			services.AddScoped<Web.Services.IThirdPartyPayService, Web.Services.EcPayService>();
@@ -155,7 +166,9 @@ namespace Web
 			}
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
-			
+
+			app.UseHangfireDashboard();
+
 
 			app.UseSwaggerUI(c =>
 			{
@@ -174,6 +187,7 @@ namespace Web
 			app.UseEndpoints(endpoints =>
 			{
 				endpoints.MapControllers();
+				endpoints.MapHub<NotificationsHub>("/notifications");
 			});
 
 		}

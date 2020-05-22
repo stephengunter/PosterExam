@@ -22,4 +22,9 @@ namespace ApplicationCore.Views
 
         public string Message { get; set; }
     }
+
+    public class CommonRequestViewModel
+    {
+        public string Data { get; set; } //json string
+    }
 }

@@ -12,7 +12,9 @@ namespace ApplicationCore
         public static string DevRoleName => "Dev";
         public static string SubscriberRoleName => "Subscriber";
 
-        public static string TradeRemoteApiName => "Trade";  //PayMvc
+        public static string Notifications => "notifications";
+
+        public static string MAILCONTENT => "MAILCONTENT";
     }
 
     public enum PaymentTypes

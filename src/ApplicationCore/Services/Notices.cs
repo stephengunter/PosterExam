@@ -18,6 +18,8 @@ namespace ApplicationCore.Services
 
 		Task<Notice> CreateUserNotificationAsync(Notice notice, IEnumerable<string> userIds);
 		Task<IEnumerable<Receiver>> FetchUserNotificationsAsync(string userId);
+		Task ClearUserNotificationsAsync(string userId, IEnumerable<int> ids);
+		Receiver GetUserNotificationById(int id);
 
 		Task<IEnumerable<Notice>> FetchAllAsync();
 		Task UpdateAsync(Notice notice);
@@ -66,6 +68,23 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Receiver>> FetchUserNotificationsAsync(string userId)
 			=> await _receiverRepository.ListAsync(new ReceiverFilterSpecification(userId));
+
+		public async Task ClearUserNotificationsAsync(string userId, IEnumerable<int> ids)
+		{
+			var receivers = await FetchUserNotificationsAsync(userId);
+			var items = receivers.Where(item => ids.Contains(item.Id)).ToList();
+
+			if (items.HasItems())
+			{
+				foreach (var item in items) item.ReceivedAt = DateTime.Now;
+				_receiverRepository.UpdateRange(items);
+			} 
+		}
+
+		public Receiver GetUserNotificationById(int id)
+			=> _receiverRepository.GetSingleBySpec(new ReceiverFilterSpecification(id));
+
+
 
 		public async Task UpdateAsync(Notice notice) => await _noticeRepository.UpdateAsync(notice);
 

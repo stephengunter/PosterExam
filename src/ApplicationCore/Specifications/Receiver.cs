@@ -15,5 +15,10 @@ namespace ApplicationCore.Specifications
 			AddInclude(item => item.Notice);
 		}
 
+		public ReceiverFilterSpecification(int id) : base(item => item.Id == id)
+		{
+			AddInclude(item => item.Notice);
+		}
+
 	}
 }

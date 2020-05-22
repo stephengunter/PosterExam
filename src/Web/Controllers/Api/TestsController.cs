@@ -13,11 +13,20 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Hosting;
 using ApplicationCore.ViewServices;
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
+using Web.Hubs;
+using ApplicationCore.Hubs;
+using ApplicationCore.Logging;
+using Hangfire;
 
 namespace Web.Controllers.Api
 {
 	public class ATestsController : BaseApiController
 	{
+		private readonly IHubContext<NotificationsHub> _notificationHubContext;
+		private readonly IHubConnectionManager _userConnectionManager;
+
+
 		private readonly EcPaySettings _ecpaySettings;
 		private readonly IPaysService _paysService;
 		private readonly IWebHostEnvironment _environment;
@@ -27,15 +36,21 @@ namespace Web.Controllers.Api
 		private readonly IMailService _mailService;
 
 		private readonly INoticesService _noticesService;
-
+		private readonly IAppLogger _logger;
 		private readonly IMapper _mapper;
 
 		private readonly Web.Services.ISubscribesService _subscribesService;
 
-		public ATestsController(IOptions<EcPaySettings> ecPaySettings, IPaysService paysService, IWebHostEnvironment environment, IOptions<AppSettings> appSettings, 
-			IOptions<AdminSettings> adminSettings, ITestsService testsService, IMailService mailService,
-			Web.Services.ISubscribesService subscribesService, INoticesService noticesService, IMapper mapper)
+		public ATestsController(IHubContext<NotificationsHub> notificationHubContext, IHubConnectionManager userConnectionManager,
+			IOptions<EcPaySettings> ecPaySettings, IPaysService paysService, IWebHostEnvironment environment, IOptions<AppSettings> appSettings, 
+			IOptions<AdminSettings> adminSettings, 
+			ITestsService testsService, IMailService mailService,
+			Web.Services.ISubscribesService subscribesService, INoticesService noticesService,
+			IAppLogger appLogger, IMapper mapper)
 		{
+			_notificationHubContext = notificationHubContext;
+			_userConnectionManager = userConnectionManager;
+
 			_ecpaySettings = ecPaySettings.Value;
 			_paysService = paysService;
 			_environment = environment;
@@ -48,15 +63,50 @@ namespace Web.Controllers.Api
 			_subscribesService = subscribesService;
 
 			_noticesService = noticesService;
+
+			_logger = appLogger;
 			_mapper = mapper;
 		}
 		[HttpGet]
 		public async Task<ActionResult> Index()
 		{
-			var receivers = await _noticesService.FetchUserNotificationsAsync(_adminSettings.Id);
+			return Ok(_ecpaySettings.MerchantID);
+		}
+		[ApiExplorerSettings(IgnoreApi = true)]
+		public async Task NotifyUserAsync(string userId)
+		{
 
-			return Ok(receivers.MapViewModelList(_mapper));
-			//return Ok(_ecpaySettings.MerchantID);
+			try
+			{
+				string content = GetMailTemplate(_environment, _appSettings, "subscribe");
+				var notice = new Notice 
+				{ 
+					Title = "您的訂閱會員已經生效",
+					Content = content				
+				};
+				await _noticesService.CreateUserNotificationAsync(notice, new List<string> { userId });
+
+				string mailSubject = notice.Title;
+				string mailTemplate = GetMailTemplate(_environment, _appSettings);
+				string mailContent = mailTemplate.Replace("MAILCONTENT", content);
+
+				await _mailService.SendAsync("traders.com.tw@gmail.com", notice.Title, mailContent);
+
+
+				var connections = _userConnectionManager.GetUserConnections(userId);
+				if (connections.HasItems())
+				{
+					foreach (var connectionId in connections)
+					{
+						await _notificationHubContext.Clients.Client(connectionId).SendAsync("notifications", userId);
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogException(ex);
+			}
+
 		}
 
 		async Task CreateFakeUserNoticesAsync()
@@ -120,7 +170,12 @@ namespace Web.Controllers.Api
 			{
 				var tradeResultModel = JsonConvert.DeserializeObject<TradeResultModel>(model.Data);
 
-				await _subscribesService.StorePayAsync(tradeResultModel);
+				var subscribe = await _subscribesService.StorePayAsync(tradeResultModel);
+				if (subscribe != null)
+				{
+					//付款訂閱完成
+					BackgroundJob.Enqueue(() => NotifyUserAsync(subscribe.UserId));
+				}
 
 				return Ok("1|OK");
 			}
@@ -149,8 +204,6 @@ namespace Web.Controllers.Api
 			return Ok();
 
 		}
-
-		
 
 
 		[HttpGet("ex")]

@@ -35,9 +35,9 @@ namespace Web.Services
         
         Task<EcPayTradeModel> BeginPayAsync(int billId, BillViewModel model, string userId);
         TradeResultModel ResolveTradeResult(HttpRequest request);
-        Task StorePayAsync(TradeResultModel model);
+        Task<Subscribe> StorePayAsync(TradeResultModel model);
 
-        void Test();
+        Task<User> FindUserByIdAsync(string id);
     }
 
     public class SubscribesService : ISubscribesService
@@ -76,7 +76,8 @@ namespace Web.Services
             _logger = logger;
             _mapper = mapper;
         }
-        public void Test() => throw new BadRequestException(new RequestErrorViewModel { Key = "payed", Message = "此訂單已經支付過了" });
+
+        public async Task<User> FindUserByIdAsync(string id) => await _usersService.FindUserByIdAsync(id);
 
         public async Task<SubscribesIndexViewModel> GetSubscribesIndexViewAsync(string userId, bool allData = false)
         {
@@ -369,72 +370,18 @@ namespace Web.Services
         public TradeResultModel ResolveTradeResult(HttpRequest request) => _thirdPartyPayService.ResolveTradeResult(request);
         
 
-        public async Task StorePayAsync(TradeResultModel model)
+        public async Task<Subscribe> StorePayAsync(TradeResultModel model)
         {
-           
             var pay = _paysService.FindByCode(model.Code);
             if (pay == null) throw new PayNotFound($"code: {model.Code}");
 
-            if (model.Simulate)
+            if (model.Simulate) return await HandleSimulatePayAsync(pay, model);
+
+
+            if (model.Payed) //付款成功的資料
             {
-               await HandleSimulatePayAsync(pay, model);
-            }
-            else
-            {
-                if (model.Payed) //付款成功的資料
-                {
-                    if (!pay.HasMoney)  //不處理重複發送的資料
-                    {
-                        pay.Money = Convert.ToDecimal(model.Amount);
-                        pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
-                        pay.TradeNo = model.TradeNo;
-                        pay.TradeData = model.Data;
-                        pay.Removed = false;
-
-                        await _paysService.UpdateAsync(pay);
-
-                        if (pay.Bill.Removed)
-                        {
-                            pay.Bill.Removed = false;
-                            await _billsService.UpdateAsync(pay.Bill);
-                        }
-
-                        await OnPayedAsync(pay);
-                    }
-
-                }
-                else
-                {
-                    if (!String.IsNullOrEmpty(model.BankAccount))
-                    {
-                        DateTime? expireDate = model.ExpireDate.ToEndDate();
-                        // 獲取ATM虛擬帳號
-                        pay.BankCode = model.BankCode;
-                        pay.BankAccount = model.BankAccount;
-                        if (!String.IsNullOrEmpty(model.PayWay)) pay.PayWay = model.PayWay;
-
-                        await _paysService.UpdateAsync(pay);
-
-                        if (expireDate.HasValue)
-                        {
-                            pay.Bill.DeadLine = expireDate;
-                            await _billsService.UpdateAsync(pay.Bill);
-                        }
-
-                    }
-
-                }
-            }
-        }
-
-        async Task HandleSimulatePayAsync(Pay pay, TradeResultModel model)
-        {
-            string userId = pay.Bill.UserId;
-            if (userId != _adminSettings.Id) return;
-            if (!model.Payed) return;
-
-            if (!pay.HasMoney)  //不處理重複發送的資料
-            {
+                if (pay.HasMoney) return null; //不處理重複發送的資料 
+                  
                 pay.Money = Convert.ToDecimal(model.Amount);
                 pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
                 pay.TradeNo = model.TradeNo;
@@ -449,11 +396,58 @@ namespace Web.Services
                     await _billsService.UpdateAsync(pay.Bill);
                 }
 
-                await OnPayedAsync(pay);
+                return await OnPayedAsync(pay);
+
+            }
+            else
+            {
+                if (String.IsNullOrEmpty(model.BankAccount)) return null;
+
+
+                DateTime? expireDate = model.ExpireDate.ToEndDate();
+                // 獲取ATM虛擬帳號
+                pay.BankCode = model.BankCode;
+                pay.BankAccount = model.BankAccount;
+                if (!String.IsNullOrEmpty(model.PayWay)) pay.PayWay = model.PayWay;
+
+                await _paysService.UpdateAsync(pay);
+
+                if (expireDate.HasValue)
+                {
+                    pay.Bill.DeadLine = expireDate;
+                    await _billsService.UpdateAsync(pay.Bill);
+                }
+
+                return null; //只獲取ATM虛擬帳號, 沒有付款完成 
+
             }
         }
 
-        async Task OnPayedAsync(Pay pay)  //當付款成功紀錄後執行
+        async Task<Subscribe> HandleSimulatePayAsync(Pay pay, TradeResultModel model)
+        {
+            string userId = pay.Bill.UserId;
+            if (userId != _adminSettings.Id) return null;
+            if (!model.Payed) return null;
+            if (pay.HasMoney) return null;//不處理重複發送的資料
+
+            pay.Money = Convert.ToDecimal(model.Amount);
+            pay.PayedDate = model.PayedDate.ToDatetimeOrNull();
+            pay.TradeNo = model.TradeNo;
+            pay.TradeData = model.Data;
+            pay.Removed = false;
+
+            await _paysService.UpdateAsync(pay);
+
+            if (pay.Bill.Removed)
+            {
+                pay.Bill.Removed = false;
+                await _billsService.UpdateAsync(pay.Bill);
+            }
+
+            return await OnPayedAsync(pay);
+        }
+
+        async Task<Subscribe> OnPayedAsync(Pay pay)  //當付款成功紀錄後執行
         {
             var bill = _billsService.GetById(pay.BillId);
             if (bill == null) throw new BillNotFoundWhilePay($"bill id: {pay.BillId}");
@@ -474,6 +468,8 @@ namespace Web.Services
 
             //加入角色
             if (subscribe.Active) await _usersService.AddSubscriberRoleAsync(subscribe.UserId);
+
+            return subscribe;
         }
 
     } //end of class

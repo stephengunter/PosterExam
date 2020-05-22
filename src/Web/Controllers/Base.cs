@@ -55,9 +55,9 @@ namespace Web.Controllers
 			=> Path.Combine(environment.WebRootPath, appSettings.TemplatePath.HasValue() ? appSettings.TemplatePath : "templates");
 
 
-		protected string GetMailTemplate(IWebHostEnvironment environment, AppSettings appSettings)
+		protected string GetMailTemplate(IWebHostEnvironment environment, AppSettings appSettings, string name = "default")
 		{
-			var pathToFile = Path.Combine(MailTemplatePath(environment, appSettings), "email.html");
+			var pathToFile = Path.Combine(MailTemplatePath(environment, appSettings), $"{name}.html");
 			if (!System.IO.File.Exists(pathToFile)) throw new Exception("email template file not found: " + pathToFile);
 
 			string body = "";
