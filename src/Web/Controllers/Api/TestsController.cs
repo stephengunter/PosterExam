@@ -70,8 +70,10 @@ namespace Web.Controllers.Api
 		[HttpGet]
 		public async Task<ActionResult> Index()
 		{
-			return Ok(_ecpaySettings.MerchantID);
+			return Ok(DateTime.Today.ToDateNumber());
+			//return Ok(_ecpaySettings.MerchantID);
 		}
+
 		[ApiExplorerSettings(IgnoreApi = true)]
 		public async Task NotifyUserAsync(string userId)
 		{
@@ -90,7 +92,7 @@ namespace Web.Controllers.Api
 				string mailTemplate = GetMailTemplate(_environment, _appSettings);
 				string mailContent = mailTemplate.Replace("MAILCONTENT", content);
 
-				await _mailService.SendAsync("traders.com.tw@gmail.com", notice.Title, mailContent);
+				await _mailService.SendAsync(_adminSettings.Email, notice.Title, mailContent);
 
 
 				var connections = _userConnectionManager.GetUserConnections(userId);

@@ -113,12 +113,12 @@ namespace ApplicationCore.ViewServices
 		{
 			if (String.IsNullOrEmpty(sortBy)) sortBy = "LastUpdated".ToLower();
 
-			if (sortBy.ToLower() == "score".ToLower())
+			if (sortBy.EqualTo("score"))
 			{ 
 				return desc ? exams.OrderByDescending(item => item.Score) : exams.OrderBy(item => item.Score);
 			}
 
-			if (sortBy.ToLower() == "lastupdated".ToLower())
+			if (sortBy.EqualTo("lastupdated"))
 			{
 				return desc ? exams.OrderByDescending(item => item.LastUpdated) : exams.OrderBy(item => item.LastUpdated);
 			}

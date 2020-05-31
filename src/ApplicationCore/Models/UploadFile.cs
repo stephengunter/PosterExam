@@ -10,6 +10,8 @@ namespace ApplicationCore.Models
 		Option = 0,
 		Resolve = 1,
 		Note = 2,
+		Manual = 3,
+		Feature = 4,
 		Unknown = -1
 	}
 

@@ -46,6 +46,9 @@ namespace ApplicationCore.DataAccess
 		public DbSet<Notice> Notices { get; set; }
 		public DbSet<Receiver> Receivers { get; set; }
 
+		public DbSet<Manual> Manuals { get; set; }
+		public DbSet<Feature> Features { get; set; }
+
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{

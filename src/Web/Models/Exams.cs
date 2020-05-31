@@ -19,6 +19,7 @@ namespace Web.Models
     public class ExamIndexViewModel
     {
         //index
+       
         public ICollection<BaseOption<int>> StatusOptions { get; set; } = new List<BaseOption<int>>();
         public ICollection<BaseOption<int>> SubjectOptions { get; set; } = new List<BaseOption<int>>();
 

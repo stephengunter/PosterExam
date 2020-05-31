@@ -30,12 +30,13 @@ namespace Web.Controllers.Api
 		private readonly IAttachmentsService _attachmentsService;
 		private readonly IExamsService _examsService;
 		private readonly ISubjectsService _subjectsService;
+		private readonly IRecruitsService _recruitsService;
 
 		private readonly IMapper _mapper;
 
 		public ExamsController(UserManager<User> userManager, IDataService dataService, 
 			IAttachmentsService attachmentsService, IQuestionsService questionsService, IResolvesService resolvesService,
-			IExamsService examsService, ISubjectsService subjectsService,
+			IExamsService examsService, ISubjectsService subjectsService, IRecruitsService recruitsService,
 			IMapper mapper)
 		{
 			_userManager = userManager;
@@ -47,6 +48,8 @@ namespace Web.Controllers.Api
 			_attachmentsService = attachmentsService;
 			_examsService = examsService;
 			_subjectsService = subjectsService;
+			_recruitsService = recruitsService;
+
 			_mapper = mapper;
 		}
 
@@ -99,11 +102,30 @@ namespace Web.Controllers.Api
 			return Ok(model);
 		}
 
-        #region  Create
-        [HttpGet("create")]
+		[HttpGet("init")]
+		public async Task<ActionResult> Init()
+		{
+			var model = new ExamIndexViewModel();
+
+			model.LoadExamTypeOptions();
+			model.LoadRecruitExamTypeOptions();
+
+			var yearRecruits = _dataService.FetchYearRecruits();
+			model.YearRecruits = yearRecruits.ToList();
+
+			//考試科目
+			var examSubjects = await _subjectsService.FetchExamSubjectsAsync();
+			model.LoadSubjectOptions(examSubjects, "全部");
+
+			return Ok(model);
+		}
+
+		#region  Create
+		[HttpGet("create")]
 		public async Task<ActionResult> Create(int recruit = 0, int type = -1, int rtype = -1, int subject = 0)
 		{
 			Exam exam = null;
+			string examTitle = "";
 
 			if (recruit > 0)   
 			{
@@ -120,6 +142,11 @@ namespace Web.Controllers.Api
 
 
 				exam = await InitByRecruitAsync(selectedRecruitView, yearRecruits);
+
+				var selectedYear = yearRecruits.FirstOrDefault(x => x.Id == selectedRecruitView.ParentId);
+				var selectedSubject = await _subjectsService.GetByIdAsync(selectedRecruitView.SubjectId);
+
+				examTitle = $"歷屆試題_{selectedYear.Title}_{selectedSubject.Title}_{DateTime.Today.ToDateNumber()}";
 
 			}
 			else 
@@ -158,6 +185,18 @@ namespace Web.Controllers.Api
 				};
 				
 				await InitExamPartsAsync(exam, examSettingsView, subjectQuestionsList);
+
+				var selectedSubject = await _subjectsService.GetByIdAsync(subject);
+
+				if (examType == ExamType.Recruit)
+				{
+					examTitle = $"{examType.GetDisplayName()}_{RecruitExamType.CrossYears.GetDisplayName()}_{selectedSubject.Title}_{DateTime.Today.ToDateNumber()}";
+				}
+				else if (examType == ExamType.System)
+				{
+					examTitle = $"{examType.GetDisplayName()}_{selectedSubject.Title}_{DateTime.Today.ToDateNumber()}";
+				}
+					
 			}
 
 
@@ -174,7 +213,10 @@ namespace Web.Controllers.Api
 			var types = new List<PostType> { PostType.Option, PostType.Resolve };
 			var attachments = await _attachmentsService.FetchByTypesAsync(types);
 
-			return Ok(exam.MapExamViewModel(_mapper, attachments.ToList()));
+			var examView = exam.MapExamViewModel(_mapper, attachments.ToList());
+			examView.Title = examTitle;
+
+			return Ok(examView);
 		}
 
 		async Task<Exam> InitByRecruitAsync(RecruitViewModel recruitView, List<RecruitViewModel> recruitViewList)

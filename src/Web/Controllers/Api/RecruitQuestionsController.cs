@@ -39,6 +39,7 @@ namespace Web.Controllers.Api
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int mode, int recruit)
 		{
+			
 			var yearRecruits = _dataService.FetchYearRecruits();
 
 			RQMode selectMode = mode.ToRQModeType();
