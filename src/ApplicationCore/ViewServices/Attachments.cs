@@ -20,6 +20,17 @@ namespace ApplicationCore.ViewServices
 		public static List<AttachmentViewModel> MapViewModelList(this IEnumerable<UploadFile> attachments, IMapper mapper)
 			=> attachments.Select(item => MapViewModel(item, mapper)).ToList();
 
+		public static PagedList<UploadFile, AttachmentViewModel> GetPagedList(this IEnumerable<UploadFile> attachments, IMapper mapper, int page = 1, int pageSize = 99)
+		{
+			var pageList = new PagedList<UploadFile, AttachmentViewModel>(attachments, page, pageSize);
+
+			pageList.ViewList = pageList.List.MapViewModelList(mapper);
+
+			pageList.List = null;
+
+			return pageList;
+		}
+
 		public static UploadFile MapEntity(this AttachmentViewModel model, IMapper mapper, string currentUserId)
 		{
 			var entity = mapper.Map<AttachmentViewModel, UploadFile>(model);

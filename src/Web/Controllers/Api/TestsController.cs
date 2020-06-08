@@ -68,10 +68,10 @@ namespace Web.Controllers.Api
 			_mapper = mapper;
 		}
 		[HttpGet]
-		public async Task<ActionResult> Index()
+		public ActionResult Index()
 		{
-			return Ok(DateTime.Today.ToDateNumber());
-			//return Ok(_ecpaySettings.MerchantID);
+			
+			return Ok(_ecpaySettings.MerchantID);
 		}
 
 		[ApiExplorerSettings(IgnoreApi = true)]

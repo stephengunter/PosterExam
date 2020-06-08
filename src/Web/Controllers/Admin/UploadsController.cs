@@ -16,23 +16,38 @@ using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using ApplicationCore.Settings;
 using Web.Controllers;
+using AutoMapper;
+using ApplicationCore.ViewServices;
 
 namespace Web.Controllers.Admin
 {
 	public class UploadsController : BaseAdminController
 	{
-		private readonly IAttachmentsService _attachmentsService;
 		private readonly IWebHostEnvironment _environment;
 		private readonly AppSettings _appSettings;
+		private readonly IAttachmentsService _attachmentsService;
+		private readonly IMapper _mapper;
 
-		public UploadsController(IWebHostEnvironment environment, IOptions<AppSettings> appSettings, IAttachmentsService attachmentsService)
+		public UploadsController(IWebHostEnvironment environment, IOptions<AppSettings> appSettings,
+			IAttachmentsService attachmentsService, IMapper mapper)
 		{
 			_environment = environment;
 			_appSettings = appSettings.Value;
 			_attachmentsService = attachmentsService;
+			_mapper = mapper;
 		}
 
 		string UploadFilesPath => Path.Combine(_environment.WebRootPath, _appSettings.UploadPath.HasValue() ? _appSettings.UploadPath : "uploads");
+
+		[HttpGet("")]
+		public async Task<IActionResult> Index(int page = 1, int pageSize = 12)
+		{
+			var attachments = await _attachmentsService.FetchAsync();
+			attachments = attachments.OrderByDescending(x => x.CreatedAt);
+
+			return Ok(attachments.GetPagedList(_mapper, page, pageSize));
+		}
+
 
 		[HttpPost("")]
 		public async Task<IActionResult> Store([FromForm] UploadForm form)

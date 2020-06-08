@@ -13,6 +13,8 @@ namespace ApplicationCore.Services
 {
 	public interface IAttachmentsService
 	{
+		Task<IEnumerable<UploadFile>> FetchAsync();
+
 		Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, int postId = 0);
 
 		Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, IList<int> postIds);
@@ -59,6 +61,9 @@ namespace ApplicationCore.Services
 		{
 			this._uploadFileRepository = uploadFileRepository;
 		}
+
+		public async Task<IEnumerable<UploadFile>> FetchAsync() => await _uploadFileRepository.ListAsync(new AttachmentFilterSpecifications());
+		
 
 		public async Task<IEnumerable<UploadFile>> FetchAsync(PostType postType, int postId = 0)
 		{

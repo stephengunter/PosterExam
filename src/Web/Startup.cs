@@ -60,12 +60,12 @@ namespace Web
 			.AddDefaultTokenProviders();
 
 			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+			services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDBSettings"));
 			services.Configure<RootSubjectSettings>(Configuration.GetSection("RootSubjectSettings"));
 			services.Configure<AuthSettings>(Configuration.GetSection("AuthSettings"));
 			services.Configure<SubscribesSettings>(Configuration.GetSection("SubscribesSettings"));
 			services.Configure<EcPaySettings>(Configuration.GetSection("EcPaySettings"));
 			services.Configure<AdminSettings>(Configuration.GetSection("AdminSettings"));
-			services.Configure<MongoDBSettings>(Configuration.GetSection("MongoDBSettings"));
 
 
 			services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("Default")));

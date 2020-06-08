@@ -78,7 +78,7 @@ namespace Web.Controllers
 		
 	}
 
-	[EnableCors("Admin")]
+	//[EnableCors("Admin")]
 	[Route("admin/[controller]")]
 	[Authorize(Policy = "Admin")]
 	public class BaseAdminController : BaseController

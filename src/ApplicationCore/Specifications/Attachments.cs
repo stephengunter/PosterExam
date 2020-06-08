@@ -11,6 +11,13 @@ namespace ApplicationCore.Specifications
 {
 	public class AttachmentFilterSpecifications : BaseSpecification<UploadFile>
 	{
+		public AttachmentFilterSpecifications()
+			: base(item => !item.Removed)
+		{
+
+		}
+
+
 		public AttachmentFilterSpecifications(PostType postType)
 			: base(item => !item.Removed && item.PostType == postType)
 		{

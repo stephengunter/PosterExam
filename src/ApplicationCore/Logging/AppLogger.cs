@@ -46,7 +46,7 @@ namespace ApplicationCore.Logging
 		{
 			//exceptions
 			var exceptionsfilePath = Path.Combine(folderPath, "exceptions.json");
-			if (!File.Exists(exceptionsfilePath)) File.Create(exceptionsfilePath);
+			if (!File.Exists(exceptionsfilePath)) File.Create(exceptionsfilePath).Close();
 			_exceptionsFilePath = exceptionsfilePath;
 		}
 
