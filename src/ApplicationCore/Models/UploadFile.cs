@@ -12,12 +12,13 @@ namespace ApplicationCore.Models
 		Note = 2,
 		Manual = 3,
 		Feature = 4,
-		Unknown = -1
+		Emoji = 5,
+		None = -1
 	}
 
 	public class UploadFile : BaseUploadFile
 	{
-		public PostType PostType { get; set; }
+		public PostType PostType { get; set; } = PostType.None;
 		public int PostId { get; set; }
 
 	}

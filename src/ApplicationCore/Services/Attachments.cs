@@ -29,6 +29,8 @@ namespace ApplicationCore.Services
 
 		Task<UploadFile> GetByIdAsync(int id);
 
+		Task RemoveAsync(UploadFile attachment);
+
 		void CreateMany(ICollection<UploadFile> attachments);
 
 		Task UpdateAsync(UploadFile attachment);
@@ -103,6 +105,12 @@ namespace ApplicationCore.Services
 		}
 
 		public async Task<UploadFile> GetByIdAsync(int id) => await _uploadFileRepository.GetByIdAsync(id);
+
+		public async Task RemoveAsync(UploadFile attachment)
+		{
+			attachment.Removed = true;
+			await _uploadFileRepository.UpdateAsync(attachment);
+		}
 
 		public async Task<UploadFile> CreateAsync(UploadFile attachment) => await _uploadFileRepository.AddAsync(attachment);
 

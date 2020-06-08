@@ -46,14 +46,16 @@ namespace ApplicationCore.Views
 
 		public PostType GetPostType()
 		{
+			if(String.IsNullOrEmpty(this.PostType)) return Models.PostType.None;
+
 			try
 			{
 				var type = this.PostType.ToEnum<PostType>();
 				return type;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				return ApplicationCore.Models.PostType.Unknown;
+				return Models.PostType.None;
 			}
 		}
 		
