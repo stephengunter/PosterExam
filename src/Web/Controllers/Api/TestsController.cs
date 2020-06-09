@@ -17,17 +17,16 @@ namespace Web.Controllers.Api
 	{
 		private readonly EcPaySettings _ecpaySettings;
 		private readonly AdminSettings _adminSettings;
+		private readonly Web.Services.ISubscribesService _subscribesService;
 		private readonly ITestsService _testsService;
 
 		public ATestsController(
-			IOptions<EcPaySettings> ecPaySettings, 
-			IOptions<AdminSettings> adminSettings, 
-			ITestsService testsService)
-			
+			IOptions<EcPaySettings> ecPaySettings, IOptions<AdminSettings> adminSettings,
+			Web.Services.ISubscribesService subscribesService, ITestsService testsService)
 		{
 			
 			_ecpaySettings = ecPaySettings.Value;
-
+			_subscribesService = subscribesService;
 			_adminSettings = adminSettings.Value;
 			_testsService = testsService;
 		}
@@ -60,6 +59,13 @@ namespace Web.Controllers.Api
 				await _testsService.RemoveBillsFromUserAsync();
 
 				return Ok();
+			}
+			else if (model.Cmd.EqualTo("fake-pay"))
+			{
+				var tradeResultModel = JsonConvert.DeserializeObject<TradeResultModel>(model.Data);
+
+				var subscribe = await _subscribesService.StorePayAsync(tradeResultModel);
+				return Ok("1|OK");
 			}
 			else if (model.Cmd.EqualTo("login"))
 			{
