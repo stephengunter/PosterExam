@@ -40,12 +40,34 @@ namespace Web.Controllers.Admin
 		string UploadFilesPath => Path.Combine(_environment.WebRootPath, _appSettings.UploadPath.HasValue() ? _appSettings.UploadPath : "uploads");
 
 		[HttpGet("")]
-		public async Task<IActionResult> Index(int page = 1, int pageSize = 12)
+		public async Task<IActionResult> Index(string type = "", int page = 1, int pageSize = 12)
 		{
-			var attachments = await _attachmentsService.FetchAsync();
-			attachments = attachments.OrderByDescending(x => x.CreatedAt);
+			if (String.IsNullOrEmpty(type))
+			{
+				var attachments = await _attachmentsService.FetchAsync();
+				attachments = attachments.OrderByDescending(x => x.CreatedAt);
 
-			return Ok(attachments.GetPagedList(_mapper, page, pageSize));
+				return Ok(attachments.GetPagedList(_mapper, page, pageSize));
+			}
+
+
+			try
+			{
+				var postType = type.ToEnum<PostType>();
+
+				var attachments = await _attachmentsService.FetchByTypesAsync(new List<PostType> { postType });
+				attachments = attachments.OrderByDescending(x => x.CreatedAt);
+
+				return Ok(attachments.GetPagedList(_mapper, page, pageSize));
+
+			}
+			catch (Exception)
+			{
+				ModelState.AddModelError("type", "錯誤的 type");
+				return BadRequest(ModelState);
+			}
+
+
 		}
 
 
@@ -65,7 +87,8 @@ namespace Web.Controllers.Admin
 					var attachment = await GetUploadFileAsync(postType, postId, fileName);
 					if (attachment == null) throw new Exception(String.Format("attachmentService.FindByName({0},{1})", file.FileName, form.PostId));
 
-					var upload = await SaveFile(file);
+					string folder = postType == PostType.Emoji ? "emoji" : "";
+					var upload = await SaveFile(file, folder);
 					attachment.PostType = postType;
 					attachment.Type = upload.Type;
 					attachment.Path = upload.Path;
@@ -104,17 +127,18 @@ namespace Web.Controllers.Admin
 
 		async Task<UploadFile> GetUploadFileAsync(PostType postType, int postId, string fileName)
 		{
-			if (postType == PostType.Unknown || postId < 1) return new UploadFile();
+			if (postType == PostType.None || postId < 1) return new UploadFile();
 		
 			return await _attachmentsService.FindByNameAsync(fileName, postType, postId);
 		}
 
 
-		async Task<UploadFile> SaveFile(IFormFile file)
+		async Task<UploadFile> SaveFile(IFormFile file, string folder = "")
 		{
 			//檢查檔案路徑
-			string folderName = DateTime.Now.ToString("yyyyMMdd");
-			string folderPath = Path.Combine(this.UploadFilesPath, folderName);
+			if(String.IsNullOrEmpty(folder)) folder = DateTime.Now.ToString("yyyyMMdd");
+
+			string folderPath = Path.Combine(this.UploadFilesPath, folder);
 			if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
 
 			string extension = Path.GetExtension(file.FileName).ToLower();
@@ -130,11 +154,23 @@ namespace Web.Controllers.Admin
 			var entity = new UploadFile()
 			{
 				Type = extension,
-				Path = folderName + "/" + fileName
+				Path = folder + "/" + fileName
 			};
 
 			return entity;
 		}
-		
+
+		[HttpDelete("{id}")]
+		public async Task<ActionResult> Delete(int id)
+		{
+			var attachment = await _attachmentsService.GetByIdAsync(id);
+			if (attachment == null) return NotFound();
+
+			attachment.SetUpdated(CurrentUserId);
+			await _attachmentsService.RemoveAsync(attachment);
+
+			return Ok();
+		}
+
 	}
 }
