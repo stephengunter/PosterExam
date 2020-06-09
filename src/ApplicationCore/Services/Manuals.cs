@@ -13,7 +13,7 @@ namespace ApplicationCore.Services
 {
 	public interface IManualsService
 	{
-		Task<IEnumerable<Manual>> FetchAsync(bool active);
+		Task<IEnumerable<Manual>> FetchAsync(bool active = true);
 		Task<Manual> GetByIdAsync(int id);
 		Task<Manual> CreateAsync(Manual manual);
 		Task UpdateAsync(Manual manual);
@@ -23,6 +23,9 @@ namespace ApplicationCore.Services
 		Manual GetById(int id);
 
 		Feature GetFeatureById(int id);
+		Task<Feature> GetFeatureByIdAsync(int id);
+		Task<Feature> CreateFeatureAsync(Feature feature);
+		Task UpdateAsync(Feature existingEntity, Feature feature);
 	}
 
 	public class ManualsService : BaseCategoriesService<Manual>, IManualsService
@@ -36,7 +39,7 @@ namespace ApplicationCore.Services
 			_featureRepository = featureRepository;
 		}
 
-		public async Task<IEnumerable<Manual>> FetchAsync(bool active)
+		public async Task<IEnumerable<Manual>> FetchAsync(bool active = true)
 		{
 			var allItems = await FetchAllAsync();
 			var rootItems = allItems.Where(x => x.IsRootItem);
@@ -94,5 +97,11 @@ namespace ApplicationCore.Services
 		}
 
 		public Feature GetFeatureById(int id) => _featureRepository.GetSingleBySpec(new FeatureFilterSpecification(id));
+
+		public async Task<Feature> GetFeatureByIdAsync(int id) => await _featureRepository.GetByIdAsync(id);
+
+		public async Task<Feature> CreateFeatureAsync(Feature feature) => await _featureRepository.AddAsync(feature);
+
+		public async Task UpdateAsync(Feature existingEntity, Feature feature) => await _featureRepository.UpdateAsync(existingEntity, feature);
 	}
 }

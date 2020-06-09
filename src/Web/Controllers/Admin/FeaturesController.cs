@@ -17,17 +17,15 @@ using Web.Controllers;
 
 namespace Web.Controllers.Admin
 {
-	public class ManualsController : BaseAdminController
+	public class FeaturesController : BaseAdminController
 	{
 		private readonly IManualsService _manualsService;
-		private readonly IAttachmentsService _attachmentsService;
 		private readonly IMapper _mapper;
 
-		public ManualsController(IManualsService manualsService, IAttachmentsService attachmentsService,
-			 IMapper mapper)
+		public FeaturesController(IManualsService manualsService, IMapper mapper)
+
 		{
 			_manualsService = manualsService;
-			_attachmentsService = attachmentsService;
 			_mapper = mapper;
 		}
 
@@ -46,25 +44,52 @@ namespace Web.Controllers.Admin
 		[HttpGet("create")]
 		public ActionResult Create()
 		{
-			return Ok(new ManualViewModel());
+			return Ok(new FeatureViewModel());
 		}
 
 		[HttpPost("")]
-		public async Task<ActionResult> Store([FromBody] ManualViewModel model)
+		public async Task<ActionResult> Store([FromBody] FeatureViewModel model)
 		{
 			ValidateRequest(model);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 
 			model.Order = model.Active ? 0 : -1;
 
-			var manual = model.MapEntity(_mapper, CurrentUserId);
+			var feature = model.MapEntity(_mapper, CurrentUserId);
 
-			manual = await _manualsService.CreateAsync(manual);
+			feature = await _manualsService.CreateFeatureAsync(feature);
 
-			return Ok(manual.Id);
+			return Ok(feature.Id);
 		}
 
-		void ValidateRequest(ManualViewModel model)
+		[HttpGet("edit/{id}")]
+		public ActionResult Edit(int id)
+		{
+			var feature = _manualsService.GetFeatureById(id);
+			if (feature == null) return NotFound();
+
+			var model = feature.MapViewModel(_mapper);
+			return Ok(model);
+		}
+
+		[HttpPut("{id}")]
+		public async Task<ActionResult> Update(int id, [FromBody] FeatureViewModel model)
+		{
+			var existingEntity = await _manualsService.GetFeatureByIdAsync(id);
+			if (existingEntity == null) return NotFound();
+
+			ValidateRequest(model);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			model.Order = model.Active ? 0 : -1;
+			var feature = model.MapEntity(_mapper, CurrentUserId);
+
+			await _manualsService.UpdateAsync(existingEntity, feature);
+
+			return Ok();
+		}
+
+		void ValidateRequest(FeatureViewModel model)
 		{
 			if (String.IsNullOrEmpty(model.Title)) ModelState.AddModelError("title", "請填寫標題");
 		}
