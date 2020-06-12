@@ -20,6 +20,14 @@ namespace ApplicationCore.Specifications
 		}
 	}
 
+	public class ManualParentFilterSpecification : BaseSpecification<Manual>
+	{
+		public ManualParentFilterSpecification(int parentId, bool features = false) : base(item => !item.Removed && item.ParentId == parentId)
+		{
+			if(features) AddInclude(item => item.Features);
+		}
+	}
+
 
 	public class FeatureFilterSpecification : BaseSpecification<Feature>
 	{

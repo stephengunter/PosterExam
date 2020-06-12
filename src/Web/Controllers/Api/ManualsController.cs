@@ -28,8 +28,11 @@ namespace Web.Controllers.Api
 	
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index()
+		public async Task<ActionResult> Index(int id = 0, int feature = 0, string user = "")
 		{
+			if (id > 0 || feature > 0) return await Details(id, feature, user);
+
+			
 			var manuals = await _manualsService.FetchAsync();
 
 			manuals = manuals.GetOrdered().ToList();
@@ -38,20 +41,21 @@ namespace Web.Controllers.Api
 		}
 
 
-		[HttpGet("{id}/{user?}")]
-		public async Task<ActionResult> Details(int id, string user = "")
+
+		async Task<ActionResult> Details(int id = 0, int feature = 0, string user = "")
 		{
-			var manual = await _manualsService.GetByIdAsync(id);
+			bool subItems = true;
+			var manual = await _manualsService.GetByIdAsync(id, subItems);
 			if (manual == null) return NotFound();
 
-			if (!manual.Active)
-			{
-				var existingUser = await _usersService.FindUserByIdAsync(user);
-				if(existingUser == null) return NotFound();
+			//if (!manual.Active)
+			//{
+			//	var existingUser = await _usersService.FindUserByIdAsync(user);
+			//	if(existingUser == null) return NotFound();
 
-				bool isAdmin = await _usersService.IsAdminAsync(existingUser);
-				if(!isAdmin) return NotFound();
-			}
+			//	bool isAdmin = await _usersService.IsAdminAsync(existingUser);
+			//	if(!isAdmin) return NotFound();
+			//}
 
 			return Ok(manual.MapViewModel(_mapper));
 		}

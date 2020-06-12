@@ -14,6 +14,7 @@ using Web.Models;
 using ApplicationCore.Specifications;
 using Web.Helpers;
 using Web.Controllers;
+using Infrastructure.Views;
 
 namespace Web.Controllers.Admin
 {
@@ -44,9 +45,18 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("create")]
-		public ActionResult Create()
+		public async Task<ActionResult> Create()
 		{
-			return Ok(new ManualViewModel());
+			int parentId = 0;
+			var rootItems = await _manualsService.FetchAsync(parentId);
+
+			var form = new ManualEditForm
+			{
+				Parents = rootItems.Select(item => new BaseOption<int>(item.Id, item.Title)).ToList(),
+				Manual = new ManualViewModel()
+			};
+
+			return Ok(form);
 		}
 
 		[HttpPost("")]
@@ -62,6 +72,41 @@ namespace Web.Controllers.Admin
 			manual = await _manualsService.CreateAsync(manual);
 
 			return Ok(manual.Id);
+		}
+
+		[HttpGet("edit/{id}")]
+		public async Task<ActionResult> Edit(int id)
+		{
+			var manual = await _manualsService.GetByIdAsync(id);
+			if (manual == null) return NotFound();
+
+			int parentId = 0;
+			var rootItems = await _manualsService.FetchAsync(parentId);
+
+			var form = new ManualEditForm
+			{
+				Parents = rootItems.Select(item => new BaseOption<int>(item.Id, item.Title)).ToList(),
+				Manual = manual.MapViewModel(_mapper)
+			};
+
+			return Ok(form);
+		}
+
+		[HttpPut("{id}")]
+		public async Task<ActionResult> Update(int id, [FromBody] ManualViewModel model)
+		{
+			var existingEntity = await _manualsService.GetByIdAsync(id);
+			if (existingEntity == null) return NotFound();
+
+			ValidateRequest(model);
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			var notice = model.MapEntity(_mapper, CurrentUserId);
+			notice.Order = model.Active ? 0 : -1;
+
+			await _manualsService.UpdateAsync(existingEntity, notice);
+
+			return Ok();
 		}
 
 		void ValidateRequest(ManualViewModel model)

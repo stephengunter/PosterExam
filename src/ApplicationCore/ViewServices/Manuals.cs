@@ -30,7 +30,7 @@ namespace ApplicationCore.ViewServices
 			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);
 
-			entity.Content = entity.Content.ReplaceNewLine();
+			entity.Content = entity.Content.ReplaceNewLine("");
 			return entity;
 		}
 
@@ -53,7 +53,7 @@ namespace ApplicationCore.ViewServices
 			if (model.Id == 0) entity.SetCreated(currentUserId);
 			entity.SetUpdated(currentUserId);
 
-			entity.Content = entity.Content.ReplaceNewLine();
+			entity.Content = entity.Content.ReplaceNewLine("");
 			return entity;
 		}
 

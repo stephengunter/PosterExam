@@ -10,5 +10,7 @@ namespace Infrastructure.Views
 		
 		public int ParentId { get; set; }
 		public string ParentTitle { get; set; }
+
+		public bool IsRoot => ParentId == 0;
 	}
 }
