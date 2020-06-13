@@ -10,6 +10,7 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Microsoft.AspNetCore.Authorization;
+using Web.Models;
 
 namespace Web.Controllers.Api
 {
@@ -25,20 +26,45 @@ namespace Web.Controllers.Api
 			_usersService = usersService;
 			_mapper = mapper;
 		}
-	
+
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int id = 0, int feature = 0, string user = "")
+		public async Task<ActionResult> Index()
 		{
-			if (id > 0 || feature > 0) return await Details(id, feature, user);
+			var manuals = await _manualsService.FetchAllAsync();
+
+			manuals = manuals.Where(x => x.Active);
+
+			var rootItems = manuals.Where(x => x.ParentId == 0).GetOrdered();
+
+			var subItems = manuals.Where(x => x.ParentId > 0).GetOrdered();
+
+			foreach (var item in manuals) item.LoadSubItems(subItems);
+
+			return Ok(rootItems.MapViewModelList(_mapper));
+
+			//var model = new ManualIndexModel
+			//{
+			//	RootItems = rootItems.MapViewModelList(_mapper),
+			//	SubItems = subItems.MapViewModelList(_mapper)
+			//};
+
+			//return Ok(model);
+		}
+
+
+		//[HttpGet("")]
+		//public async Task<ActionResult> Index(int id = 0, int feature = 0, string user = "")
+		//{
+		//	if (id > 0 || feature > 0) return await Details(id, feature, user);
 
 			
-			var manuals = await _manualsService.FetchAsync();
+		//	var manuals = await _manualsService.FetchAsync();
 
-			manuals = manuals.GetOrdered().ToList();
+		//	manuals = manuals.GetOrdered().ToList();
 
-			return Ok(manuals);
-		}
+		//	return Ok(manuals);
+		//}
 
 
 

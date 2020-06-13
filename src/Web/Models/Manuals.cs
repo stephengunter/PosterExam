@@ -9,6 +9,13 @@ using Infrastructure.Views;
 
 namespace Web.Models
 {
+    public class ManualIndexModel
+    {
+        public List<ManualViewModel> RootItems { get; set; }
+
+        public List<ManualViewModel> SubItems { get; set; }
+    }
+
     public class ManualEditForm
     {
         public ICollection<BaseOption<int>> Parents { get; set; } = new List<BaseOption<int>>();

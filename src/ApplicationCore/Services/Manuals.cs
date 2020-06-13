@@ -13,6 +13,7 @@ namespace ApplicationCore.Services
 {
 	public interface IManualsService
 	{
+		Task<IEnumerable<Manual>> FetchAllAsync();
 		Task<IEnumerable<Manual>> FetchAsync(bool active = true);
 		Task<IEnumerable<Manual>> FetchAsync(int parentId, bool features = false);
 		Task<Manual> GetByIdAsync(int id, bool subItems = false);
@@ -38,6 +39,9 @@ namespace ApplicationCore.Services
 			_featureRepository = featureRepository;
 		}
 
+		public async Task<IEnumerable<Manual>> FetchAllAsync() => await _manualRepository.ListAsync(new ManualFilterSpecification());
+
+
 		public async Task<IEnumerable<Manual>> FetchAsync(bool active = true)
 		{
 			int parentId = 0;
@@ -53,10 +57,9 @@ namespace ApplicationCore.Services
 
 		public async Task<IEnumerable<Manual>> FetchAsync(int parentId, bool features = false)
 			=> await _manualRepository.ListAsync(new ManualParentFilterSpecification(parentId, features));
-	
 
-		async Task<IEnumerable<Manual>> FetchAllAsync() => await _manualRepository.ListAsync(new ManualFilterSpecification());
 
+		
 		public async Task<Manual> GetByIdAsync(int id, bool subItems = false)
 		{
 			var spec = new ManualFilterSpecification(id);

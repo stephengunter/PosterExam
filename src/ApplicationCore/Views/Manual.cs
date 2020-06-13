@@ -16,6 +16,8 @@ namespace ApplicationCore.Views
 
         public string Content { get; set; }
 
+        public IList<int> SubIds => SubItems.IsNullOrEmpty() ? new List<int>() : SubItems.Select(item => item.Id).ToList();
+
         public ICollection<FeatureViewModel> Features { get; set; } = new List<FeatureViewModel>();
 
         public ICollection<ManualViewModel> SubItems { get; set; }
