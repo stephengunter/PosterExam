@@ -10,6 +10,8 @@ namespace ApplicationCore.Models
 {
     public class Manual : BaseCategory
     {
+        public bool Free { get; set; }
+
         public string Summary { get; set; }
 
         public string Content { get; set; }

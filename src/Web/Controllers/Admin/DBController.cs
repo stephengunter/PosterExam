@@ -134,6 +134,12 @@ namespace Web.Controllers.Admin
 			var notes = _context.Notes.ToList();
 			SaveJson(folderPath, new Note().GetType().Name, JsonConvert.SerializeObject(notes));
 
+			var manuals = _context.Manuals.ToList();
+			SaveJson(folderPath, new Manual().GetType().Name, JsonConvert.SerializeObject(manuals));
+
+			var features = _context.Features.ToList();
+			SaveJson(folderPath, new Feature().GetType().Name, JsonConvert.SerializeObject(features));
+
 			var uploads = _context.UploadFiles.ToList();
 			SaveJson(folderPath, new UploadFile().GetType().Name, JsonConvert.SerializeObject(uploads));
 
@@ -173,7 +179,9 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var subjectModels = JsonConvert.DeserializeObject<List<Subject>>(content);
 				_dBImportService.ImportSubjects(_context, subjectModels);
-				
+
+				_dBImportService.SyncSubjects(_context, subjectModels);
+
 			}
 
 			fileName = new Term().GetType().Name;
@@ -183,6 +191,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var termModels = JsonConvert.DeserializeObject<List<Term>>(content);
 				_dBImportService.ImportTerms(_context, termModels);
+
+				_dBImportService.SyncTerms(_context, termModels);
 			}
 
 
@@ -193,6 +203,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var questionModels = JsonConvert.DeserializeObject<List<Question>>(content);
 				_dBImportService.ImportQuestions(_context, questionModels);
+
+				_dBImportService.SyncQuestions(_context, questionModels);
 			}
 
 			file = model.GetFile(new Option().GetType().Name);
@@ -201,6 +213,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var optionModels = JsonConvert.DeserializeObject<List<Option>>(content);
 				_dBImportService.ImportOptions(_context, optionModels);
+
+				_dBImportService.SyncOptions(_context, optionModels);
 			}
 
 			file = model.GetFile(new TermQuestion().GetType().Name);
@@ -209,6 +223,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var termQuestionModels = JsonConvert.DeserializeObject<List<TermQuestion>>(content);
 				_dBImportService.ImportTermQuestions(_context, termQuestionModels);
+
+				_dBImportService.SyncTermQuestions(_context, termQuestionModels);
 			}
 
 			file = model.GetFile(new Resolve().GetType().Name);
@@ -217,6 +233,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var resolveModels = JsonConvert.DeserializeObject<List<Resolve>>(content);
 				_dBImportService.ImportResolves(_context, resolveModels);
+
+				_dBImportService.SyncResolves(_context, resolveModels);
 			}
 
 			file = model.GetFile(new Recruit().GetType().Name);
@@ -225,6 +243,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var recruitModels = JsonConvert.DeserializeObject<List<Recruit>>(content);
 				_dBImportService.ImportRecruits(_context, recruitModels);
+
+				_dBImportService.SyncRecruits(_context, recruitModels);
 			}
 
 			file = model.GetFile(new RecruitQuestion().GetType().Name);
@@ -233,6 +253,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var recruitQuestionModels = JsonConvert.DeserializeObject<List<RecruitQuestion>>(content);
 				_dBImportService.ImportRecruitQuestions(_context, recruitQuestionModels);
+
+				_dBImportService.SyncRecruitQuestions(_context, recruitQuestionModels);
 			}
 
 			file = model.GetFile(new Note().GetType().Name);
@@ -241,7 +263,30 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var noteModels = JsonConvert.DeserializeObject<List<Note>>(content);
 				_dBImportService.ImportNotes(_context, noteModels);
+
+				_dBImportService.SyncNotes(_context, noteModels);
 			}
+
+			file = model.GetFile(new Manual().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var manualModels = JsonConvert.DeserializeObject<List<Manual>>(content);
+				_dBImportService.ImportManuals(_context, manualModels);
+
+				_dBImportService.SyncManuals(_context, manualModels);
+			}
+
+			file = model.GetFile(new Feature().GetType().Name);
+			if (file != null)
+			{
+				content = await ReadFileTextAsync(file);
+				var featureModels = JsonConvert.DeserializeObject<List<Feature>>(content);
+				_dBImportService.ImportFeatures(_context, featureModels);
+
+				_dBImportService.SyncFeatures(_context, featureModels);
+			}
+
 
 			file = model.GetFile(new UploadFile().GetType().Name);
 			if (file != null)
@@ -249,6 +294,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var uploadFileModels = JsonConvert.DeserializeObject<List<UploadFile>>(content);
 				_dBImportService.ImportUploadFiles(_context, uploadFileModels);
+
+				_dBImportService.SyncUploadFiles(_context, uploadFileModels);
 			}
 
 			file = model.GetFile(new ReviewRecord().GetType().Name);
@@ -257,6 +304,8 @@ namespace Web.Controllers.Admin
 				content = await ReadFileTextAsync(file);
 				var reviewRecordModels = JsonConvert.DeserializeObject<List<ReviewRecord>>(content);
 				_dBImportService.ImportReviewRecords(_context, reviewRecordModels);
+
+				_dBImportService.SyncReviewRecords(_context, reviewRecordModels);
 			}
 
 
