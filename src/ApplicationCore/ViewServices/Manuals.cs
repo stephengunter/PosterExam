@@ -18,6 +18,8 @@ namespace ApplicationCore.ViewServices
 		public static ManualViewModel MapViewModel(this Manual manual, IMapper mapper)
 		{
 			var model = mapper.Map<ManualViewModel>(manual);
+			if (model.SubItems.HasItems()) model.SubItems = model.SubItems.OrderBy(item => item.Order).ToList();
+			if (model.Features.HasItems()) model.Features = model.Features.OrderBy(item => item.Order).ToList();
 			return model;
 		}
 

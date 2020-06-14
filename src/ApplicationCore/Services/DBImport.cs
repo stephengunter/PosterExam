@@ -21,6 +21,8 @@ namespace ApplicationCore.Services
 		void ImportRecruits(DefaultContext _context, List<Recruit> models);
 		void ImportRecruitQuestions(DefaultContext _context, List<RecruitQuestion> models);
 		void ImportNotes(DefaultContext _context, List<Note> models);
+		void ImportManuals(DefaultContext _context, List<Manual> models);
+		void ImportFeatures(DefaultContext _context, List<Feature> models);
 		void ImportUploadFiles(DefaultContext _context, List<UploadFile> models);
 		void ImportReviewRecords(DefaultContext _context, List<ReviewRecord> models);
 
@@ -29,9 +31,13 @@ namespace ApplicationCore.Services
 		void SyncTerms(DefaultContext _context, List<Term> models);
 		void SyncQuestions(DefaultContext _context, List<Question> models);
 		void SyncOptions(DefaultContext _context, List<Option> models);
+		void SyncTermQuestions(DefaultContext _context, List<TermQuestion> models);
 		void SyncResolves(DefaultContext _context, List<Resolve> models);
 		void SyncRecruits(DefaultContext _context, List<Recruit> models);
+		void SyncRecruitQuestions(DefaultContext _context, List<RecruitQuestion> models);
 		void SyncNotes(DefaultContext _context, List<Note> models);
+		void SyncManuals(DefaultContext _context, List<Manual> models);
+		void SyncFeatures(DefaultContext _context, List<Feature> models);
 		void SyncUploadFiles(DefaultContext _context, List<UploadFile> models);
 		void SyncReviewRecords(DefaultContext _context, List<ReviewRecord> models);
 	}
@@ -178,12 +184,7 @@ namespace ApplicationCore.Services
 			{
 				var existingEntity = _context.TermQuestions.FirstOrDefault(x => x.TermId == termQuestionModel.TermId && x.QuestionId == termQuestionModel.QuestionId);
 				if (existingEntity == null) newTermQuestions.Add(termQuestionModel);
-				else
-				{
-					var entry = _context.Entry(existingEntity);
-					entry.CurrentValues.SetValues(termQuestionModel);
-					entry.State = EntityState.Modified;
-				}
+				
 			}
 			_context.TermQuestions.AddRange(newTermQuestions);
 			_context.SaveChanges();
@@ -264,12 +265,6 @@ namespace ApplicationCore.Services
 			{
 				var existingEntity = _context.RecruitQuestions.FirstOrDefault(x => x.RecruitId == recruitQuestionModel.RecruitId && x.QuestionId == recruitQuestionModel.QuestionId);
 				if (existingEntity == null) newRecruitQuestions.Add(recruitQuestionModel);
-				else
-				{
-					var entry = _context.Entry(existingEntity);
-					entry.CurrentValues.SetValues(recruitQuestionModel);
-					entry.State = EntityState.Modified;
-				}
 			}
 			_context.RecruitQuestions.AddRange(newRecruitQuestions);
 			_context.SaveChanges();
@@ -308,6 +303,71 @@ namespace ApplicationCore.Services
 				}
 			}
 
+		}
+
+		public void ImportManuals(DefaultContext _context, List<Manual> models)
+		{
+			var connectionString = _context.Database.GetDbConnection().ConnectionString;
+
+			var newManuals = new List<Manual>();
+			foreach (var manualModel in models)
+			{
+
+				var existingEntity = _context.Manuals.Find(manualModel.Id);
+				if (existingEntity == null) newManuals.Add(manualModel);
+				else Update(_context, existingEntity, manualModel);
+			}
+
+			_context.SaveChanges();
+
+			using (var context = new DefaultContext(connectionString))
+			{
+				context.Manuals.AddRange(newManuals);
+
+				context.Database.OpenConnection();
+				try
+				{
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Manuals ON");
+					context.SaveChanges();
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Manuals OFF");
+				}
+				finally
+				{
+					context.Database.CloseConnection();
+				}
+			}
+		}
+		public void ImportFeatures(DefaultContext _context, List<Feature> models)
+		{
+			var connectionString = _context.Database.GetDbConnection().ConnectionString;
+
+			var newFeatures = new List<Feature>();
+			foreach (var featureModel in models)
+			{
+
+				var existingEntity = _context.Features.Find(featureModel.Id);
+				if (existingEntity == null) newFeatures.Add(featureModel);
+				else Update(_context, existingEntity, featureModel);
+			}
+
+			_context.SaveChanges();
+
+			using (var context = new DefaultContext(connectionString))
+			{
+				context.Features.AddRange(newFeatures);
+
+				context.Database.OpenConnection();
+				try
+				{
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Features ON");
+					context.SaveChanges();
+					context.Database.ExecuteSqlRaw($"SET IDENTITY_INSERT Features OFF");
+				}
+				finally
+				{
+					context.Database.CloseConnection();
+				}
+			}
 		}
 
 		public void ImportUploadFiles(DefaultContext _context, List<UploadFile> models)
@@ -428,6 +488,21 @@ namespace ApplicationCore.Services
 			_context.SaveChanges();
 		}
 
+		public void SyncTermQuestions(DefaultContext _context, List<TermQuestion> models)
+		{
+			var deletedEntities = new List<TermQuestion>();
+
+			foreach (var existingItem in _context.TermQuestions)
+			{
+				var newItem = models.FirstOrDefault(x => x.TermId == existingItem.TermId && x.QuestionId == existingItem.QuestionId);
+				if (newItem == null) deletedEntities.Add(existingItem);
+			}
+
+			if (deletedEntities.HasItems()) _context.TermQuestions.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
 		public void SyncResolves(DefaultContext _context, List<Resolve> models)
 		{
 			var ids = models.Select(x => x.Id).ToList();
@@ -450,6 +525,21 @@ namespace ApplicationCore.Services
 			_context.SaveChanges();
 		}
 
+		public void SyncRecruitQuestions(DefaultContext _context, List<RecruitQuestion> models)
+		{
+			var deletedEntities = new List<RecruitQuestion>();
+
+			foreach (var existingItem in _context.RecruitQuestions)
+			{
+				var newItem = models.FirstOrDefault(x => x.RecruitId == existingItem.RecruitId && x.QuestionId == existingItem.QuestionId);
+				if (newItem == null) deletedEntities.Add(existingItem);
+			}
+
+			if (deletedEntities.HasItems()) _context.RecruitQuestions.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
 		public void SyncNotes(DefaultContext _context, List<Note> models)
 		{
 			var ids = models.Select(x => x.Id).ToList();
@@ -457,6 +547,28 @@ namespace ApplicationCore.Services
 			var deletedEntities = _context.Notes.Where(x => !ids.Contains(x.Id)).ToList();
 
 			if (deletedEntities.HasItems()) _context.Notes.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncManuals(DefaultContext _context, List<Manual> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Manuals.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Manuals.RemoveRange(deletedEntities);
+
+			_context.SaveChanges();
+		}
+
+		public void SyncFeatures(DefaultContext _context, List<Feature> models)
+		{
+			var ids = models.Select(x => x.Id).ToList();
+
+			var deletedEntities = _context.Features.Where(x => !ids.Contains(x.Id)).ToList();
+
+			if (deletedEntities.HasItems()) _context.Features.RemoveRange(deletedEntities);
 
 			_context.SaveChanges();
 		}
