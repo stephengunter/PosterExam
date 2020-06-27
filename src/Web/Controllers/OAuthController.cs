@@ -21,7 +21,7 @@ namespace Web.Controllers
 			_authService = authService;
 		}
 
-		
+
 		[HttpPost("google")]
 		public async Task<ActionResult> Google([FromBody] OAuthLoginRequest model)
 		{
@@ -34,7 +34,7 @@ namespace Web.Controllers
 				bool emailConfirmed = true;
 				user = await _usersService.CreateUserAsync(payload.Email, emailConfirmed);
 			}
-			
+
 			var oAuth = new OAuth
 			{
 				OAuthId = payload.Subject,
