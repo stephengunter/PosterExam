@@ -19,17 +19,7 @@ namespace ApplicationCore.Views
         public string Text { get; set; }
         public ICollection<NoteCategoryViewModel> SubItems { get; set; } = new List<NoteCategoryViewModel>();
     }
-    public class NoteAdminViewModel
-    {
-        public List<NoteCategoryViewModel> Categories { get; set; } = new List<NoteCategoryViewModel>();
 
+    
 
-        public SubjectViewModel Subject { get; set; }
-        //index
-        public List<SubjectViewModel> RootSubjects { get; set; } = new List<SubjectViewModel>();
-
-        public List<SubjectViewModel> Subjects { get; set; } = new List<SubjectViewModel>();
-
-        public List<TermViewModel> Terms { get; set; } = new List<TermViewModel>();
-    }
 }

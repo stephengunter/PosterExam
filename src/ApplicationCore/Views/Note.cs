@@ -33,4 +33,13 @@ namespace ApplicationCore.Views
             return this.Text.Contains(keyword);
         }
     }
+
+    public class NoteParamsViewModel
+    {
+        public int Mode { get; set; }
+
+        public int TermId { get; set; }
+    }
+
+
 }

@@ -10,6 +10,7 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Microsoft.AspNetCore.Authorization;
+using Web.Models;
 
 namespace Web.Controllers.Api
 {
@@ -28,7 +29,6 @@ namespace Web.Controllers.Api
 		public ActionResult Index()
 		{
 			var categories = _dataService.FetchNoteCategories();
-
 			return Ok(categories);
 		}
 

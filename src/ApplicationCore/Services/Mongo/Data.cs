@@ -15,6 +15,9 @@ namespace ApplicationCore.Services
 {
     public interface IDataService
     {
+        NoteParamsViewModel FindNoteParams(string userId);
+        void SaveNoteParams(string userId, NoteParamsViewModel model);
+
         ExamSettingsViewModel FindExamSettings(int subjectId);
         void SaveExamSettings(int subjectId, ExamSettingsViewModel model);
 
@@ -36,22 +39,49 @@ namespace ApplicationCore.Services
 
     public class DataService : IDataService
     {
+        private readonly IMongoRepository<NoteParams> _noteParamsRepository;
         private readonly IMongoRepository<ExamSettings> _examSettingsRepository;
         private readonly IMongoRepository<SubjectQuestions> _subjectQuestionsRepository;
         private readonly IMongoRepository<YearRecruit> _yearRecruitsRepository;
         private readonly IMongoRepository<NoteCategories> _noteCategoriesRepository;
         private readonly IMongoRepository<TermNotes> _termNotesRepository;
 
-        public DataService(IMongoRepository<ExamSettings> examSettingsRepository, IMongoRepository<SubjectQuestions> subjectQuestionsRepository,
+        public DataService(IMongoRepository<NoteParams> noteParamsRepository,
+            IMongoRepository<ExamSettings> examSettingsRepository, IMongoRepository<SubjectQuestions> subjectQuestionsRepository,
             IMongoRepository<YearRecruit> yearRecruitsRepository, IMongoRepository<NoteCategories> noteCategoriesRepository,
             IMongoRepository<TermNotes> termNotesRepository)
         {
+            _noteParamsRepository = noteParamsRepository;
             _examSettingsRepository = examSettingsRepository;
             _subjectQuestionsRepository = subjectQuestionsRepository;
             _yearRecruitsRepository = yearRecruitsRepository;
             _noteCategoriesRepository = noteCategoriesRepository;
             _termNotesRepository = termNotesRepository;
         }
+
+        public void SaveNoteParams(string userId, NoteParamsViewModel model)
+        {
+            var existingDoc = _noteParamsRepository.FindOne(item => item.UserId == userId);
+            string content = JsonConvert.SerializeObject(model);
+
+            if (existingDoc == null) _noteParamsRepository.InsertOne(new NoteParams { UserId = userId, Content = content });
+            else
+            {
+
+                existingDoc.Content = content;
+                existingDoc.LastUpdated = DateTime.Now;
+                _noteParamsRepository.ReplaceOne(existingDoc);
+            }
+        }
+
+        public NoteParamsViewModel FindNoteParams(string userId)
+        {
+            var doc = _noteParamsRepository.FindOne(item => item.UserId == userId);
+            if (doc == null) return null;
+
+            return JsonConvert.DeserializeObject<NoteParamsViewModel>(doc.Content);
+        }
+
 
         public void SaveExamSettings(int subjectId, ExamSettingsViewModel model)
         {

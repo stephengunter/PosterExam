@@ -10,6 +10,7 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Microsoft.AspNetCore.Authorization;
+using Web.Models;
 
 namespace Web.Controllers.Api
 {
@@ -33,16 +34,31 @@ namespace Web.Controllers.Api
 		{
 			var categories = _dataService.FetchNoteCategories();
 
-			return Ok(categories);
+			var paramsView = _dataService.FindNoteParams(CurrentUserId);
+
+			var model = new NotesIndexModel
+			{
+				Categories = categories.ToList(),
+				Params = paramsView
+			};
+
+			return Ok(model);
 		}
 
 		[HttpGet("")]
-		public ActionResult Index(int term = 0, int subject = 0, string keyword = "")
+		public ActionResult Index(int mode = 0, int term = 0, int subject = 0, string keyword = "")
 		{
 			if (term > 0)
 			{
 				var termViewModel = _dataService.FindTermNotesByTerm(term);
 				if (termViewModel == null) return NotFound();
+
+				if (mode < 0 || mode > 1) mode = 0;
+				_dataService.SaveNoteParams(CurrentUserId, new NoteParamsViewModel
+				{
+					Mode = mode,
+					TermId = term
+				});
 
 				if (termViewModel.SubItems.HasItems()) return Ok(termViewModel.SubItems);
 				else return Ok(new List<TermViewModel> { termViewModel });
