@@ -38,6 +38,8 @@ namespace ApplicationCore.Views
     {
         public int Mode { get; set; }
 
+        public int SubjectId { get; set; }
+
         public int TermId { get; set; }
     }
 

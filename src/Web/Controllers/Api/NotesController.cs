@@ -57,6 +57,7 @@ namespace Web.Controllers.Api
 				_dataService.SaveNoteParams(CurrentUserId, new NoteParamsViewModel
 				{
 					Mode = mode,
+					SubjectId = 0,
 					TermId = term
 				});
 
@@ -68,7 +69,18 @@ namespace Web.Controllers.Api
 				var keywords = keyword.GetKeywords();
 				var termViewList = _dataService.FetchTermNotesBySubject(subject);
 
-				if (keywords.IsNullOrEmpty()) return Ok(termViewList);
+				if (keywords.IsNullOrEmpty())
+				{
+					if (mode < 0 || mode > 1) mode = 0;
+					_dataService.SaveNoteParams(CurrentUserId, new NoteParamsViewModel
+					{
+						Mode = mode,
+						SubjectId = subject,
+						TermId = 0
+					});
+
+					return Ok(termViewList);
+				} 
 
 
 				var termsHasKeywords = FilterByKeywords(termViewList, keywords);
