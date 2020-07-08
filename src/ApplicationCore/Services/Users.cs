@@ -27,6 +27,9 @@ namespace ApplicationCore.Services
         Task<User> FindSubscriberAsync(string userId);
         Task<User> AddSubscriberRoleAsync(string userId);
         Task RemoveSubscriberRoleAsync(string userId);
+
+        Task<bool> HasPasswordAsync(User user);
+        Task AddPasswordAsync(User user, string password);
     }
 
     public class UsersService : IUsersService
@@ -148,5 +151,18 @@ namespace ApplicationCore.Services
 
             return isSubscriber ? user : null;
         }
+
+        public async Task<bool> HasPasswordAsync(User user) => await _userManager.HasPasswordAsync(user);
+
+        public async Task AddPasswordAsync(User user, string password)
+        {
+            var result = await _userManager.AddPasswordAsync(user, password);
+            if (!result.Succeeded)
+            {
+                var error = result.Errors.FirstOrDefault();
+                throw new UserAddPasswordException($"{error.Code} : {error.Description}");
+            }
+        }
+        
     }
 }

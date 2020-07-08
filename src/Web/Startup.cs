@@ -65,6 +65,7 @@ namespace Web
 			services.Configure<AuthSettings>(Configuration.GetSection("AuthSettings"));
 			services.Configure<SubscribesSettings>(Configuration.GetSection("SubscribesSettings"));
 			services.Configure<EcPaySettings>(Configuration.GetSection("EcPaySettings"));
+			services.Configure<CloudStorageSettings>(Configuration.GetSection("CloudStorageSettings"));
 			services.Configure<AdminSettings>(Configuration.GetSection("AdminSettings"));
 
 

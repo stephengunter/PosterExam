@@ -54,5 +54,46 @@ namespace Web.Controllers.Admin
 			return Ok(model);
 		}
 
+		[HttpGet("{id}")]
+		public async Task<ActionResult> Details(string id)
+		{
+			var user = await _usersService.FindUserByIdAsync(id);
+			if (user == null) return NotFound();
+
+			var model = user.MapViewModel(_mapper);
+			model.HasPassword = await _usersService.HasPasswordAsync(user);
+
+			return Ok(model);
+		}
+
+
+		[HttpPost("password")]
+		public async Task<ActionResult> AddPassword([FromBody] SetPasswordRequest model)
+		{
+			var user = await _usersService.FindUserByIdAsync(CurrentUserId);
+			if (user == null) return NotFound();
+
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			string password = model.Password.Trim();
+			if (password.Length < 6)
+			{
+				ModelState.AddModelError("password", "密碼長度不能小於6個字元");
+				return BadRequest(ModelState);
+			}
+
+			try
+			{
+				await _usersService.AddPasswordAsync(user, password);
+			}
+			catch (Exception ex)
+			{
+
+				throw;
+			}
+
+			return Ok();
+		}
+
 	}
 }

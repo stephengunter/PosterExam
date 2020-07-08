@@ -15,26 +15,27 @@ namespace Web.Controllers.Api
 {
 	public class ATestsController : BaseApiController
 	{
-		private readonly EcPaySettings _ecpaySettings;
+		private readonly ICloudStorageService _cloudStorageService;
 		private readonly AdminSettings _adminSettings;
 		private readonly Web.Services.ISubscribesService _subscribesService;
 		private readonly ITestsService _testsService;
 
 		public ATestsController(
-			IOptions<EcPaySettings> ecPaySettings, IOptions<AdminSettings> adminSettings,
+			ICloudStorageService cloudStorageService, IOptions<AdminSettings> adminSettings,
 			Web.Services.ISubscribesService subscribesService, ITestsService testsService)
 		{
-			
-			_ecpaySettings = ecPaySettings.Value;
+
+			_cloudStorageService = cloudStorageService;
 			_subscribesService = subscribesService;
 			_adminSettings = adminSettings.Value;
 			_testsService = testsService;
 		}
 
 		[HttpGet]
-		public ActionResult Index()
+		public async Task<ActionResult> Index()
 		{
-			return Ok(_ecpaySettings.MerchantID);
+			string result =  await _cloudStorageService.UploadFileAsync(@"C:\testApp\Gunter_in_Sign.png", @"folder1/Gunter_in_Sign.png");
+			return Ok(result);
 		}
 
 		[HttpPost]

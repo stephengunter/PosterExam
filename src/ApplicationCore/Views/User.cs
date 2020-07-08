@@ -18,6 +18,8 @@ namespace ApplicationCore.Views
 
         public DateTime CreatedAt { get; set; }
 
+        public bool HasPassword { get; set; }
+
         public string CreatedAtText => CreatedAt.ToString("yyyy/MM/dd H:mm:ss");
         public string Roles { get; set; }
     }

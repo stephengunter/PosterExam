@@ -115,7 +115,6 @@ namespace ApplicationCore.DataAccess
 					}
 				}
 
-
 			}
 		}
 

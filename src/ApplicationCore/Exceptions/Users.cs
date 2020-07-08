@@ -35,4 +35,12 @@ namespace ApplicationCore.Exceptions
 
 		}
 	}
+
+	public class UserAddPasswordException : Exception
+	{
+		public UserAddPasswordException(string message) : base(message)
+		{
+
+		}
+	}
 }
