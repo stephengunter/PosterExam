@@ -10,6 +10,7 @@ using ApplicationCore.Helpers;
 using Microsoft.Extensions.Options;
 using ApplicationCore.Settings;
 using Newtonsoft.Json;
+using System.IO;
 
 namespace Web.Controllers.Api
 {
@@ -32,10 +33,10 @@ namespace Web.Controllers.Api
 		}
 
 		[HttpGet]
-		public async Task<ActionResult> Index()
+		public ActionResult Index()
 		{
-			string result =  await _cloudStorageService.UploadFileAsync(@"C:\testApp\Gunter_in_Sign.png", @"folder1/Gunter_in_Sign.png");
-			return Ok(result);
+			
+			return Ok();
 		}
 
 		[HttpPost]

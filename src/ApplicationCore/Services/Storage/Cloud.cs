@@ -40,15 +40,8 @@ namespace ApplicationCore.Services
             }
         }
 
-        public async Task<string> UploadFileAsync(string filePath, string fileName)
+        public async Task<string> UploadFileAsync(string filePath, string name)
         {
-            //var memoryStream = new MemoryStream();
-            //using (var stream = new FileStream(filePath, FileMode.Open))
-            //{
-            //    await stream.CopyToAsync(memoryStream);
-            //}
-            //memoryStream.Seek(0, SeekOrigin.Begin);
-
             using (var memoryStream = new MemoryStream())
             {
                 using (var stream = new FileStream(filePath, FileMode.Open))
@@ -56,7 +49,7 @@ namespace ApplicationCore.Services
                     await stream.CopyToAsync(memoryStream);
                 }
                
-                var dataObject = await _storageClient.UploadObjectAsync(_bucketName, fileName, null, memoryStream);
+                var dataObject = await _storageClient.UploadObjectAsync(_bucketName, name, null, memoryStream);
                 return dataObject.MediaLink;
             }
         }

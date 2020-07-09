@@ -82,15 +82,7 @@ namespace Web.Controllers.Admin
 				return BadRequest(ModelState);
 			}
 
-			try
-			{
-				await _usersService.AddPasswordAsync(user, password);
-			}
-			catch (Exception ex)
-			{
-
-				throw;
-			}
+			await _usersService.AddPasswordAsync(user, password);
 
 			return Ok();
 		}

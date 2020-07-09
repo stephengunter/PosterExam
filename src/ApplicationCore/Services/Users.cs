@@ -13,6 +13,7 @@ namespace ApplicationCore.Services
 {
     public interface IUsersService
     {
+       
         Task<User> FindUserByEmailAsync(string email);
         Task<User> CreateUserAsync(string email, bool emailConfirmed);
         Task<IList<string>> GetRolesAsync(User user);
@@ -28,7 +29,9 @@ namespace ApplicationCore.Services
         Task<User> AddSubscriberRoleAsync(string userId);
         Task RemoveSubscriberRoleAsync(string userId);
 
+        
         Task<bool> HasPasswordAsync(User user);
+        Task<bool> CheckPasswordAsync(User user, string password);
         Task AddPasswordAsync(User user, string password);
     }
 
@@ -44,8 +47,6 @@ namespace ApplicationCore.Services
             _userManager = userManager;
             _roleManager = roleManager;
         }
-
-        
         
         public async Task<User> FindUserByEmailAsync(string email) => await _userManager.FindByEmailAsync(email);
 
@@ -153,6 +154,8 @@ namespace ApplicationCore.Services
         }
 
         public async Task<bool> HasPasswordAsync(User user) => await _userManager.HasPasswordAsync(user);
+
+        public async Task<bool> CheckPasswordAsync(User user, string password) => await _userManager.CheckPasswordAsync(user, password);
 
         public async Task AddPasswordAsync(User user, string password)
         {
