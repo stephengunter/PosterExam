@@ -13,6 +13,7 @@ namespace ApplicationCore.Services
 {
     public interface IUsersService
     {
+       
         Task<User> FindUserByEmailAsync(string email);
         Task<User> CreateUserAsync(string email, bool emailConfirmed);
         Task<IList<string>> GetRolesAsync(User user);
@@ -27,6 +28,11 @@ namespace ApplicationCore.Services
         Task<User> FindSubscriberAsync(string userId);
         Task<User> AddSubscriberRoleAsync(string userId);
         Task RemoveSubscriberRoleAsync(string userId);
+
+        
+        Task<bool> HasPasswordAsync(User user);
+        Task<bool> CheckPasswordAsync(User user, string password);
+        Task AddPasswordAsync(User user, string password);
     }
 
     public class UsersService : IUsersService
@@ -41,8 +47,6 @@ namespace ApplicationCore.Services
             _userManager = userManager;
             _roleManager = roleManager;
         }
-
-        
         
         public async Task<User> FindUserByEmailAsync(string email) => await _userManager.FindByEmailAsync(email);
 
@@ -148,5 +152,20 @@ namespace ApplicationCore.Services
 
             return isSubscriber ? user : null;
         }
+
+        public async Task<bool> HasPasswordAsync(User user) => await _userManager.HasPasswordAsync(user);
+
+        public async Task<bool> CheckPasswordAsync(User user, string password) => await _userManager.CheckPasswordAsync(user, password);
+
+        public async Task AddPasswordAsync(User user, string password)
+        {
+            var result = await _userManager.AddPasswordAsync(user, password);
+            if (!result.Succeeded)
+            {
+                var error = result.Errors.FirstOrDefault();
+                throw new UserAddPasswordException($"{error.Code} : {error.Description}");
+            }
+        }
+        
     }
 }

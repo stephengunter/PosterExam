@@ -18,6 +18,28 @@ namespace Web.Controllers
 			_authService = authService;
 		}
 
+		[HttpPost("")]
+		public async Task<ActionResult> Login([FromBody] LoginRequest model)
+		{
+			if (!ModelState.IsValid) return BadRequest(ModelState);
+
+			var user = await _usersService.FindUserByEmailAsync(model.Username);
+			if (user != null)
+			{
+				if (await _usersService.CheckPasswordAsync(user, model.Password))
+				{
+					var roles = await _usersService.GetRolesAsync(user);
+					var responseView = await _authService.CreateTokenAsync(RemoteIpAddress, user, roles);
+
+					return Ok(responseView);
+				}
+			}
+
+			ModelState.AddModelError("", "身分驗證失敗. 請重新登入");
+			return BadRequest(ModelState);
+
+		}
+
 		//POST api/auth/refreshtoken
 		[HttpPost("refreshtoken")]
 		public async Task<ActionResult> RefreshToken([FromBody] RefreshTokenRequest model)

@@ -17,6 +17,7 @@ namespace ApplicationCore.Services
 	public interface IAuthService
 	{
 		Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, OAuth oAuth, IList<string> roles = null);
+		Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, IList<string> roles = null);
 		Task CreateUpdateUserOAuthAsync(string userId, OAuth oAuth);
 
 		ClaimsPrincipal ResolveClaimsFromToken(string accessToken);
@@ -57,6 +58,20 @@ namespace ApplicationCore.Services
 		public async Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, OAuth oAuth, IList<string> roles = null)
 		{
 			var accessToken = await _jwtFactory.GenerateEncodedToken(user, oAuth, roles);
+			var refreshToken = _tokenFactory.GenerateToken();
+
+			await SetRefreshTokenAsync(ipAddress, user, refreshToken);
+
+			return new AuthResponse
+			{
+				AccessToken = accessToken,
+				RefreshToken = refreshToken
+			};
+		}
+
+		public async Task<AuthResponse> CreateTokenAsync(string ipAddress, User user, IList<string> roles = null)
+		{
+			var accessToken = await _jwtFactory.GenerateEncodedToken(user, roles);
 			var refreshToken = _tokenFactory.GenerateToken();
 
 			await SetRefreshTokenAsync(ipAddress, user, refreshToken);

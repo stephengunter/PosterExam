@@ -45,8 +45,6 @@ namespace Web.Controllers.Admin
 
 		}
 
-		string GetDbName(string connectionString) => new SqlConnectionStringBuilder(connectionString).InitialCatalog;
-
 		[HttpGet("dbname")]
 		public ActionResult DBName()
 		{
@@ -78,7 +76,7 @@ namespace Web.Controllers.Admin
 			var connectionString = _context.Database.GetDbConnection().ConnectionString;
 			string dbName = GetDbName(connectionString);
 
-			var folderPath = BackupFolder();
+			var folderPath = BackupFolder(_adminSettings);
 			var fileName = Path.Combine(folderPath, $"{dbName}_{DateTime.Now.ToString("yyyyMMddHHmmss")}.bak");
 
 			string cmdText = $"BACKUP DATABASE [{dbName}] TO DISK = '{fileName}'";
@@ -102,7 +100,7 @@ namespace Web.Controllers.Admin
 			ValidateRequest(model, _adminSettings);
 			if (!ModelState.IsValid) return BadRequest(ModelState);
 			
-			var folderPath = BackupFolder();
+			var folderPath = BackupFolder(_adminSettings);
 		
 			_context.ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
 			
@@ -318,14 +316,6 @@ namespace Web.Controllers.Admin
 		{
 			var filePath = Path.Combine(folderPath, $"{name}.json");
 			System.IO.File.WriteAllText(filePath, content);
-		}
-
-		string BackupFolder()
-		{
-			var path = Path.Combine(_adminSettings.BackupPath, DateTime.Today.ToDateNumber().ToString());
-			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-			return path;
 		}
 
 	}

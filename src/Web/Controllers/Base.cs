@@ -9,6 +9,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using System;
 using Microsoft.AspNetCore.Cors;
+using System.Data.SqlClient;
 
 namespace Web.Controllers
 {
@@ -78,11 +79,20 @@ namespace Web.Controllers
 		
 	}
 
-	//[EnableCors("Admin")]
+	[EnableCors("Admin")]
 	[Route("admin/[controller]")]
 	[Authorize(Policy = "Admin")]
 	public class BaseAdminController : BaseController
 	{
+		protected string BackupFolder(AdminSettings adminSettings)
+		{
+			var path = Path.Combine(adminSettings.BackupPath, DateTime.Today.ToDateNumber().ToString());
+			if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+			return path;
+		}
+
+		protected string GetDbName(string connectionString) => new SqlConnectionStringBuilder(connectionString).InitialCatalog;
 
 		protected void ValidateRequest(AdminRequest model, AdminSettings adminSettings)
 		{
