@@ -35,10 +35,10 @@ namespace ApplicationCore.ViewServices
 		}
 
 
-		public static IEnumerable<User> GetOrdered(this IEnumerable<User> users)
-		{
-			return users.OrderByDescending(u => u.CreatedAt);
-		}
+		public static IEnumerable<User> GetOrdered(this IEnumerable<User> users) => users.OrderByDescending(u => u.CreatedAt);
+
+		public static IEnumerable<User> FilterByKeyword(this IEnumerable<User> users, ICollection<string> keywords)
+			=> users.Where(item => keywords.Any(item.UserName.CaseInsensitiveContains)).ToList();
 
 	}
 }

@@ -2,23 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ApplicationCore.Models;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
-using Web.Models;
-using ApplicationCore.Specifications;
-using Web.Helpers;
-using Web.Controllers;
-using Newtonsoft.Json;
-using System.IO;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Options;
-using ApplicationCore.Settings;
 
 namespace Web.Controllers.Admin
 {

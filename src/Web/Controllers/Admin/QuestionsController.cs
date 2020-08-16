@@ -11,6 +11,7 @@ using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
 using Web.Controllers;
+using Web.Models;
 
 namespace Web.Controllers.Admin
 {
@@ -38,6 +39,16 @@ namespace Web.Controllers.Admin
 		[HttpGet("")]
 		public async Task<ActionResult> Index(int subject, int term = 0, int recruit = 0, string keyword = "", int page = 1, int pageSize = 10)
 		{
+			
+			if (page < 1)
+			{
+				var model = new QuestionsIndexModel();
+				await LoadOptionsAsync(model);
+
+				return Ok(model);
+			}
+
+
 			Subject selectedSubject = _subjectsService.GetById(subject);
 			if (selectedSubject == null)
 			{
@@ -84,12 +95,7 @@ namespace Web.Controllers.Admin
 			}
 
 			var questions = await _questionsService.FetchAsync(selectedSubject, termIds, recruitIds);
-
-			if (questions.IsNullOrEmpty())
-			{
-				return Ok(questions.GetPagedList(_mapper, page, pageSize));
-			}
-
+			if (questions.IsNullOrEmpty()) return Ok(questions.GetPagedList(_mapper, page, pageSize));
 
 			var keywords = keyword.GetKeywords();
 			if (keywords.HasItems()) questions = questions.FilterByKeyword(keywords);
@@ -98,14 +104,36 @@ namespace Web.Controllers.Admin
 			List<Term> allTerms = (await _termsService.FetchAllAsync()).ToList();
 			List<UploadFile> attachments = (await _attachmentsService.FetchAsync(PostType.Option)).ToList();
 
-			var pageList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments, allTerms, page, pageSize);
-			
-			foreach (var item in pageList.ViewList)
+			var pagedList = questions.GetPagedList(_mapper, allRecruits.ToList(), attachments, allTerms, page, pageSize);
+
+			foreach (var item in pagedList.ViewList)
 			{
 				item.Options = item.Options.OrderByDescending(o => o.Correct).ToList();
 			}
 
-			return Ok(pageList);
+
+			return Ok(pagedList);
+
+		}
+
+		async Task LoadOptionsAsync(QuestionsIndexModel model)
+		{
+			//Subjects
+			var subjects = await _subjectsService.FetchAsync();
+			subjects = subjects.GetOrdered();
+
+			_subjectsService.LoadSubItems(subjects);
+			foreach (var item in subjects) item.GetSubIds();
+
+			model.Subjects = subjects.MapViewModelList(_mapper);
+
+
+			//Recruits
+			var recruits = await _recruitsService.FetchAsync();
+			recruits = recruits.GetOrdered();
+
+			_recruitsService.LoadSubItems(recruits);
+			model.Recruits = recruits.MapViewModelList(_mapper);
 		}
 
 		[HttpGet("create")]

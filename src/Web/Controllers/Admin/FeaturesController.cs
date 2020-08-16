@@ -29,22 +29,11 @@ namespace Web.Controllers.Admin
 			_mapper = mapper;
 		}
 
-		
-
-		[HttpGet("")]
-		public async Task<ActionResult> Index(int active = 1)
-		{
-			var manuals = await _manualsService.FetchAsync(active.ToBoolean());
-
-			manuals = manuals.GetOrdered();
-
-			return Ok(manuals.MapViewModelList(_mapper));
-		}
 
 		[HttpGet("create")]
 		public ActionResult Create()
 		{
-			return Ok(new FeatureViewModel());
+			return Ok(new FeatureViewModel() { Order = -1 });
 		}
 
 		[HttpPost("")]
@@ -84,7 +73,19 @@ namespace Web.Controllers.Admin
 			model.Order = model.Active ? 0 : -1;
 			var feature = model.MapEntity(_mapper, CurrentUserId);
 
-			await _manualsService.UpdateAsync(existingEntity, feature);
+			await _manualsService.UpdateFeatureAsync(existingEntity, feature);
+
+			return Ok();
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<ActionResult> Delete(int id)
+		{
+			var feature = await _manualsService.GetFeatureByIdAsync(id);
+			if (feature == null) return NotFound();
+
+			feature.SetUpdated(CurrentUserId);
+			await _manualsService.RemoveFeatureAsync(feature);
 
 			return Ok();
 		}

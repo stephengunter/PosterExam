@@ -39,6 +39,7 @@ namespace Web.Controllers.Admin
 			}
 
 			var terms = await _termsService.FetchAsync(selectedSubject, parent);
+
 			if (terms.HasItems())
 			{
 				if (subItems) _termsService.LoadSubItems(terms);
@@ -53,6 +54,9 @@ namespace Web.Controllers.Admin
 			return Ok(terms.MapViewModelList(_mapper));
 		}
 
+
+
+
 		[HttpGet("create")]
 		public async Task<ActionResult> Create(int subject, int parent)
 		{
@@ -64,16 +68,21 @@ namespace Web.Controllers.Admin
 			}
 
 			int maxOrder = await _termsService.GetMaxOrderAsync(selectedSubject, parent);
+			int order = maxOrder + 1;
 			var model = new TermViewModel()
 			{
-				Order = maxOrder + 1,
+				Order = order,
 				SubjectId = subject,
-				ParentId = parent
+				ParentId = parent,
+				Active = order >= 0
 			};
-
-			
-			var terms = await _termsService.FetchAllAsync();
-			terms = terms.GetOrdered();
+		
+			var terms = await _termsService.FetchAsync(selectedSubject);
+			if (terms.HasItems())
+			{
+				_termsService.LoadSubItems(terms);
+				terms = terms.GetOrdered();
+			}
 
 			var form = new TermEditForm()
 			{
@@ -115,8 +124,14 @@ namespace Web.Controllers.Admin
 			var model = term.MapViewModel(_mapper);
 			model.Text = model.Text.ReplaceBrToNewLine();
 
-			var terms = await _termsService.FetchAllAsync();
-			terms = terms.GetOrdered();
+
+			var selectedSubject = await _subjectsService.GetByIdAsync(term.SubjectId);
+			var terms = await _termsService.FetchAsync(selectedSubject);
+			if (terms.HasItems())
+			{
+				_termsService.LoadSubItems(terms);
+				terms = terms.GetOrdered();
+			}
 
 			var form = new TermEditForm()
 			{

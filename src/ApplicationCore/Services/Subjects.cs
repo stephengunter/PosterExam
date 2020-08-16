@@ -22,8 +22,8 @@ namespace ApplicationCore.Services
 		Task<IEnumerable<Subject>> FetchRootSubjectsAsync();
 		IEnumerable<Subject> FetchRootItems();
 		Task<IEnumerable<Subject>> FetchExamSubjectsAsync();
-		void LoadSubItems(Subject entity);
-		void LoadSubItems(IEnumerable<Subject> list);
+		void LoadSubItems(Subject entity, bool activeOnly = false);
+		void LoadSubItems(IEnumerable<Subject> list, bool activeOnly = false);
 		Subject GetById(int id);
 	}
 
@@ -84,24 +84,19 @@ namespace ApplicationCore.Services
 			return await _subjectRepository.ListAsync(spec);
 		}
 
-		public void LoadSubItems(IEnumerable<Subject> list)
+		public void LoadSubItems(IEnumerable<Subject> list, bool activeOnly = false)
 		{
 			if (list.IsNullOrEmpty()) return;
 
-			var subItems = AllSubItems(_subjectRepository.DbSet);
-
-
-			foreach (var entity in list)
-			{
-				entity.LoadSubItems(subItems.ToList());
-			}
+			var subItems = AllSubItems(_subjectRepository.DbSet).ToList();
+			foreach (var entity in list) entity.LoadSubItems(subItems, activeOnly);
 		}
 
-		public void LoadSubItems(Subject entity)
+		public void LoadSubItems(Subject entity, bool activeOnly = false)
 		{
-			var subItems = AllSubItems(_subjectRepository.DbSet);
+			var subItems = AllSubItems(_subjectRepository.DbSet).ToList();
 
-			entity.LoadSubItems(subItems.ToList());
+			entity.LoadSubItems(subItems, activeOnly);
 		}
 
 		

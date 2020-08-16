@@ -19,7 +19,7 @@ namespace ApplicationCore.Services
         Task<IList<string>> GetRolesAsync(User user);
 
         Task<User> FindUserByIdAsync(string id);
-        Task<IEnumerable<User>> FetchUsersAsync(string role = "", string keyword = "");
+        Task<IEnumerable<User>> FetchUsersAsync(string role = "");
         IEnumerable<IdentityRole> FetchRoles();
 
         IEnumerable<IdentityRole> GetRolesByUserId(string userId);
@@ -70,7 +70,7 @@ namespace ApplicationCore.Services
 
         public async Task<User> FindUserByIdAsync(string id) => await _userManager.FindByIdAsync(id);
 
-        public async Task<IEnumerable<User>> FetchUsersAsync(string role = "", string keyword = "")
+        public async Task<IEnumerable<User>> FetchUsersAsync(string role = "")
         {
             var users = _userManager.Users;
 
@@ -83,12 +83,8 @@ namespace ApplicationCore.Services
                     users = users.Where(user => userIdsInRole.Contains(user.Id));
                 }
             }
-            
 
-            if (String.IsNullOrEmpty(keyword)) return users;
-            if (users.IsNullOrEmpty()) return users;
-
-            return users.Where(u => u.UserName.CaseInsensitiveContains(keyword));
+            return users;
         }
 
         public IEnumerable<IdentityRole> FetchRoles() => _roleManager.Roles.ToList();

@@ -33,20 +33,22 @@ namespace Web.Controllers.Admin
 		{
 			var recruits = await _recruitsService.FetchAsync(parent);
 
-			if(active >= 0) recruits = recruits.Where(x => x.Active == active.ToBoolean());
+			if (active >= 0) recruits = recruits.Where(x => x.Active == active.ToBoolean());
 			if (year > 0) recruits = recruits.Where(x => x.Year == year);
 
 			recruits = recruits.GetOrdered();
 
+			_recruitsService.LoadSubItems(recruits);
+
 			if (parent == 0)
 			{
-				_recruitsService.LoadSubItems(recruits);
-
 				var subjects = await _subjectsService.FetchAsync();
 				_subjectsService.LoadSubItems(subjects);
 
 				foreach (var recruit in recruits)
 				{
+					recruit.LoadParent(recruits);
+
 					foreach (var subItem in recruit.SubItems)
 					{
 						if (subItem.SubjectId > 0)
@@ -55,7 +57,7 @@ namespace Web.Controllers.Admin
 							subject.GetSubIds();
 
 							subItem.Subject = subject;
-							
+
 							var subjectIds = new List<int> { subject.Id };
 							subjectIds.AddRange(subject.SubIds);
 							subItem.SubjectIds = subjectIds;
@@ -65,12 +67,6 @@ namespace Web.Controllers.Admin
 				}
 			}
 
-			foreach (var item in recruits)
-			{
-				item.LoadParent(recruits);
-			}
-
-			
 
 			return Ok(recruits.MapViewModelList(_mapper));
 		}

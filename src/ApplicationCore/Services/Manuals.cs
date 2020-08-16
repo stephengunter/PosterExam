@@ -25,7 +25,8 @@ namespace ApplicationCore.Services
 		Feature GetFeatureById(int id);
 		Task<Feature> GetFeatureByIdAsync(int id);
 		Task<Feature> CreateFeatureAsync(Feature feature);
-		Task UpdateAsync(Feature existingEntity, Feature feature);
+		Task UpdateFeatureAsync(Feature existingEntity, Feature feature);
+		Task RemoveFeatureAsync(Feature feature);
 	}
 
 	public class ManualsService : BaseCategoriesService<Manual>, IManualsService
@@ -50,7 +51,10 @@ namespace ApplicationCore.Services
 			manuals = manuals.Where(x => x.Active == active).ToList();
 
 			var allItems = await FetchAllAsync();
-			foreach (var item in manuals) item.LoadSubItems(allItems);
+			foreach (var item in manuals)
+			{
+				item.LoadSubItems(allItems);
+			} 
 
 			return manuals;
 		}
@@ -64,7 +68,7 @@ namespace ApplicationCore.Services
 		{
 			var spec = new ManualFilterSpecification(id);
 			var manual = _manualRepository.GetSingleBySpec(spec);
-
+			
 			if (subItems)
 			{
 				var allItems = await FetchAllAsync();
@@ -114,6 +118,12 @@ namespace ApplicationCore.Services
 
 		public async Task<Feature> CreateFeatureAsync(Feature feature) => await _featureRepository.AddAsync(feature);
 
-		public async Task UpdateAsync(Feature existingEntity, Feature feature) => await _featureRepository.UpdateAsync(existingEntity, feature);
+		public async Task UpdateFeatureAsync(Feature existingEntity, Feature feature) => await _featureRepository.UpdateAsync(existingEntity, feature);
+
+		public async Task RemoveFeatureAsync(Feature feature)
+		{
+			feature.Removed = true;
+			await _featureRepository.UpdateAsync(feature);
+		}
 	}
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ApplicationCore.Paging;
 
 namespace ApplicationCore.Views
 {
@@ -13,12 +14,5 @@ namespace ApplicationCore.Views
 
 		public ICollection<int> SubIds { get; set; }
 
-	}
-
-	public class SubjectEditForm
-	{
-		public SubjectViewModel Subject { get; set; } = new SubjectViewModel();
-
-		public ICollection<SubjectViewModel> Parents { get; set; }
 	}
 }

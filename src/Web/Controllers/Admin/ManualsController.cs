@@ -39,6 +39,11 @@ namespace Web.Controllers.Admin
 		{
 			var manuals = await _manualsService.FetchAsync(active.ToBoolean());
 
+			foreach (var item in manuals)
+			{
+				item.Features = item.Features.Where(x => !x.Removed).ToList();
+			}
+
 			manuals = manuals.GetOrdered();
 
 			return Ok(manuals.MapViewModelList(_mapper));
@@ -53,7 +58,7 @@ namespace Web.Controllers.Admin
 			var form = new ManualEditForm
 			{
 				Parents = rootItems.Select(item => new BaseOption<int>(item.Id, item.Title)).ToList(),
-				Manual = new ManualViewModel()
+				Manual = new ManualViewModel() { Order = -1 }
 			};
 
 			return Ok(form);
@@ -105,6 +110,19 @@ namespace Web.Controllers.Admin
 			notice.Order = model.Active ? 0 : -1;
 
 			await _manualsService.UpdateAsync(existingEntity, notice);
+
+			return Ok();
+		}
+
+
+		[HttpDelete("{id}")]
+		public async Task<ActionResult> Delete(int id)
+		{
+			var manual = await _manualsService.GetByIdAsync(id);
+			if (manual == null) return NotFound();
+
+			manual.SetUpdated(CurrentUserId);
+			await _manualsService.RemoveAsync(manual);
 
 			return Ok();
 		}

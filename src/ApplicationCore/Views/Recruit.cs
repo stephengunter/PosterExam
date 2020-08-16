@@ -10,6 +10,8 @@ namespace ApplicationCore.Views
 	{
 		public int Id { get; set; }
 
+		public string EntityType { get; set; }
+
 		public int Year { get; set; }
 
 		public int SubjectId { get; set; }

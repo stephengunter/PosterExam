@@ -4,13 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using ApplicationCore.Models;
 using ApplicationCore.Services;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using ApplicationCore.Views;
 using ApplicationCore.Helpers;
 using AutoMapper;
 using ApplicationCore.ViewServices;
-using Web.Controllers;
 
 namespace Web.Controllers.Admin
 {
@@ -26,32 +24,24 @@ namespace Web.Controllers.Admin
 		}
 
 		[HttpGet("")]
-		public async Task<ActionResult> Index(int parent = -1, bool subItems = true)
+		public async Task<ActionResult> Index(int parent = -1,  bool subItems = true)
 		{
 			var subjects = await _subjectsService.FetchAsync(parent);
+			
 			subjects = subjects.GetOrdered();
 
 			if (subItems)
 			{
 				_subjectsService.LoadSubItems(subjects);
-				foreach (var item in subjects)
-				{
-					item.GetSubIds();
-				}
+				
+				foreach (var item in subjects) item.GetSubIds();
 			}
 
 			return Ok(subjects.MapViewModelList(_mapper));
 		}
 
 		[HttpGet("create")]
-		public async Task<ActionResult> Create()
-		{
-			var subjects = await _subjectsService.FetchAsync();
-			subjects = subjects.GetOrdered();
-
-			var form = new SubjectEditForm() { Parents = subjects.MapViewModelList(_mapper) };
-			return Ok(form);
-		}
+		public ActionResult Create() => Ok(new SubjectViewModel() { Order = -1 });
 		
 
 		[HttpPost("")]
@@ -73,17 +63,7 @@ namespace Web.Controllers.Admin
 			var subject = await _subjectsService.GetByIdAsync(id);
 			if (subject == null) return NotFound();
 
-			
-			var subjects = await _subjectsService.FetchAsync();
-		
-			subjects = subjects.GetOrdered();
-
-			var form = new SubjectEditForm() 
-			{
-				Subject = subject.MapViewModel(_mapper),
-				Parents = subjects.MapViewModelList(_mapper) 
-			};
-			return Ok(form);
+			return Ok(subject.MapViewModel(_mapper));
 		}
 
 		[HttpPut("{id}")]

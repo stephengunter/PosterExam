@@ -35,8 +35,10 @@ namespace Web.Controllers.Admin
 			if (page < 0) //首次載入
 			{
 				page = 1;
-				model.StartDateText = records.Select(item => item.DateTime).Min().ToDateString();
-				model.EndDateText = records.Select(item => item.DateTime).Max().ToDateString();				
+				string startDate = records.Select(item => item.DateTime).Min().ToDateString();
+				string endDate = records.Select(item => item.DateTime).Max().ToDateString();
+
+				model.Period = new List<string> { startDate , endDate  };
 			}
 
 			if (start.HasValue() || end.HasValue())
@@ -57,7 +59,7 @@ namespace Web.Controllers.Admin
 
 			var types = records.Select(item => item.TypeName).Distinct();
 
-			model.LoadTypeOptions(types);
+			model.Types = types.ToList();
 
 			model.PagedList = records.GetPagedList(page, pageSize);
 

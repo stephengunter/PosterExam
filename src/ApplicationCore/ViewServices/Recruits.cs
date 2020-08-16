@@ -15,8 +15,9 @@ namespace ApplicationCore.ViewServices
 	public static class RecruitsViewService
 	{
 		public static RecruitViewModel MapViewModel(this Recruit recruit, IMapper mapper)
-		{ 
+		{
 			var model = mapper.Map<RecruitViewModel>(recruit);
+			model.EntityType = recruit.RecruitEntityType.ToString();
 			model.DateText = recruit.Date.ToDateString();
 			model.OptionType = recruit.OptionType.ToString();
 
@@ -28,6 +29,8 @@ namespace ApplicationCore.ViewServices
 					subjectIds.AddRange(item.SubjectIds);
 				}
 				model.SubjectIds = subjectIds;
+
+				
 			}
 
 			var parents = new List<RecruitViewModel>();
@@ -39,6 +42,8 @@ namespace ApplicationCore.ViewServices
 			}
 
 			model.Parents = parents;
+
+			
 
 			return model;
 		}

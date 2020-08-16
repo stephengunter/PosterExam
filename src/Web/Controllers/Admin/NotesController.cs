@@ -198,6 +198,17 @@ namespace Web.Controllers.Admin
 			return Ok(note.MapViewModel(_mapper));
 		}
 
+		[HttpGet("edit/{id}")]
+		public async Task<ActionResult> Edit(int id)
+		{
+			var note = _notesService.GetById(id);
+			if (note == null) return NotFound();
+
+			var attachments = (await _attachmentsService.FetchAsync(PostType.Note, id)).ToList();
+
+			return Ok(note.MapViewModel(_mapper, attachments));
+		}
+
 		[HttpPut("{id}")]
 		public async Task<ActionResult> Update(int id, [FromBody] NoteViewModel model)
 		{

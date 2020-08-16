@@ -23,9 +23,12 @@ namespace ApplicationCore.Models
 		public ICollection<int> SubIds { get; private set; }
 
 
-		public void LoadSubItems(IEnumerable<Subject> subItems)
+		public void LoadSubItems(IEnumerable<Subject> subItems, bool activeOnly = false)
 		{
-			SubItems = subItems.Where(item => item.ParentId == this.Id).OrderBy(item => item.Order).ToList();
+			var children = subItems.Where(item => item.ParentId == this.Id);
+			if (activeOnly) children = children.Where(item => item.Active);
+
+			SubItems = children.OrderBy(item => item.Order).ToList();
 
 			foreach (var item in SubItems)
 			{

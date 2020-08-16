@@ -40,7 +40,16 @@ namespace Web.Controllers.Admin
 				page = 1;
 			}
 
-			var users = await _usersService.FetchUsersAsync(role, keyword);
+			var users = await _usersService.FetchUsersAsync(role);
+			if (users.IsNullOrEmpty())
+			{
+				model.PagedList = users.GetPagedList(_mapper, page, pageSize);
+				return Ok(model);
+			}
+
+			var keywords = keyword.GetKeywords();
+			if (keywords.HasItems()) users = users.FilterByKeyword(keywords);
+
 			var pagedList = users.GetPagedList(_mapper, page, pageSize);
 
 			foreach (var item in pagedList.ViewList)
