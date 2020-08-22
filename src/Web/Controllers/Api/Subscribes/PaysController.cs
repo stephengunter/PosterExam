@@ -93,7 +93,6 @@ namespace Web.Controllers.Api
 			}
 
 			return Ok("1|OK");
-			
 
 		}
 
